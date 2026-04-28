@@ -185,7 +185,7 @@ export function Toolbar({
               onClick={onUndo}
             >
               <svg
-                className="h-3.5 w-3.5"
+                className="h-4 w-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -209,7 +209,7 @@ export function Toolbar({
               onClick={onRedo}
             >
               <svg
-                className="h-3.5 w-3.5"
+                className="h-4 w-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -227,6 +227,8 @@ export function Toolbar({
             </Tooltip.Content>
           </Tooltip>
         </div>
+
+        <div className="w-px h-5 bg-separator/50" />
 
         {/* Device preview toggle */}
         <div className="flex items-center gap-0.5 rounded-lg bg-[#F5F5F5] dark:bg-surface p-0.5">
@@ -278,6 +280,8 @@ export function Toolbar({
             AR
           </button>
         </div>
+
+        <div className="w-px h-5 bg-separator/50" />
 
         {/* Theme switcher */}
         <Tooltip delay={200}>

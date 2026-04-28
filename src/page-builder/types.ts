@@ -21,12 +21,27 @@ export type BlockType =
   | "video"
   | "button-group"
   | "columns"
+  | "grid"
+  | "flex-row"
+  | "flex-col"
+  | "flex-container"
+  | "container"
   | "spacer"
   | "divider"
   | "code"
   | "html";
 
 export type BlockCategory = "sections" | "content" | "layout" | "media";
+
+/** A named drop zone definition for container blocks */
+export interface ZoneDefinition {
+  /** Zone identifier (e.g., "left", "right", "content") */
+  name: string;
+  /** Human-readable label for the zone */
+  label: string;
+  /** Block types allowed in this zone (empty/undefined = all allowed) */
+  allow?: BlockType[];
+}
 
 export interface BlockDefinition {
   type: BlockType;
@@ -36,12 +51,60 @@ export interface BlockDefinition {
   description: string;
   /** Default props when a new instance is created */
   defaultProps: Record<string, unknown>;
+  /** If present, this block is a container that supports nesting */
+  zones?: ZoneDefinition[];
 }
 
 export interface BlockInstance {
   id: string;
   type: BlockType;
   props: Record<string, unknown>;
+  /**
+   * Children organized by zone name.
+   * Only present on container blocks.
+   * Example: { left: [...], right: [...] }
+   */
+  children?: Record<string, BlockInstance[]>;
+}
+
+/** Per-block style overrides stored in block.props._style */
+export interface BlockStyleOverrides {
+  // Typography
+  fontSize?: string;
+  fontWeight?: string;
+  textAlign?: string;
+  textColor?: string;
+  lineHeight?: string;
+  // Borders
+  borderWidth?: string;
+  borderColor?: string;
+  borderStyle?: string;
+  borderRadius?: string;
+  borderRadiusTL?: string;
+  borderRadiusTR?: string;
+  borderRadiusBL?: string;
+  borderRadiusBR?: string;
+  // Background
+  backgroundColor?: string;
+  backgroundImage?: string;
+  // Spacing
+  paddingTop?: number;
+  paddingBottom?: number;
+  paddingLeft?: number;
+  paddingRight?: number;
+  marginTop?: number;
+  marginBottom?: number;
+  // Layout
+  fullWidth?: boolean;
+  // Animation
+  animation?: string;
+  animationDelay?: number;
+  // CSS
+  cssClass?: string;
+  // Responsive visibility
+  visibleDesktop?: boolean;
+  visibleTablet?: boolean;
+  visibleMobile?: boolean;
 }
 
 // ── Animation Presets ──
@@ -160,4 +223,6 @@ export interface BuilderState {
   sidebarPanel: SidebarPanel;
   isDrawerOpen: boolean;
   previewMode: "desktop" | "tablet" | "mobile";
+  hoveredBlockId: string | null;
+  expandedLayerIds: Set<string>;
 }

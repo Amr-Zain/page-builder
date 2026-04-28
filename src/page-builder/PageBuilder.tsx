@@ -28,11 +28,22 @@ import {
   BLOCK_DEFINITIONS,
   createBlockId,
 } from "./data";
+import {
+  findBlock,
+  getParentBlock,
+  insertBlock as treeInsertBlock,
+  removeBlock,
+  moveBlock as treeMoveBlock,
+  duplicateBlock as treeDuplicateBlock,
+  wouldCreateCycle,
+} from "./tree-utils";
 import { Toolbar } from "./components/Toolbar";
 import { Sidebar } from "./components/Sidebar";
 import { Canvas } from "./components/Canvas";
 import { RightPanel } from "./components/RightPanel";
 import { ResizeHandle } from "./components/ResizeHandle";
+import { BreadcrumbNav } from "./components/BreadcrumbNav";
+import { ActionBar } from "./components/ActionBar";
 import { FloatingBar } from "./components/FloatingBar";
 import { PreviewMode } from "./components/PreviewMode";
 import { PagesPanel } from "./components/PagesPanel";
@@ -97,6 +108,29 @@ function saveToStorage(blocks: BlockInstance[], design: DesignSettings) {
   }
 }
 
+/** Recursively find and update a block's props at any depth in the tree */
+function updateBlockInTree(
+  blocks: BlockInstance[],
+  blockId: string,
+  props: Record<string, unknown>,
+): BlockInstance[] {
+  return blocks.map((b) => {
+    if (b.id === blockId) return { ...b, props };
+    if (b.children) {
+      return {
+        ...b,
+        children: Object.fromEntries(
+          Object.entries(b.children).map(([zone, zoneBlocks]) => [
+            zone,
+            updateBlockInTree(zoneBlocks, blockId, props),
+          ]),
+        ),
+      };
+    }
+    return b;
+  });
+}
+
 export default function PageBuilder() {
   // Load persisted state or use defaults
   const persisted = useRef(loadState());
@@ -107,6 +141,8 @@ export default function PageBuilder() {
     sidebarPanel: "blocks",
     isDrawerOpen: false,
     previewMode: "desktop",
+    hoveredBlockId: null,
+    expandedLayerIds: new Set<string>(),
   }));
 
   // ── Dirty tracking (must be before pages section) ──
@@ -345,7 +381,7 @@ export default function PageBuilder() {
       }
       // Ctrl+C = Copy selected block
       if (meta && e.key === "c" && state.selectedBlockId) {
-        const block = state.blocks.find((b) => b.id === state.selectedBlockId);
+        const block = findBlock(state.blocks, state.selectedBlockId);
         if (block) {
           const tag = (e.target as HTMLElement)?.tagName;
           if (tag !== "INPUT" && tag !== "TEXTAREA") {
@@ -447,7 +483,7 @@ export default function PageBuilder() {
       const def = BLOCK_DEFINITIONS.find((b) => b.type === data.blockType);
       setActiveDragLabel(def ? `${def.icon} ${def.label}` : data.blockType);
     } else {
-      const block = state.blocks.find((b) => b.id === active.id);
+      const block = findBlock(state.blocks, active.id as string);
       if (block) {
         const def = BLOCK_DEFINITIONS.find((b) => b.type === block.type);
         setActiveDragLabel(def ? `${def.icon} ${def.label}` : block.type);
@@ -461,7 +497,9 @@ export default function PageBuilder() {
     setActiveDragLabel(null);
     if (!over) return;
     const activeData = active.data.current;
+    const overId = over.id as string;
 
+    // ── Sidebar block drop (new block creation) ──
     if (activeData?.type === "sidebar-block") {
       const blockType = activeData.blockType as BlockType;
       const def = BLOCK_DEFINITIONS.find((b) => b.type === blockType);
@@ -471,7 +509,43 @@ export default function PageBuilder() {
         type: blockType,
         props: def ? { ...def.defaultProps } : {},
       };
-      const overId = over.id as string;
+
+      // Check if dropping into a nested zone (compound ID: parentId:zoneName)
+      if (overId.includes(":") && !overId.startsWith("drop-before-") && !overId.startsWith("drop-after-")) {
+        const parts = overId.split(":");
+        const parentId = parts[0];
+        const zoneName = parts[1];
+        // Parse optional position hint: parentId:zone:before-blockId or parentId:zone:after-blockId
+        let targetIndex = 0;
+        if (parts.length >= 3) {
+          const posHint = parts.slice(2).join(":");
+          if (posHint.startsWith("before-")) {
+            const refId = posHint.replace("before-", "");
+            const parent = findBlock(state.blocks, parentId);
+            const zoneBlocks = parent?.children?.[zoneName] ?? [];
+            const idx = zoneBlocks.findIndex((b) => b.id === refId);
+            targetIndex = idx >= 0 ? idx : 0;
+          } else if (posHint.startsWith("after-")) {
+            const refId = posHint.replace("after-", "");
+            const parent = findBlock(state.blocks, parentId);
+            const zoneBlocks = parent?.children?.[zoneName] ?? [];
+            const idx = zoneBlocks.findIndex((b) => b.id === refId);
+            targetIndex = idx >= 0 ? idx + 1 : zoneBlocks.length;
+          }
+        } else {
+          // Drop at end of zone
+          const parent = findBlock(state.blocks, parentId);
+          targetIndex = parent?.children?.[zoneName]?.length ?? 0;
+        }
+        setState((s) => ({
+          ...s,
+          blocks: treeInsertBlock(s.blocks, newBlock, parentId, zoneName, targetIndex),
+          selectedBlockId: newBlock.id,
+        }));
+        return;
+      }
+
+      // Root-level drops
       setState((s) => {
         let newBlocks = [...s.blocks];
         if (overId === "canvas-drop-empty") newBlocks = [newBlock];
@@ -494,13 +568,49 @@ export default function PageBuilder() {
       return;
     }
 
+    // ── Reorder existing block ──
     if (active.id !== over.id) {
-      const activeIdx = state.blocks.findIndex(
-        (b) => b.id === (active.id as string),
-      );
-      const overIdx = state.blocks.findIndex(
-        (b) => b.id === (over.id as string),
-      );
+      const activeId = active.id as string;
+
+      // Check for cycle prevention when dropping into a container zone
+      if (overId.includes(":") && !overId.startsWith("drop-before-") && !overId.startsWith("drop-after-")) {
+        const parentId = overId.split(":")[0];
+        if (wouldCreateCycle(state.blocks, activeId, parentId)) return;
+
+        const zoneName = overId.split(":")[1];
+        const parts = overId.split(":");
+        let targetIndex = 0;
+        if (parts.length >= 3) {
+          const posHint = parts.slice(2).join(":");
+          if (posHint.startsWith("before-")) {
+            const refId = posHint.replace("before-", "");
+            const parent = findBlock(state.blocks, parentId);
+            const zoneBlocks = parent?.children?.[zoneName] ?? [];
+            const idx = zoneBlocks.findIndex((b) => b.id === refId);
+            targetIndex = idx >= 0 ? idx : 0;
+          } else if (posHint.startsWith("after-")) {
+            const refId = posHint.replace("after-", "");
+            const parent = findBlock(state.blocks, parentId);
+            const zoneBlocks = parent?.children?.[zoneName] ?? [];
+            const idx = zoneBlocks.findIndex((b) => b.id === refId);
+            targetIndex = idx >= 0 ? idx + 1 : zoneBlocks.length;
+          }
+        } else {
+          const parent = findBlock(state.blocks, parentId);
+          targetIndex = parent?.children?.[zoneName]?.length ?? 0;
+        }
+
+        pushHistory();
+        setState((s) => ({
+          ...s,
+          blocks: treeMoveBlock(s.blocks, activeId, parentId, zoneName, targetIndex),
+        }));
+        return;
+      }
+
+      // Root-level reorder
+      const activeIdx = state.blocks.findIndex((b) => b.id === activeId);
+      const overIdx = state.blocks.findIndex((b) => b.id === overId);
       if (activeIdx >= 0 && overIdx >= 0) {
         pushHistory();
         setState((s) => ({
@@ -517,7 +627,7 @@ export default function PageBuilder() {
       pushHistory();
       setState((s) => ({
         ...s,
-        blocks: s.blocks.filter((b) => b.id !== id),
+        blocks: removeBlock(s.blocks, id),
         selectedBlockId: s.selectedBlockId === id ? null : s.selectedBlockId,
       }));
     },
@@ -525,14 +635,18 @@ export default function PageBuilder() {
   );
 
   const selectBlock = useCallback((id: string | null) => {
-    setState((s) => ({ ...s, selectedBlockId: id }));
+    setState((s) => {
+      // Verify the block exists in the tree (not just root level)
+      if (id !== null && !findBlock(s.blocks, id)) return s;
+      return { ...s, selectedBlockId: id };
+    });
   }, []);
 
   const updateBlockProps = useCallback(
     (blockId: string, props: Record<string, unknown>) => {
       setState((s) => ({
         ...s,
-        blocks: s.blocks.map((b) => (b.id === blockId ? { ...b, props } : b)),
+        blocks: updateBlockInTree(s.blocks, blockId, props),
       }));
       markDirty();
     },
@@ -543,6 +657,16 @@ export default function PageBuilder() {
     (id: string) => {
       pushHistory();
       setState((s) => {
+        // Check if block is nested
+        const parentInfo = getParentBlock(s.blocks, id);
+        if (parentInfo) {
+          const { parent, zone } = parentInfo;
+          const zoneBlocks = parent.children?.[zone] ?? [];
+          const idx = zoneBlocks.findIndex((b) => b.id === id);
+          if (idx <= 0) return s;
+          return { ...s, blocks: treeMoveBlock(s.blocks, id, parent.id, zone, idx - 1) };
+        }
+        // Root level
         const idx = s.blocks.findIndex((b) => b.id === id);
         if (idx <= 0) return s;
         return { ...s, blocks: arrayMove(s.blocks, idx, idx - 1) };
@@ -555,6 +679,16 @@ export default function PageBuilder() {
     (id: string) => {
       pushHistory();
       setState((s) => {
+        // Check if block is nested
+        const parentInfo = getParentBlock(s.blocks, id);
+        if (parentInfo) {
+          const { parent, zone } = parentInfo;
+          const zoneBlocks = parent.children?.[zone] ?? [];
+          const idx = zoneBlocks.findIndex((b) => b.id === id);
+          if (idx < 0 || idx >= zoneBlocks.length - 1) return s;
+          return { ...s, blocks: treeMoveBlock(s.blocks, id, parent.id, zone, idx + 1) };
+        }
+        // Root level
         const idx = s.blocks.findIndex((b) => b.id === id);
         if (idx < 0 || idx >= s.blocks.length - 1) return s;
         return { ...s, blocks: arrayMove(s.blocks, idx, idx + 1) };
@@ -566,19 +700,10 @@ export default function PageBuilder() {
   const duplicateBlock = useCallback(
     (id: string) => {
       pushHistory();
-      setState((s) => {
-        const idx = s.blocks.findIndex((b) => b.id === id);
-        if (idx < 0) return s;
-        const original = s.blocks[idx];
-        const copy: BlockInstance = {
-          id: createBlockId(),
-          type: original.type,
-          props: { ...original.props },
-        };
-        const newBlocks = [...s.blocks];
-        newBlocks.splice(idx + 1, 0, copy);
-        return { ...s, blocks: newBlocks, selectedBlockId: copy.id };
-      });
+      setState((s) => ({
+        ...s,
+        blocks: treeDuplicateBlock(s.blocks, id),
+      }));
     },
     [pushHistory],
   );
@@ -590,6 +715,20 @@ export default function PageBuilder() {
     },
     [pushHistory],
   );
+
+  // ── Hover & Expand state handlers ──
+  const setHoveredBlockId = useCallback((id: string | null) => {
+    setState((s) => ({ ...s, hoveredBlockId: id }));
+  }, []);
+
+  const toggleExpandLayer = useCallback((id: string) => {
+    setState((s) => {
+      const next = new Set(s.expandedLayerIds);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return { ...s, expandedLayerIds: next };
+    });
+  }, []);
 
   const applyTemplate = useCallback(
     (template: Template) => {
@@ -633,7 +772,7 @@ export default function PageBuilder() {
   }, []);
 
   const selectedBlock =
-    state.blocks.find((b) => b.id === state.selectedBlockId) || null;
+    findBlock(state.blocks, state.selectedBlockId ?? "") || null;
 
   // ── Clipboard ──
   const clipboard = useClipboard();
@@ -718,6 +857,12 @@ export default function PageBuilder() {
           onUndo={undo}
         />
 
+        <BreadcrumbNav
+          blocks={state.blocks}
+          selectedBlockId={state.selectedBlockId}
+          onSelectBlock={selectBlock}
+        />
+
         <div className="flex flex-1 min-h-0">
           {/* Left sidebar with slide animation */}
           <div
@@ -762,6 +907,7 @@ export default function PageBuilder() {
             blocks={state.blocks}
             design={state.design}
             isDragActive={activeDragId !== null}
+            hoveredBlockId={state.hoveredBlockId}
             previewMode={state.previewMode}
             selectedBlockId={state.selectedBlockId}
             onBlockDelete={deleteBlock}
@@ -784,6 +930,9 @@ export default function PageBuilder() {
                 block={selectedBlock}
                 blocks={state.blocks}
                 width={rightWidth}
+                expandedLayerIds={state.expandedLayerIds}
+                onToggleExpand={toggleExpandLayer}
+                onHoverBlock={setHoveredBlockId}
                 onDelete={deleteBlock}
                 onDeselect={() => selectBlock(null)}
                 onDuplicate={duplicateBlock}
@@ -802,6 +951,22 @@ export default function PageBuilder() {
           onPreview={() => setIsPreviewOpen(true)}
           onSave={handleSave}
         />
+
+        {/* ActionBar for selected block */}
+        {selectedBlock && !activeDragId && (
+          <ActionBar
+            block={selectedBlock}
+            blockRef={document.querySelector(`[data-block-id="${state.selectedBlockId}"]`) as HTMLElement | null}
+            isNested={!!getParentBlock(state.blocks, state.selectedBlockId!)}
+            isDragging={!!activeDragId}
+            onDuplicate={() => duplicateBlock(state.selectedBlockId!)}
+            onDelete={() => deleteBlock(state.selectedBlockId!)}
+            onSelectParent={() => {
+              const parentInfo = getParentBlock(state.blocks, state.selectedBlockId!);
+              if (parentInfo) selectBlock(parentInfo.parent.id);
+            }}
+          />
+        )}
 
         <DragOverlay>
           {activeDragId && activeDragLabel && (

@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useDraggable } from "@dnd-kit/core";
-import { Tabs, Slider } from "@heroui/react";
+import { Slider } from "@heroui/react";
 import clsx from "clsx";
 
 import type {
   BlockDefinition,
   BlockCategory,
   ComponentDefinition,
+  ComponentCategory,
   DesignSettings,
   SidebarPanel,
   Template,
@@ -81,7 +82,7 @@ function CollapsibleSection({
   );
 }
 
-// ── Draggable Block Card ──
+// ── Draggable Block Card (2-column grid for sections) ──
 function DraggableBlockCard({ block }: { block: BlockDefinition }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `sidebar-block-${block.type}`,
@@ -92,10 +93,10 @@ function DraggableBlockCard({ block }: { block: BlockDefinition }) {
     <div
       ref={setNodeRef}
       className={clsx(
-        "flex flex-col items-center gap-2 rounded-xl border-2 border-separator/40 bg-white dark:bg-surface p-3 transition-all cursor-grab active:cursor-grabbing select-none",
+        "flex flex-col items-center gap-2 rounded-lg border-2 border-separator/40 bg-white dark:bg-surface p-3 transition-all cursor-grab active:cursor-grabbing select-none outline-none",
         isDragging
           ? "opacity-50 border-[#634CF8] shadow-lg scale-95"
-          : "hover:border-[#634CF8]/30 hover:shadow-sm",
+          : "hover:border-[#634CF8]/30 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[#634CF8]/40 focus-visible:border-[#634CF8]/30 focus-visible:shadow-sm",
       )}
       {...listeners}
       {...attributes}
@@ -104,6 +105,50 @@ function DraggableBlockCard({ block }: { block: BlockDefinition }) {
       <span className="text-[11px] font-medium text-foreground text-center leading-tight">
         {block.label}
       </span>
+    </div>
+  );
+}
+
+// ── Draggable Block Card (single-column list for content/layout/media) ──
+function DraggableBlockCardList({ block }: { block: BlockDefinition }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `sidebar-block-${block.type}`,
+    data: { type: "sidebar-block", blockType: block.type },
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={clsx(
+        "flex items-center gap-2.5 rounded-lg border border-separator/40 bg-white dark:bg-surface px-3 py-2.5 transition-all cursor-grab active:cursor-grabbing select-none outline-none",
+        isDragging
+          ? "opacity-50 border-[#634CF8] shadow-lg scale-95"
+          : "hover:border-[#634CF8]/30 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[#634CF8]/40 focus-visible:border-[#634CF8]/30 focus-visible:shadow-sm",
+      )}
+      {...listeners}
+      {...attributes}
+    >
+      <div className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-md bg-[#F8F8FA] dark:bg-[#1a1a2e]">
+        <span className="text-lg opacity-50">{block.icon}</span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <span className="text-[11px] font-medium text-foreground block truncate">
+          {block.label}
+        </span>
+        <span className="text-[9px] text-muted/60">{block.description}</span>
+      </div>
+      <svg
+        className="h-3.5 w-3.5 text-muted/30 shrink-0"
+        fill="currentColor"
+        viewBox="0 0 16 16"
+      >
+        <circle cx="5" cy="4" r="1" />
+        <circle cx="11" cy="4" r="1" />
+        <circle cx="5" cy="8" r="1" />
+        <circle cx="11" cy="8" r="1" />
+        <circle cx="5" cy="12" r="1" />
+        <circle cx="11" cy="12" r="1" />
+      </svg>
     </div>
   );
 }
@@ -251,10 +296,10 @@ function DraggableComponentCard({
     <div
       ref={setNodeRef}
       className={clsx(
-        "flex items-center gap-2.5 rounded-lg border border-separator/40 bg-white dark:bg-surface px-3 py-2.5 transition-all cursor-grab active:cursor-grabbing select-none",
+        "flex items-center gap-2.5 rounded-lg border border-separator/40 bg-white dark:bg-surface px-3 py-2.5 transition-all cursor-grab active:cursor-grabbing select-none outline-none",
         isDragging
-          ? "opacity-40 border-[#634CF8] shadow-lg scale-95"
-          : "hover:border-[#634CF8]/30 hover:shadow-sm",
+          ? "opacity-50 border-[#634CF8] shadow-lg scale-95"
+          : "hover:border-[#634CF8]/30 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[#634CF8]/40 focus-visible:border-[#634CF8]/30 focus-visible:shadow-sm",
       )}
       {...listeners}
       {...attributes}
@@ -302,7 +347,7 @@ function SelectionCard({
   return (
     <button
       className={clsx(
-        "flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-all cursor-pointer",
+        "flex flex-col items-center gap-2 rounded-lg border-2 p-3 transition-all cursor-pointer",
         selected
           ? "border-[#634CF8] bg-[#634CF8]/[0.03]"
           : "border-separator/40 bg-white dark:bg-surface hover:border-muted/80",
@@ -349,27 +394,35 @@ function BlocksPanel() {
   const categories = Object.keys(BLOCK_CATEGORIES) as BlockCategory[];
 
   return (
-    <div className="flex flex-col">
-      <BlockSearch />
+    <div className="flex flex-col gap-3">
       <p className="text-[11px] text-muted pb-2 leading-relaxed">
         Drag blocks onto the canvas to build your page.
       </p>
       {categories.map((cat) => {
         const meta = BLOCK_CATEGORIES[cat];
         const blocks = BLOCK_DEFINITIONS.filter((b) => b.category === cat);
+        const isSections = cat === "sections";
         return (
           <CollapsibleSection
             count={blocks.length}
-            defaultOpen={cat === "sections"}
+            defaultOpen={isSections}
             icon={meta.icon}
             key={cat}
             title={meta.label}
           >
-            <div className="grid grid-cols-2 gap-2">
-              {blocks.map((block) => (
-                <DraggableBlockCard block={block} key={block.type} />
-              ))}
-            </div>
+            {isSections ? (
+              <div className="grid grid-cols-2 gap-2">
+                {blocks.map((block) => (
+                  <DraggableBlockCard block={block} key={block.type} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {blocks.map((block) => (
+                  <DraggableBlockCardList block={block} key={block.type} />
+                ))}
+              </div>
+            )}
           </CollapsibleSection>
         );
       })}
@@ -384,7 +437,7 @@ function ComponentsPanel() {
   ) as (keyof typeof COMPONENT_CATEGORIES)[];
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-3">
       <p className="text-[12px] text-muted py-2 leading-relaxed">
         UI elements to use inside blocks.
       </p>
@@ -399,7 +452,7 @@ function ComponentsPanel() {
             key={cat}
             title={meta.label}
           >
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               {comps.map((comp) => (
                 <DraggableComponentCard component={comp} key={comp.type} />
               ))}
@@ -423,7 +476,7 @@ function DesignPanel({
   ) => void;
 }) {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-3">
       <CollapsibleSection title="Mood">
         <div className="flex gap-3">
           <SelectionCard
@@ -913,6 +966,16 @@ function TemplatesPanel({
 // MAIN SIDEBAR
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// ── Nav Items ──
+const NAV_ITEMS: { id: SidebarPanel; icon: string; label: string }[] = [
+  { id: "blocks", icon: "📐", label: "Blocks" },
+  { id: "components", icon: "🔘", label: "UI" },
+  { id: "design", icon: "🎨", label: "Design" },
+  { id: "templates", icon: "📋", label: "Tpl" },
+  { id: "pages", icon: "📄", label: "Pages" },
+  { id: "menus", icon: "☰", label: "Menus" },
+];
+
 export function Sidebar({
   activePanel,
   design,
@@ -937,49 +1000,42 @@ export function Sidebar({
 }) {
   return (
     <aside
-      className="flex h-full shrink-0 flex-col border-r border-separator/50 bg-white dark:bg-background overflow-hidden"
+      className="flex h-full shrink-0 border-r border-separator/50 bg-white dark:bg-background overflow-hidden"
       style={{ width: `${width}px` }}
     >
-      <div className="border-b border-separator/50 px-2 pt-2 overflow-x-auto scrollbar-none">
-        <Tabs
-          selectedKey={activePanel}
-          onSelectionChange={(key) => onPanelChange(key as SidebarPanel)}
-        >
-          <Tabs.ListContainer>
-            <Tabs.List
-              aria-label="Builder panels"
-              className="w-full text-[10px] flex-wrap"
+      {/* Left icon strip — 48px wide vertical nav */}
+      <div className="flex flex-col w-12 shrink-0 border-r border-separator/50 bg-[#FAFAFA] dark:bg-[#0f0f1a] py-2">
+        {NAV_ITEMS.map((item) => {
+          const isActive = activePanel === item.id;
+          return (
+            <button
+              key={item.id}
+              className={clsx(
+                "relative flex flex-col items-center justify-center gap-0.5 w-full py-2.5 transition-colors outline-none",
+                isActive
+                  ? "text-[#634CF8] bg-[#634CF8]/5"
+                  : "text-muted hover:text-foreground hover:bg-surface",
+              )}
+              title={item.label}
+              onClick={() => onPanelChange(item.id)}
             >
-              <Tabs.Tab id="blocks">
-                📐 Blocks
-                <Tabs.Indicator />
-              </Tabs.Tab>
-              <Tabs.Tab id="components">
-                🔘 UI
-                <Tabs.Indicator />
-              </Tabs.Tab>
-              <Tabs.Tab id="design">
-                🎨 Design
-                <Tabs.Indicator />
-              </Tabs.Tab>
-              <Tabs.Tab id="templates">
-                📋 Tpl
-                <Tabs.Indicator />
-              </Tabs.Tab>
-              <Tabs.Tab id="pages">
-                📄 Pages
-                <Tabs.Indicator />
-              </Tabs.Tab>
-              <Tabs.Tab id="menus">
-                ☰ Menus
-                <Tabs.Indicator />
-              </Tabs.Tab>
-            </Tabs.List>
-          </Tabs.ListContainer>
-        </Tabs>
+              {/* Active left border indicator */}
+              {isActive && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-[#634CF8]" />
+              )}
+              <span className="text-base leading-none">{item.icon}</span>
+              <span className="text-[9px] font-medium leading-tight">{item.label}</span>
+            </button>
+          );
+        })}
       </div>
 
+      {/* Right content area */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 min-w-0">
+        {/* Sticky BlockSearch above all panels */}
+        <div className="sticky top-0 z-10 bg-white dark:bg-background pt-3 pb-2 mt-3">
+          <BlockSearch />
+        </div>
         {activePanel === "blocks" && <BlocksPanel />}
         {activePanel === "components" && <ComponentsPanel />}
         {activePanel === "design" && (

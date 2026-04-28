@@ -375,6 +375,19 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     </div>`;
   },
 
+  grid: (props) => {
+    const cols = Number(props.columns) || 2;
+    const gap = props.gap || "16";
+    const templateCols = props.templateColumns || `repeat(${cols}, 1fr)`;
+    return `<div style="display:grid;grid-template-columns:${templateCols};gap:${gap}px;${props.justifyItems ? `justify-items:${props.justifyItems};` : ""}${props.alignItems ? `align-items:${props.alignItems};` : ""}padding:1rem"></div>`;
+  },
+
+  "flex-container": (props) => {
+    const dir = props.direction || "row";
+    const gap = props.gap || "16";
+    return `<div style="display:flex;flex-direction:${dir};gap:${gap}px;${props.justifyContent ? `justify-content:${props.justifyContent};` : ""}${props.alignItems ? `align-items:${props.alignItems};` : ""}${props.wrap ? `flex-wrap:${props.wrap};` : ""}padding:1rem"></div>`;
+  },
+
   spacer: (props) => {
     const height = Number(props.height) || 64;
     return `<div style="height:${height}px"></div>`;
@@ -412,7 +425,21 @@ function renderBlock(block: BlockInstance, design: DesignSettings): string {
       : "";
   const section = block.props._section as Record<string, string> | undefined;
 
-  let html = `<div data-block-id="${esc(block.id)}" data-block-type="${esc(block.type)}"${inlineStyle}${animClass}>${inner}</div>`;
+  // Render nested children if present
+  let childrenHtml = "";
+  if (block.children) {
+    for (const [zoneName, zoneBlocks] of Object.entries(block.children)) {
+      if (zoneBlocks.length > 0) {
+        const zoneContent = zoneBlocks.map((child) => renderBlock(child, design)).join("\n");
+        childrenHtml += `\n<div data-zone="${esc(zoneName)}" style="flex:1;min-width:0">${zoneContent}</div>`;
+      }
+    }
+    if (childrenHtml) {
+      childrenHtml = `<div style="display:flex;gap:1rem">${childrenHtml}\n</div>`;
+    }
+  }
+
+  let html = `<div data-block-id="${esc(block.id)}" data-block-type="${esc(block.type)}"${inlineStyle}${animClass}>${inner}${childrenHtml}</div>`;
 
   if (section?.bgImage || section?.bgOverlay) {
     const overlay = section?.bgOverlay
@@ -438,12 +465,20 @@ export function generateHtml(options: HtmlExportOptions): string {
 
   const blocksHtml = blocks.map((b) => renderBlock(b, design)).join("\n");
 
-  // Collect animation presets used
+  // Collect animation presets used (recursively)
   const usedAnimations = new Set<string>();
-  blocks.forEach((b) => {
-    const anim = b.props._animation as string;
-    if (anim && anim !== "none") usedAnimations.add(anim);
-  });
+  function collectAnimations(blockList: BlockInstance[]) {
+    for (const b of blockList) {
+      const anim = b.props._animation as string;
+      if (anim && anim !== "none") usedAnimations.add(anim);
+      if (b.children) {
+        for (const zone of Object.values(b.children)) {
+          collectAnimations(zone);
+        }
+      }
+    }
+  }
+  collectAnimations(blocks);
 
   // Animation keyframes CSS
   const animationCSS =
@@ -502,7 +537,18 @@ export function generateHtml(options: HtmlExportOptions): string {
       : "";
 
   // Form submission script
-  const hasContactForm = blocks.some((b) => b.type === "contact");
+  function hasBlockType(blockList: BlockInstance[], type: string): boolean {
+    for (const b of blockList) {
+      if (b.type === type) return true;
+      if (b.children) {
+        for (const zone of Object.values(b.children)) {
+          if (hasBlockType(zone, type)) return true;
+        }
+      }
+    }
+    return false;
+  }
+  const hasContactForm = hasBlockType(blocks, "contact");
   const formScript = hasContactForm
     ? `
   <script>

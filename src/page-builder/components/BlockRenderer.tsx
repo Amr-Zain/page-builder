@@ -1,7 +1,7 @@
 import { Button, Card } from "@heroui/react";
 import clsx from "clsx";
 
-import type { BlockInstance, DesignSettings } from "../types";
+import type { BlockInstance, BlockStyleOverrides, DesignSettings } from "../types";
 import { RADIUS_TOKENS } from "../tokens";
 
 /** Convert radius token to CSS value */
@@ -1071,6 +1071,110 @@ function ButtonGroupBlock({ props, design }: RendererProps) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Container
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function ContainerBlock({ props, design }: RendererProps) {
+  const maxWidth = (props.maxWidth as string) || "1200px";
+
+  return (
+    <div className="px-4 py-6">
+      <div
+        className="border-2 border-dashed border-separator/50 min-h-[6rem] flex flex-col items-center justify-center gap-2 p-4"
+        style={{ maxWidth, margin: "0 auto", borderRadius: radiusValue(design.radius) }}
+      >
+        <span className="text-xs font-semibold text-muted/60 uppercase tracking-wider">📦 Container</span>
+        <span className="text-[10px] text-muted/40">max-width: {maxWidth}</span>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Grid
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function GridBlock({ props }: RendererProps) {
+  const cols = Number(props.columns) || 2;
+
+  return (
+    <div className="p-4 rounded-lg border border-dashed border-separator/40 min-h-[80px]">
+      <div className="text-[10px] text-muted/60 mb-2 font-mono">
+        ⊞ Grid · {cols} cols · gap {String(props.gap || 16)}px
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Flex Container
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function FlexContainerBlock({ props }: RendererProps) {
+  return (
+    <div className="p-4 rounded-lg border border-dashed border-separator/40 min-h-[80px]">
+      <div className="text-[10px] text-muted/60 mb-2 font-mono">
+        ⇔ Flex · {String(props.direction || "row")} · gap {String(props.gap || 16)}px
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Flex Row
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function FlexRowBlock({ props, design }: RendererProps) {
+  const gap = (props.gap as string) || "1rem";
+
+  return (
+    <div className="px-8 py-6">
+      <div className="mb-2 flex items-center gap-2">
+        <span className="text-xs font-semibold text-muted/60 uppercase tracking-wider">↔️ Flex Row</span>
+      </div>
+      <div className="flex flex-row items-stretch" style={{ gap }}>
+        <div
+          className="flex-1 min-h-[5rem] border-2 border-dotted border-separator/40 flex items-center justify-center text-[10px] text-muted/50"
+          style={{ borderRadius: radiusValue(design.radius) }}
+        >
+          ← Item 1
+        </div>
+        <div
+          className="flex-1 min-h-[5rem] border-2 border-dotted border-separator/40 flex items-center justify-center text-[10px] text-muted/50"
+          style={{ borderRadius: radiusValue(design.radius) }}
+        >
+          Item 2 →
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Flex Column
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function FlexColBlock({ props, design }: RendererProps) {
+  const gap = (props.gap as string) || "1rem";
+
+  return (
+    <div className="px-8 py-6">
+      <div className="mb-2 flex items-center gap-2">
+        <span className="text-xs font-semibold text-muted/60 uppercase tracking-wider">↕️ Flex Column</span>
+      </div>
+      <div className="flex flex-col" style={{ gap }}>
+        <div
+          className="min-h-[4rem] border-2 border-dotted border-separator/40 flex items-center justify-center text-[10px] text-muted/50"
+          style={{ borderRadius: radiusValue(design.radius) }}
+        >
+          ↑ Content ↓
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Columns
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1236,25 +1340,173 @@ const RENDERERS: Record<string, React.FC<RendererProps>> = {
   video: VideoBlock,
   "button-group": ButtonGroupBlock,
   columns: ColumnsBlock,
+  container: ContainerBlock,
+  grid: GridBlock,
+  "flex-row": FlexRowBlock,
+  "flex-col": FlexColBlock,
+  "flex-container": FlexContainerBlock,
   spacer: SpacerBlock,
   divider: DividerBlock,
   code: CodeBlock,
   html: HTMLBlock,
 };
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// Style Override Utilities
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/** Font size token to CSS value mapping */
+const FONT_SIZE_MAP: Record<string, string> = {
+  sm: "0.875rem",
+  base: "1rem",
+  lg: "1.125rem",
+  xl: "1.25rem",
+  "2xl": "1.5rem",
+  "3xl": "1.875rem",
+  "4xl": "2.25rem",
+};
+
+/** Font weight token to CSS value mapping */
+const FONT_WEIGHT_MAP: Record<string, string> = {
+  light: "300",
+  normal: "400",
+  medium: "500",
+  semibold: "600",
+  bold: "700",
+};
+
+/** Line height token to CSS value mapping */
+const LINE_HEIGHT_MAP: Record<string, string> = {
+  tight: "1.25",
+  normal: "1.5",
+  relaxed: "1.625",
+  loose: "2",
+};
+
+/** Animation class mapping */
+const ANIMATION_CLASSES: Record<string, string> = {
+  "fade-in": "animate-fade-in",
+  "fade-up": "animate-fade-up",
+  "fade-down": "animate-fade-down",
+  "slide-up": "animate-slide-up",
+  "slide-down": "animate-slide-down",
+  "slide-left": "animate-slide-left",
+  "slide-right": "animate-slide-right",
+  "zoom-in": "animate-zoom-in",
+  "zoom-out": "animate-zoom-out",
+  bounce: "animate-bounce",
+};
+
+/** Build inline style object from BlockStyleOverrides */
+function buildStyleOverrides(style: BlockStyleOverrides): React.CSSProperties {
+  const css: React.CSSProperties = {};
+
+  // Typography
+  if (style.fontSize) {
+    css.fontSize = FONT_SIZE_MAP[style.fontSize] || style.fontSize;
+  }
+  if (style.fontWeight) {
+    css.fontWeight = FONT_WEIGHT_MAP[style.fontWeight] || style.fontWeight;
+  }
+  if (style.textAlign) {
+    css.textAlign = style.textAlign as React.CSSProperties["textAlign"];
+  }
+  if (style.textColor) {
+    css.color = style.textColor;
+  }
+  if (style.lineHeight) {
+    css.lineHeight = LINE_HEIGHT_MAP[style.lineHeight] || style.lineHeight;
+  }
+
+  // Borders
+  if (style.borderWidth && style.borderWidth !== "0") {
+    css.borderWidth = style.borderWidth;
+    css.borderStyle = style.borderStyle || "solid";
+    if (style.borderColor) {
+      css.borderColor = style.borderColor;
+    }
+  }
+  if (style.borderRadius) {
+    const token = RADIUS_TOKENS[style.borderRadius as keyof typeof RADIUS_TOKENS];
+    css.borderRadius = token ? token.value : style.borderRadius;
+  }
+  // Per-corner radius overrides
+  if (style.borderRadiusTL) css.borderTopLeftRadius = style.borderRadiusTL;
+  if (style.borderRadiusTR) css.borderTopRightRadius = style.borderRadiusTR;
+  if (style.borderRadiusBL) css.borderBottomLeftRadius = style.borderRadiusBL;
+  if (style.borderRadiusBR) css.borderBottomRightRadius = style.borderRadiusBR;
+
+  // Background
+  if (style.backgroundColor) {
+    css.backgroundColor = style.backgroundColor;
+  }
+
+  // Spacing
+  if (style.paddingTop != null) css.paddingTop = `${style.paddingTop}px`;
+  if (style.paddingBottom != null) css.paddingBottom = `${style.paddingBottom}px`;
+  if (style.paddingLeft != null) css.paddingLeft = `${style.paddingLeft}px`;
+  if (style.paddingRight != null) css.paddingRight = `${style.paddingRight}px`;
+  if (style.marginTop != null) css.marginTop = `${style.marginTop}px`;
+  if (style.marginBottom != null) css.marginBottom = `${style.marginBottom}px`;
+
+  // Animation delay
+  if (style.animationDelay) {
+    css.animationDelay = `${style.animationDelay}ms`;
+  }
+
+  return css;
+}
+
+/** Check if block is hidden for a given preview mode */
+function isHiddenForViewport(
+  style: BlockStyleOverrides | undefined,
+  previewMode: string,
+): boolean {
+  if (!style) return false;
+  if (previewMode === "desktop" && style.visibleDesktop === false) return true;
+  if (previewMode === "tablet" && style.visibleTablet === false) return true;
+  if (previewMode === "mobile" && style.visibleMobile === false) return true;
+  return false;
+}
+
+/** Get viewport label for hidden overlay */
+function getHiddenViewportLabel(previewMode: string): string {
+  switch (previewMode) {
+    case "desktop":
+      return "desktop";
+    case "tablet":
+      return "tablet";
+    case "mobile":
+      return "mobile";
+    default:
+      return previewMode;
+  }
+}
+
 export function BlockRenderer({
   block,
   design,
   isSelected,
+  previewMode = "desktop",
   onClick,
 }: {
   block: BlockInstance;
   design: DesignSettings;
   isSelected: boolean;
+  previewMode?: string;
   onClick: () => void;
 }) {
   const Renderer = RENDERERS[block.type];
   if (!Renderer) return null;
+
+  const styleOverrides = block.props._style as BlockStyleOverrides | undefined;
+  const inlineStyles = styleOverrides ? buildStyleOverrides(styleOverrides) : {};
+  const animationClass =
+    styleOverrides?.animation && styleOverrides.animation !== "none"
+      ? ANIMATION_CLASSES[styleOverrides.animation] || ""
+      : "";
+  const cssClass = styleOverrides?.cssClass || "";
+  const hiddenForViewport = isHiddenForViewport(styleOverrides, previewMode);
 
   return (
     <div
@@ -1263,7 +1515,10 @@ export function BlockRenderer({
         isSelected
           ? "ring-2 ring-[#634CF8] ring-offset-2 rounded-lg"
           : "hover:ring-1 hover:ring-[#634CF8]/30 hover:ring-offset-1 rounded-lg",
+        animationClass,
+        cssClass,
       )}
+      style={inlineStyles}
       onClick={(e) => {
         e.stopPropagation();
         onClick();
@@ -1280,7 +1535,19 @@ export function BlockRenderer({
       >
         {block.type}
       </div>
+
       <Renderer design={design} props={block.props} />
+
+      {/* Responsive visibility overlay */}
+      {hiddenForViewport && (
+        <div className="absolute inset-0 bg-muted/20 backdrop-blur-[1px] flex items-center justify-center rounded-lg z-[5]">
+          <div className="bg-white dark:bg-surface border border-separator/50 rounded-lg px-3 py-1.5 shadow-sm">
+            <p className="text-[10px] font-semibold text-muted">
+              Hidden on {getHiddenViewportLabel(previewMode)}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
