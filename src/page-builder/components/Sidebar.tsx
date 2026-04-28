@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { Slider } from "@heroui/react";
 import clsx from "clsx";
@@ -7,7 +7,6 @@ import type {
   BlockDefinition,
   BlockCategory,
   ComponentDefinition,
-  ComponentCategory,
   DesignSettings,
   SidebarPanel,
   Template,
