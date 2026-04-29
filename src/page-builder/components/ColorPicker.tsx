@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Slider, Label } from "@heroui/react";
 
 /** Preset colors for quick selection */
@@ -79,17 +79,25 @@ export function ColorPicker({
     setOpacity(p.opacity);
   }, [value]);
 
+  const emitTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
   const emitChange = useCallback(
     (newHex: string, newOpacity: number) => {
-      if (newHex === "transparent") {
-        onChange("transparent");
-        return;
-      }
-      const output = newOpacity < 100 ? hexToRgba(newHex, newOpacity) : newHex;
-      onChange(output);
+      if (emitTimeout.current) clearTimeout(emitTimeout.current);
+      emitTimeout.current = setTimeout(() => {
+        if (newHex === "transparent") {
+          onChange("transparent");
+          return;
+        }
+        const output = newOpacity < 100 ? hexToRgba(newHex, newOpacity) : newHex;
+        onChange(output);
+      }, 100);
     },
     [onChange],
   );
+
+  // Cleanup on unmount
+  useEffect(() => () => { if (emitTimeout.current) clearTimeout(emitTimeout.current); }, []);
 
   function handleHexChange(newHex: string) {
     setHex(newHex);
@@ -178,7 +186,7 @@ export function ColorPicker({
       </div>
 
       {/* Preset colors */}
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-1.5 p-2">
         {PRESET_COLORS.map((preset) => (
           <button
             key={preset.hex}
