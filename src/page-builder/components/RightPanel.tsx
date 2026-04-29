@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { useState, useRef } from "react";
 import { Tabs, Switch, Label } from "@heroui/react";
-import { X, ChevronUp, ChevronDown, Copy, Trash2 } from "lucide-react";
+import { X, ChevronUp, ChevronDown, Copy, Trash2, AlignLeft, AlignCenter, AlignRight, AlignJustify } from "lucide-react";
 
 import type { BlockInstance, BlockType, BlockStyleOverrides } from "../types";
 import type { Page } from "../pages";
@@ -1129,38 +1129,10 @@ function StyleTab({
                   )
                 }
               >
-                {opt.value === "left" && (
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
-                    <rect x="1" y="2" width="14" height="1.5" rx="0.5" />
-                    <rect x="1" y="6" width="10" height="1.5" rx="0.5" />
-                    <rect x="1" y="10" width="12" height="1.5" rx="0.5" />
-                    <rect x="1" y="14" width="8" height="1.5" rx="0.5" />
-                  </svg>
-                )}
-                {opt.value === "center" && (
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
-                    <rect x="1" y="2" width="14" height="1.5" rx="0.5" />
-                    <rect x="3" y="6" width="10" height="1.5" rx="0.5" />
-                    <rect x="2" y="10" width="12" height="1.5" rx="0.5" />
-                    <rect x="4" y="14" width="8" height="1.5" rx="0.5" />
-                  </svg>
-                )}
-                {opt.value === "right" && (
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
-                    <rect x="1" y="2" width="14" height="1.5" rx="0.5" />
-                    <rect x="5" y="6" width="10" height="1.5" rx="0.5" />
-                    <rect x="3" y="10" width="12" height="1.5" rx="0.5" />
-                    <rect x="7" y="14" width="8" height="1.5" rx="0.5" />
-                  </svg>
-                )}
-                {opt.value === "justify" && (
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
-                    <rect x="1" y="2" width="14" height="1.5" rx="0.5" />
-                    <rect x="1" y="6" width="14" height="1.5" rx="0.5" />
-                    <rect x="1" y="10" width="14" height="1.5" rx="0.5" />
-                    <rect x="1" y="14" width="14" height="1.5" rx="0.5" />
-                  </svg>
-                )}
+                {opt.value === "left" && <AlignLeft size={14} />}
+                {opt.value === "center" && <AlignCenter size={14} />}
+                {opt.value === "right" && <AlignRight size={14} />}
+                {opt.value === "justify" && <AlignJustify size={14} />}
               </button>
             ))}
           </div>

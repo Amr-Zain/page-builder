@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { Slider } from "@heroui/react";
 import clsx from "clsx";
-import { ChevronUp, GripVertical, Search, LayoutGrid, Component, Palette, FileText, Files, Menu, Sun, Moon } from "lucide-react";
+import { ChevronUp, GripVertical, Search, LayoutGrid, Component, Palette, FileText, Files, Menu, Sun, Moon, CircleCheck, MousePointer, Ban, Monitor } from "lucide-react";
 
 import type {
   BlockDefinition,
@@ -325,17 +325,7 @@ function SelectionCard({
       {children}
       <div className="flex items-center gap-1.5">
         {selected && (
-          <svg
-            className="h-3.5 w-3.5 text-[#634CF8]"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              clipRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-              fillRule="evenodd"
-            />
-          </svg>
+          <CircleCheck size={14} className="text-[#634CF8]" />
         )}
         <span
           className={clsx(
@@ -891,8 +881,8 @@ function DesignPanel({
       {show("cursor pointer disabled") && <CollapsibleSection defaultOpen={false} title="Cursor">
         <div className="flex gap-3">
           {[
-            { name: "Interactive", value: "pointer", icon: "👆" },
-            { name: "Disabled", value: "not-allowed", icon: "🚫" },
+            { name: "Interactive", value: "pointer", icon: <MousePointer size={14} /> },
+            { name: "Disabled", value: "not-allowed", icon: <Ban size={14} /> },
           ].map((c) => (
             <div
               className="flex items-center gap-2 rounded-lg border border-separator/40 px-3 py-2"
@@ -939,7 +929,7 @@ function TemplatesPanel({
             onClick={() => onSelect(template)}
           >
             <div className="h-28 w-full bg-gradient-to-br from-[#F8F8FA] to-[#EFEFEF] dark:from-gray-800 dark:to-gray-900 flex items-center justify-center relative">
-              <span className="text-3xl opacity-25">🖥️</span>
+              <Monitor size={32} className="opacity-25 text-muted" />
               <span className="absolute bottom-2 right-2 text-[9px] font-semibold text-[#634CF8] bg-[#634CF8]/10 rounded-md px-1.5 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                 Use →
               </span>
