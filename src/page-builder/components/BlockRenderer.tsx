@@ -480,8 +480,8 @@ function PricingBlock({ props, design, previewMode }: RendererProps) {
           <Card
             key={tier.name}
             className={clsx(
-              "p-8 flex flex-col relative",
-              tier.highlighted && "border-2 shadow-lg",
+              "p-8 flex flex-col relative overflow-visible",
+              tier.highlighted && "border-2 shadow-lg mt-4",
             )}
             style={{
               borderRadius: radiusValue(design.radius),
@@ -1048,9 +1048,12 @@ function FooterBlock({ props, design, previewMode }: RendererProps) {
             </div>
           ))}
         </div>
-        <div className="mt-12 pt-8 border-t border-separator/50 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-muted">{copyright}</p>
-          <div className="flex items-center gap-4">
+        <div className={clsx(
+          "mt-12 pt-8 border-t border-separator/50 flex items-center justify-between gap-4",
+          mobile ? "flex-col text-center" : "flex-col md:flex-row",
+        )}>
+          <p className="text-xs text-muted whitespace-nowrap">{copyright}</p>
+          <div className="flex items-center gap-4 flex-wrap justify-center">
             {["Twitter", "GitHub", "Discord", "LinkedIn"].map((social) => (
               <span
                 key={social}
