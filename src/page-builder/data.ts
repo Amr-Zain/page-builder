@@ -161,7 +161,18 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
     icon: "clipboard",
     category: "sections",
     description: "Page footer with links and copyright",
-    defaultProps: { copyright: "© 2026 Acme Inc. All rights reserved." },
+    defaultProps: {
+      copyright: "© 2026 Acme Inc. All rights reserved.",
+      logo: "Acme",
+      tagline: "Build better products, faster. The modern platform for ambitious teams.",
+      columns: [
+        { title: "Product", links: ["Features", "Pricing", "Changelog", "Docs", "API"] },
+        { title: "Company", links: ["About", "Blog", "Careers", "Press", "Partners"] },
+        { title: "Resources", links: ["Community", "Help Center", "Status", "Tutorials"] },
+        { title: "Legal", links: ["Privacy", "Terms", "Security", "Cookies"] },
+      ],
+      socials: ["Twitter", "GitHub", "Discord", "LinkedIn"],
+    },
   },
 
   // ── Content ──

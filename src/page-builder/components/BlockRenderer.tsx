@@ -33,12 +33,14 @@ interface RendererProps {
 
 function NavbarBlock({ props, design, previewMode }: RendererProps) {
   const logo = (props.logo as string) || "Acme";
-  const links = (props.links as string[]) || [
+  const links: Array<{ label: string; url: string }> = ((props.links as unknown[]) || [
     "Products",
     "Solutions",
     "Pricing",
     "Docs",
-  ];
+  ]).map((link) =>
+    typeof link === "string" ? { label: link, url: "#" } : (link as { label: string; url: string }),
+  );
   const mobile = isMobile(previewMode);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -60,12 +62,14 @@ function NavbarBlock({ props, design, previewMode }: RendererProps) {
         {!mobile && (
           <div className="flex items-center gap-4 md:gap-8">
             {links.map((link, i) => (
-              <span
+              <a
                 key={i}
+                href={link.url || "#"}
                 className="text-sm text-muted hover:text-foreground cursor-pointer transition-colors font-medium"
+                onClick={(e) => e.preventDefault()}
               >
-                {link}
-              </span>
+                {link.label}
+              </a>
             ))}
           </div>
         )}
@@ -105,12 +109,14 @@ function NavbarBlock({ props, design, previewMode }: RendererProps) {
       {mobile && mobileMenuOpen && (
         <div className="border-t border-separator/30 px-4 py-3 flex flex-col gap-2 bg-surface/50">
           {links.map((link, i) => (
-            <span
+            <a
               key={i}
+              href={link.url || "#"}
               className="text-sm text-muted hover:text-foreground cursor-pointer transition-colors font-medium py-1.5 border-b border-separator/20 last:border-0"
+              onClick={(e) => e.preventDefault()}
             >
-              {link}
-            </span>
+              {link.label}
+            </a>
           ))}
           <div className="flex items-center gap-3 pt-2">
             <span className="text-sm text-muted hover:text-foreground cursor-pointer transition-colors font-medium">
@@ -990,27 +996,19 @@ function BannerBlock({ props, design }: RendererProps) {
 
 function FooterBlock({ props, design, previewMode }: RendererProps) {
   const copyright =
-    (props.copyright as string) || "© 2025 Acme Inc. All rights reserved.";
+    (props.copyright as string) || "© 2026 Acme Inc. All rights reserved.";
+  const logo = (props.logo as string) || "Acme";
+  const tagline = (props.tagline as string) || "Build better products, faster. The modern platform for ambitious teams.";
   const mobile = isMobile(previewMode);
 
-  const columns = [
-    {
-      title: "Product",
-      links: ["Features", "Pricing", "Changelog", "Docs", "API"],
-    },
-    {
-      title: "Company",
-      links: ["About", "Blog", "Careers", "Press", "Partners"],
-    },
-    {
-      title: "Resources",
-      links: ["Community", "Help Center", "Status", "Tutorials"],
-    },
-    {
-      title: "Legal",
-      links: ["Privacy", "Terms", "Security", "Cookies"],
-    },
+  const columns = (props.columns as Array<{ title: string; links: string[] }>) || [
+    { title: "Product", links: ["Features", "Pricing", "Changelog", "Docs", "API"] },
+    { title: "Company", links: ["About", "Blog", "Careers", "Press", "Partners"] },
+    { title: "Resources", links: ["Community", "Help Center", "Status", "Tutorials"] },
+    { title: "Legal", links: ["Privacy", "Terms", "Security", "Cookies"] },
   ];
+
+  const socials = (props.socials as string[]) || ["Twitter", "GitHub", "Discord", "LinkedIn"];
 
   return (
     <footer className="px-4 sm:px-8 py-12 sm:py-16 border-t border-separator/50">
@@ -1024,11 +1022,10 @@ function FooterBlock({ props, design, previewMode }: RendererProps) {
               className="text-lg font-bold tracking-tight"
               style={{ color: `#${design.mainColor}` }}
             >
-              ◆ Acme
+              ◆ {logo}
             </span>
             <p className="text-sm text-muted mt-3 leading-relaxed">
-              Build better products, faster. The modern platform for ambitious
-              teams.
+              {tagline}
             </p>
           </div>
           {columns.map((col) => (
@@ -1054,7 +1051,7 @@ function FooterBlock({ props, design, previewMode }: RendererProps) {
         )}>
           <p className="text-xs text-muted whitespace-nowrap">{copyright}</p>
           <div className="flex items-center gap-4 flex-wrap justify-center">
-            {["Twitter", "GitHub", "Discord", "LinkedIn"].map((social) => (
+            {socials.map((social) => (
               <span
                 key={social}
                 className="text-xs text-muted hover:text-foreground cursor-pointer transition-colors"
@@ -1068,6 +1065,7 @@ function FooterBlock({ props, design, previewMode }: RendererProps) {
     </footer>
   );
 }
+
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Text
@@ -1929,6 +1927,10 @@ export function BlockRenderer({
   const cssClass = styleOverrides?.cssClass || "";
   const hiddenForViewport = isHiddenForViewport(styleOverrides, previewMode);
 
+  // Responsive scaling for tablet/mobile preview
+  const responsiveZoom =
+    previewMode === "mobile" ? 0.65 : previewMode === "tablet" ? 0.85 : undefined;
+
   return (
     <div
       className={clsx(
@@ -1936,7 +1938,7 @@ export function BlockRenderer({
         animationClass,
         cssClass,
       )}
-      style={inlineStyles}
+      style={{ ...inlineStyles, ...(responsiveZoom ? { zoom: responsiveZoom } : {}) }}
       onClick={(e) => {
         e.stopPropagation();
         onClick();

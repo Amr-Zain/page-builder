@@ -256,6 +256,7 @@ function ContentTabFields({
             addLabel="Add nav link"
             items={(block.props.links as string[]) || []}
             label="Navigation Links"
+            showUrl
             onChange={(links) => set("links", links)}
           />
         </>
@@ -577,11 +578,54 @@ function ContentTabFields({
 
       {/* ── Footer ── */}
       {block.type === "footer" && (
-        <Field
-          label="Copyright"
-          value={(block.props.copyright as string) || ""}
-          onChange={(v) => set("copyright", v)}
-        />
+        <>
+          <Field
+            label="Logo Text"
+            value={(block.props.logo as string) || ""}
+            onChange={(v) => set("logo", v)}
+          />
+          <Field
+            label="Tagline"
+            multiline
+            value={(block.props.tagline as string) || ""}
+            onChange={(v) => set("tagline", v)}
+          />
+          <Field
+            label="Copyright"
+            value={(block.props.copyright as string) || ""}
+            onChange={(v) => set("copyright", v)}
+          />
+          <ItemListEditor
+            addLabel="Add column"
+            fields={[
+              { key: "title", label: "Column Title", placeholder: "Product" },
+              { key: "linksText", label: "Links (one per line)", type: "textarea", placeholder: "Features\nPricing\nDocs" },
+            ]}
+            items={
+              ((block.props.columns as Array<{ title: string; links: string[] }>) || []).map((col) => ({
+                title: col.title,
+                linksText: col.links.join("\n"),
+              }))
+            }
+            label="Footer Columns"
+            renderPreview={(item) => <span>{item.title || "Untitled"}</span>}
+            onChange={(items) =>
+              set(
+                "columns",
+                items.map((item) => ({
+                  title: item.title,
+                  links: (item.linksText as string).split("\n").filter((l: string) => l.trim()),
+                })),
+              )
+            }
+          />
+          <LinksEditor
+            addLabel="Add social"
+            items={(block.props.socials as string[]) || []}
+            label="Social Links"
+            onChange={(socials) => set("socials", socials)}
+          />
+        </>
       )}
 
       {/* ── Content ── */}
