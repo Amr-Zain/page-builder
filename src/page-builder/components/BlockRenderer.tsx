@@ -1,5 +1,7 @@
-import { Button, Card } from "@heroui/react";
+import { useState } from "react";
+import { Button, Card, Accordion } from "@heroui/react";
 import clsx from "clsx";
+import { Menu as MenuIcon, X as XIcon, ChevronDown } from "lucide-react";
 
 import type { BlockInstance, BlockStyleOverrides, DesignSettings } from "../types";
 import { RADIUS_TOKENS } from "../tokens";
@@ -38,50 +40,95 @@ function NavbarBlock({ props, design, previewMode }: RendererProps) {
     "Docs",
   ];
   const mobile = isMobile(previewMode);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <nav className={clsx(
-      "flex items-center justify-between border-b border-separator/50",
-      mobile ? "flex-wrap gap-2 px-4 py-3" : "flex-row px-4 sm:px-8 py-4 gap-3 sm:gap-0",
-    )}>
-      <div className={clsx("flex items-center", mobile ? "gap-4" : "gap-10")}>
+    <nav className="border-b border-separator/50">
+      <div className={clsx(
+        "flex items-center justify-between",
+        mobile ? "px-4 py-3" : "px-4 sm:px-8 py-4",
+      )}>
+        {/* Logo */}
         <span
           className={clsx("font-bold tracking-tight", mobile ? "text-base" : "text-xl")}
           style={{ color: `#${design.mainColor}` }}
         >
           ◆ {logo}
         </span>
-        <div className={clsx("flex items-center flex-wrap", mobile ? "gap-2" : "gap-4 md:gap-8")}>
+
+        {/* Desktop links */}
+        {!mobile && (
+          <div className="flex items-center gap-4 md:gap-8">
+            {links.map((link, i) => (
+              <span
+                key={i}
+                className="text-sm text-muted hover:text-foreground cursor-pointer transition-colors font-medium"
+              >
+                {link}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Right side */}
+        <div className="flex items-center gap-3">
+          {!mobile && (
+            <span className="text-sm text-muted hover:text-foreground cursor-pointer transition-colors font-medium">
+              Log in
+            </span>
+          )}
+          {!mobile && (
+            <Button
+              size="sm"
+              style={{
+                backgroundColor: `#${design.mainColor}`,
+                color: "#fff",
+                borderRadius: radiusValue(design.radius),
+              }}
+            >
+              Get Started
+            </Button>
+          )}
+          {/* Hamburger toggle on mobile */}
+          {mobile && (
+            <button
+              className="flex h-8 w-8 items-center justify-center rounded-md text-foreground hover:bg-surface transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <XIcon size={18} /> : <MenuIcon size={18} />}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile dropdown menu */}
+      {mobile && mobileMenuOpen && (
+        <div className="border-t border-separator/30 px-4 py-3 flex flex-col gap-2 bg-surface/50">
           {links.map((link, i) => (
             <span
               key={i}
-              className={clsx(
-                "text-muted hover:text-foreground cursor-pointer transition-colors font-medium",
-                mobile ? "text-xs" : "text-sm",
-              )}
+              className="text-sm text-muted hover:text-foreground cursor-pointer transition-colors font-medium py-1.5 border-b border-separator/20 last:border-0"
             >
               {link}
             </span>
           ))}
+          <div className="flex items-center gap-3 pt-2">
+            <span className="text-sm text-muted hover:text-foreground cursor-pointer transition-colors font-medium">
+              Log in
+            </span>
+            <Button
+              size="sm"
+              style={{
+                backgroundColor: `#${design.mainColor}`,
+                color: "#fff",
+                borderRadius: radiusValue(design.radius),
+              }}
+            >
+              Get Started
+            </Button>
+          </div>
         </div>
-      </div>
-      <div className="flex items-center gap-3">
-        {!mobile && (
-          <span className="text-sm text-muted hover:text-foreground cursor-pointer transition-colors font-medium">
-            Log in
-          </span>
-        )}
-        <Button
-          size="sm"
-          style={{
-            backgroundColor: `#${design.mainColor}`,
-            color: "#fff",
-            borderRadius: radiusValue(design.radius),
-          }}
-        >
-          Get Started
-        </Button>
-      </div>
+      )}
     </nav>
   );
 }
@@ -648,21 +695,25 @@ function FAQBlock({ props, design }: RendererProps) {
         </h2>
         <p className="mt-4 text-lg text-muted">{subtitle}</p>
       </div>
-      <div className="flex flex-col gap-3">
+      <Accordion className="w-full" variant="surface">
         {items.map((item, i) => (
-          <div
-            key={i}
-            className="border border-separator/70 p-5 transition-colors hover:border-separator"
-            style={{ borderRadius: radiusValue(design.radius) }}
-          >
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-foreground">{item.q}</p>
-              <span className="text-muted text-xs ml-4 shrink-0">+</span>
-            </div>
-            <p className="text-sm text-muted mt-2 leading-relaxed">{item.a}</p>
-          </div>
+          <Accordion.Item key={i}>
+            <Accordion.Heading>
+              <Accordion.Trigger>
+                {item.q}
+                <Accordion.Indicator>
+                  <ChevronDown size={16} />
+                </Accordion.Indicator>
+              </Accordion.Trigger>
+            </Accordion.Heading>
+            <Accordion.Panel>
+              <Accordion.Body>
+                <p className="text-sm text-muted leading-relaxed">{item.a}</p>
+              </Accordion.Body>
+            </Accordion.Panel>
+          </Accordion.Item>
         ))}
-      </div>
+      </Accordion>
     </div>
   );
 }
@@ -1318,6 +1369,19 @@ function HTMLBlock({ props, design }: RendererProps) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Generic UI Component Placeholder
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function GenericComponentBlock({ props }: RendererProps) {
+  const label = (props.label as string) || (props.text as string) || (props.content as string) || "";
+  return (
+    <div className="px-4 py-3 min-h-[2.5rem] flex items-center">
+      {label && <span className="text-sm text-foreground">{label}</span>}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Renderer Map & BlockRenderer Export
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1351,6 +1415,27 @@ const RENDERERS: Record<string, React.FC<RendererProps>> = {
   divider: DividerBlock,
   code: CodeBlock,
   html: HTMLBlock,
+  // UI Components (generic placeholder renderer)
+  Button: GenericComponentBlock,
+  Card: GenericComponentBlock,
+  Avatar: GenericComponentBlock,
+  Badge: GenericComponentBlock,
+  Chip: GenericComponentBlock,
+  Input: GenericComponentBlock,
+  TextField: GenericComponentBlock,
+  TextArea: GenericComponentBlock,
+  Select: GenericComponentBlock,
+  Checkbox: GenericComponentBlock,
+  Switch: GenericComponentBlock,
+  RadioGroup: GenericComponentBlock,
+  Slider: GenericComponentBlock,
+  Accordion: GenericComponentBlock,
+  Tabs: GenericComponentBlock,
+  Table: GenericComponentBlock,
+  Link: GenericComponentBlock,
+  Separator: GenericComponentBlock,
+  Tooltip: GenericComponentBlock,
+  Popover: GenericComponentBlock,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
