@@ -525,7 +525,7 @@ function DesignPanel({
           Enter hex code or click the swatch to pick a color.
         </p>
         {/* Quick color presets */}
-        <div className="flex flex-wrap gap-1.5 mt-3">
+        <div className="flex flex-wrap gap-1.5 m-2">
           {[
             "634CF8",
             "3B82F6",
