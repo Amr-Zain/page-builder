@@ -15,7 +15,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "navbar",
     label: "Navigation",
-    icon: "☰",
+    icon: "menu",
     category: "sections",
     description: "Top navigation bar with logo and links",
     defaultProps: { logo: "Acme", links: ["Features", "Pricing", "About"] },
@@ -23,7 +23,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "hero",
     label: "Hero",
-    icon: "🚀",
+    icon: "rocket",
     category: "sections",
     description: "Large banner with headline, subtitle and CTA",
     defaultProps: {
@@ -35,7 +35,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "features",
     label: "Features",
-    icon: "✨",
+    icon: "sparkles",
     category: "sections",
     description: "Grid of feature cards with icons",
     defaultProps: {
@@ -58,7 +58,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "testimonials",
     label: "Testimonials",
-    icon: "💬",
+    icon: "message-square",
     category: "sections",
     description: "Customer quotes and reviews",
     defaultProps: { title: "What people say" },
@@ -66,7 +66,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "pricing",
     label: "Pricing",
-    icon: "💰",
+    icon: "dollar-sign",
     category: "sections",
     description: "Pricing plans comparison",
     defaultProps: { title: "Pricing" },
@@ -74,7 +74,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "stats",
     label: "Stats",
-    icon: "📊",
+    icon: "bar-chart",
     category: "sections",
     description: "Key numbers and metrics",
     defaultProps: {
@@ -89,7 +89,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "team",
     label: "Team",
-    icon: "👥",
+    icon: "users",
     category: "sections",
     description: "Team member profiles",
     defaultProps: { title: "Our Team" },
@@ -97,7 +97,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "faq",
     label: "FAQ",
-    icon: "❓",
+    icon: "help-circle",
     category: "sections",
     description: "Frequently asked questions accordion",
     defaultProps: {
@@ -114,7 +114,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "cta",
     label: "Call to Action",
-    icon: "📢",
+    icon: "megaphone",
     category: "sections",
     description: "Highlighted section with action button",
     defaultProps: {
@@ -126,7 +126,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "contact",
     label: "Contact",
-    icon: "✉️",
+    icon: "mail",
     category: "sections",
     description: "Contact form section",
     defaultProps: { title: "Get in Touch" },
@@ -134,7 +134,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "logos",
     label: "Logo Cloud",
-    icon: "🏢",
+    icon: "building",
     category: "sections",
     description: "Trusted-by logo strip",
     defaultProps: { title: "Trusted by" },
@@ -142,7 +142,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "banner",
     label: "Banner",
-    icon: "🎯",
+    icon: "target",
     category: "sections",
     description: "Announcement or promo banner",
     defaultProps: { text: "🎉 New feature available — check it out!" },
@@ -150,7 +150,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "gallery",
     label: "Gallery",
-    icon: "🖼️",
+    icon: "image",
     category: "sections",
     description: "Image gallery grid",
     defaultProps: { columns: 3 },
@@ -158,7 +158,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "footer",
     label: "Footer",
-    icon: "📋",
+    icon: "clipboard",
     category: "sections",
     description: "Page footer with links and copyright",
     defaultProps: { copyright: "© 2026 Acme Inc. All rights reserved." },
@@ -168,7 +168,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "text",
     label: "Text",
-    icon: "📝",
+    icon: "type",
     category: "content",
     description: "Rich text content block",
     defaultProps: { content: "Start typing your content here..." },
@@ -176,7 +176,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "button-group",
     label: "Buttons",
-    icon: "🔘",
+    icon: "circle-dot",
     category: "content",
     description: "Group of action buttons",
     defaultProps: {
@@ -189,7 +189,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "code",
     label: "Code",
-    icon: "💻",
+    icon: "code",
     category: "content",
     description: "Code snippet block",
     defaultProps: { language: "javascript", code: "console.log('Hello!');" },
@@ -197,7 +197,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "html",
     label: "HTML Embed",
-    icon: "🧩",
+    icon: "puzzle",
     category: "content",
     description: "Custom HTML embed",
     defaultProps: { html: "<div>Custom HTML</div>" },
@@ -207,7 +207,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "container",
     label: "Container",
-    icon: "📦",
+    icon: "package",
     category: "layout",
     description: "Simple container with a single drop zone",
     defaultProps: { maxWidth: "1200px", padding: "2rem" },
@@ -216,7 +216,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "grid",
     label: "Grid",
-    icon: "⊞",
+    icon: "grid",
     category: "layout",
     description: "CSS Grid container with configurable columns, rows, and gap",
     defaultProps: {
@@ -238,7 +238,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "flex-container",
     label: "Flex Container",
-    icon: "⇔",
+    icon: "maximize",
     category: "layout",
     description: "Flexbox container with configurable direction, gap, alignment",
     defaultProps: {
@@ -255,7 +255,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "flex-row",
     label: "Flex Row",
-    icon: "↔️",
+    icon: "move-horizontal",
     category: "layout",
     description: "Horizontal flex container",
     defaultProps: { gap: "1rem", align: "stretch", justify: "start" },
@@ -267,7 +267,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "flex-col",
     label: "Flex Column",
-    icon: "↕️",
+    icon: "arrow-up-down",
     category: "layout",
     description: "Vertical flex container",
     defaultProps: { gap: "1rem" },
@@ -276,7 +276,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "columns",
     label: "Columns",
-    icon: "▥",
+    icon: "columns",
     category: "layout",
     description: "Multi-column layout (2-4 columns)",
     defaultProps: { count: 2 },
@@ -288,7 +288,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "spacer",
     label: "Spacer",
-    icon: "↕️",
+    icon: "space",
     category: "layout",
     description: "Vertical spacing",
     defaultProps: { height: 64 },
@@ -296,7 +296,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "divider",
     label: "Divider",
-    icon: "➖",
+    icon: "minus",
     category: "layout",
     description: "Horizontal line separator",
     defaultProps: {},
@@ -306,7 +306,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "image",
     label: "Image",
-    icon: "🖼️",
+    icon: "image",
     category: "media",
     description: "Full-width or contained image",
     defaultProps: { alt: "Image" },
@@ -314,7 +314,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "video",
     label: "Video",
-    icon: "🎬",
+    icon: "video",
     category: "media",
     description: "Embedded video player",
     defaultProps: { url: "" },
@@ -330,28 +330,28 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
   {
     type: "Button",
     label: "Button",
-    icon: "🔘",
+    icon: "mouse-pointer",
     category: "actions",
     description: "Clickable action button",
   },
   {
     type: "Link",
     label: "Link",
-    icon: "🔗",
+    icon: "link",
     category: "actions",
     description: "Text navigation link",
   },
   {
     type: "Tooltip",
     label: "Tooltip",
-    icon: "💡",
+    icon: "lightbulb",
     category: "actions",
     description: "Hover info tooltip",
   },
   {
     type: "Popover",
     label: "Popover",
-    icon: "💬",
+    icon: "message-circle",
     category: "actions",
     description: "Click-triggered popup",
   },
@@ -360,49 +360,49 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
   {
     type: "Card",
     label: "Card",
-    icon: "🃏",
+    icon: "credit-card",
     category: "display",
     description: "Content container card",
   },
   {
     type: "Avatar",
     label: "Avatar",
-    icon: "👤",
+    icon: "user-circle",
     category: "display",
     description: "User profile image",
   },
   {
     type: "Badge",
     label: "Badge",
-    icon: "🏷️",
+    icon: "tag",
     category: "display",
     description: "Status indicator",
   },
   {
     type: "Chip",
     label: "Chip",
-    icon: "🏷️",
+    icon: "tag",
     category: "display",
     description: "Compact tag element",
   },
   {
     type: "Accordion",
     label: "Accordion",
-    icon: "📂",
+    icon: "folder-open",
     category: "display",
     description: "Collapsible panels",
   },
   {
     type: "Table",
     label: "Table",
-    icon: "📊",
+    icon: "table",
     category: "display",
     description: "Data table",
   },
   {
     type: "Separator",
     label: "Separator",
-    icon: "➖",
+    icon: "separator",
     category: "display",
     description: "Visual divider",
   },
@@ -411,56 +411,56 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
   {
     type: "Input",
     label: "Input",
-    icon: "📝",
+    icon: "text-cursor",
     category: "forms",
     description: "Text input field",
   },
   {
     type: "TextField",
     label: "Text Field",
-    icon: "📝",
+    icon: "text-cursor",
     category: "forms",
     description: "Labeled text input",
   },
   {
     type: "TextArea",
     label: "Text Area",
-    icon: "📝",
+    icon: "align-left",
     category: "forms",
     description: "Multi-line input",
   },
   {
     type: "Select",
     label: "Select",
-    icon: "📋",
+    icon: "list-filter",
     category: "forms",
     description: "Dropdown selector",
   },
   {
     type: "Checkbox",
     label: "Checkbox",
-    icon: "☑️",
+    icon: "check-square",
     category: "forms",
     description: "Boolean toggle",
   },
   {
     type: "Switch",
     label: "Switch",
-    icon: "🔀",
+    icon: "toggle-left",
     category: "forms",
     description: "On/off toggle",
   },
   {
     type: "RadioGroup",
     label: "Radio Group",
-    icon: "🔘",
+    icon: "radio",
     category: "forms",
     description: "Single selection",
   },
   {
     type: "Slider",
     label: "Slider",
-    icon: "🎚️",
+    icon: "sliders",
     category: "forms",
     description: "Range selector",
   },
@@ -469,7 +469,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
   {
     type: "Tabs",
     label: "Tabs",
-    icon: "📑",
+    icon: "book-open",
     category: "navigation",
     description: "Tabbed content panels",
   },
@@ -513,7 +513,7 @@ export const DEFAULT_BLOCKS: BlockInstance[] = [
   {
     id: "d-1",
     type: "banner",
-    props: { text: "🚀 We just launched v2.0 — See what's new →" },
+    props: { text: "🚀 We just launched v2.0 — See what's new" },
   },
   {
     id: "d-2",

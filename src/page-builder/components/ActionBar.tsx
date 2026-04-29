@@ -53,7 +53,7 @@ export function ActionBar({
   const barRef = useRef<HTMLDivElement>(null);
 
   const blockDef = BLOCK_DEFINITIONS.find((d) => d.type === block.type);
-  const label = blockDef ? `${blockDef.icon} ${blockDef.label}` : block.type;
+  const label = blockDef?.label || block.type;
 
   const syncPosition = useCallback(() => {
     if (!blockRef) return;

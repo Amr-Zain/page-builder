@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Button } from "@heroui/react";
 import clsx from "clsx";
+import { ChevronUp, ChevronDown, X } from "lucide-react";
 
 import type { Menu, MenuItem, MenuItemType, MenuLocation } from "../menus";
+import { renderIcon } from "../icon-map";
 import {
   createMenu,
   createMenuItem,
@@ -162,7 +164,7 @@ export function MenuManager({
                   key={loc}
                   onClick={() => setNewMenuLocation(loc)}
                 >
-                  <span>{MENU_LOCATIONS[loc].icon}</span>
+                  <span>{renderIcon(MENU_LOCATIONS[loc].icon)}</span>
                   {MENU_LOCATIONS[loc].label}
                 </button>
               ))}
@@ -190,7 +192,7 @@ export function MenuManager({
       )}
 
       {/* Menu tabs */}
-      <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
+      <div className="flex gap-1.5 flex-col overflow-x-auto scrollbar-none">
         {menus.map((menu) => (
           <button
             className={clsx(
@@ -202,7 +204,7 @@ export function MenuManager({
             key={menu.id}
             onClick={() => setActiveMenuId(menu.id)}
           >
-            <span>{MENU_LOCATIONS[menu.location]?.icon}</span>
+            <span>{renderIcon(MENU_LOCATIONS[menu.location]?.icon || "")}</span>
             {menu.name}
           </button>
         ))}
@@ -278,7 +280,7 @@ export function MenuManager({
                   key={type}
                   onClick={() => addItem(activeMenu.id, type)}
                 >
-                  <span>{MENU_ITEM_TYPES[type].icon}</span>
+                  <span>{renderIcon(MENU_ITEM_TYPES[type].icon)}</span>
                   {MENU_ITEM_TYPES[type].label}
                 </button>
               ))}
@@ -336,7 +338,7 @@ function MenuItemCard({
           className="flex items-center gap-2 px-3 py-2 cursor-pointer"
           onClick={() => onEdit(isEditing ? null : item.id)}
         >
-          <span className="text-xs">{typeInfo.icon}</span>
+          <span className="text-xs shrink-0">{renderIcon(typeInfo.icon)}</span>
           <span className="flex-1 text-[12px] font-medium text-foreground truncate">
             {item.label}
           </span>
@@ -359,7 +361,7 @@ function MenuItemCard({
                 onMove(item.id, -1);
               }}
             >
-              ↑
+              <ChevronUp size={12} />
             </button>
             <button
               className="text-[10px] text-muted hover:text-foreground px-0.5 disabled:opacity-20"
@@ -369,7 +371,7 @@ function MenuItemCard({
                 onMove(item.id, 1);
               }}
             >
-              ↓
+              <ChevronDown size={12} />
             </button>
             <button
               className="text-[10px] text-danger px-0.5"
@@ -378,7 +380,7 @@ function MenuItemCard({
                 onRemove(item.id);
               }}
             >
-              ✕
+              <X size={12} />
             </button>
           </div>
         </div>

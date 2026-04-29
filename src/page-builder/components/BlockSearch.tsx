@@ -4,6 +4,7 @@ import { Chip } from "@heroui/react";
 import clsx from "clsx";
 import { Search } from "lucide-react";
 import { BLOCK_DEFINITIONS, BLOCK_CATEGORIES } from "../data";
+import { renderIcon } from "../icon-map";
 import type { BlockDefinition, BlockCategory } from "../types";
 
 /** Category display order */
@@ -176,7 +177,7 @@ function SearchResultItem({
       {...listeners}
       {...attributes}
     >
-      <span className="text-sm shrink-0">{block.icon}</span>
+      <span className="shrink-0">{renderIcon(block.icon)}</span>
       <div className="flex-1 min-w-0">
         <p className="text-[11px] font-medium text-foreground">{block.label}</p>
         <p className="text-[9px] text-muted truncate">{block.description}</p>

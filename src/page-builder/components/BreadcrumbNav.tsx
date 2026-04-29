@@ -28,7 +28,7 @@ interface BreadcrumbNavProps {
 /** Get the display label for a block */
 function getBlockLabel(block: BlockInstance): string {
   const def = BLOCK_DEFINITIONS.find((d) => d.type === block.type);
-  return def ? `${def.icon} ${def.label}` : block.type;
+  return def?.label || block.type;
 }
 
 export function BreadcrumbNav({

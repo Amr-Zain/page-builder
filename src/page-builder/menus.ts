@@ -190,18 +190,18 @@ export const MENU_LOCATIONS: Record<
   MenuLocation,
   { label: string; icon: string; description: string }
 > = {
-  header: { label: "Header", icon: "☰", description: "Main site navigation" },
-  footer: { label: "Footer", icon: "📋", description: "Footer links" },
-  sidebar: { label: "Sidebar", icon: "📑", description: "Sidebar navigation" },
-  mobile: { label: "Mobile", icon: "📱", description: "Mobile menu" },
+  header: { label: "Header", icon: "menu", description: "Main site navigation" },
+  footer: { label: "Footer", icon: "clipboard", description: "Footer links" },
+  sidebar: { label: "Sidebar", icon: "book-open", description: "Sidebar navigation" },
+  mobile: { label: "Mobile", icon: "smartphone", description: "Mobile menu" },
 };
 
 export const MENU_ITEM_TYPES: Record<
   MenuItemType,
   { label: string; icon: string }
 > = {
-  page: { label: "Page Link", icon: "📄" },
-  custom: { label: "Custom URL", icon: "🔗" },
-  section: { label: "Section Anchor", icon: "#️⃣" },
-  dropdown: { label: "Dropdown", icon: "📂" },
+  page: { label: "Page Link", icon: "file-text" },
+  custom: { label: "Custom URL", icon: "link" },
+  section: { label: "Section Anchor", icon: "hash" },
+  dropdown: { label: "Dropdown", icon: "folder-open" },
 };

@@ -16,9 +16,10 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import clsx from "clsx";
-import { ChevronRight, ChevronUp, ChevronDown, Copy, X, GripVertical, Package, EyeOff, Diamond } from "lucide-react";
+import { ChevronRight, ChevronUp, ChevronDown, Copy, X, GripVertical, EyeOff, Diamond } from "lucide-react";
 import type { BlockInstance, BlockStyleOverrides } from "../types";
 import { BLOCK_DEFINITIONS } from "../data";
+import { renderIcon } from "../icon-map";
 import { flattenTree, type FlattenedBlock } from "../tree-utils";
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -298,7 +299,7 @@ function DragOverlayItem({ block }: { block: BlockInstance }) {
   const def = BLOCK_DEFINITIONS.find((d) => d.type === block.type);
   return (
     <div className="flex items-center gap-2 rounded-lg bg-white dark:bg-surface border-2 border-[#634CF8] shadow-xl px-3 py-2 pointer-events-none opacity-90">
-      <span className="text-xs">{def?.icon || <Package size={12} />}</span>
+      <span className="text-xs">{renderIcon(def?.icon || "")}</span>
       <span className="text-[11px] font-medium text-foreground">
         {def?.label || block.type}
       </span>
@@ -431,7 +432,7 @@ function SortableLayerRow({
       )}
 
       {/* Icon */}
-      <span className="text-xs shrink-0">{def?.icon || <Package size={12} />}</span>
+      <span className="shrink-0">{renderIcon(def?.icon || "")}</span>
 
       {/* Label */}
       <div className="flex-1 min-w-0">

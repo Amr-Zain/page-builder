@@ -6,6 +6,7 @@ import { X, ChevronUp, ChevronDown, Copy, Trash2, AlignLeft, AlignCenter, AlignR
 import type { BlockInstance, BlockType, BlockStyleOverrides } from "../types";
 import type { Page } from "../pages";
 import { BLOCK_DEFINITIONS } from "../data";
+import { renderIcon } from "../icon-map";
 import {
   ItemListEditor,
   ImagePicker,
@@ -142,7 +143,7 @@ export function RightPanel({
       {/* Header with block info and close button */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-separator/40 bg-[#FAFAFA] dark:bg-surface/50">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#634CF8]/10 text-sm">
-          {definition?.icon}
+          {renderIcon(definition?.icon || "")}
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[13px] font-semibold text-foreground truncate">

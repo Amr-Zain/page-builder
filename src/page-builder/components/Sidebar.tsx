@@ -12,6 +12,7 @@ import type {
   SidebarPanel,
   Template,
 } from "../types";
+import { renderIcon } from "../icon-map";
 import {
   BLOCK_DEFINITIONS,
   BLOCK_CATEGORIES,
@@ -118,7 +119,7 @@ function DraggableBlockCardList({ block }: { block: BlockDefinition }) {
       {...attributes}
     >
       <div className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-md bg-[#F8F8FA] dark:bg-[#1a1a2e]">
-        <span className="text-lg opacity-50">{block.icon}</span>
+        <span className="opacity-50">{renderIcon(block.icon)}</span>
       </div>
       <div className="flex-1 min-w-0">
         <span className="text-[11px] font-medium text-foreground block truncate">
@@ -246,7 +247,7 @@ function BlockPreview({ block }: { block: BlockDefinition }) {
     // Generic section fallback
     return (
       <div className="flex h-[44px] w-full items-center justify-center rounded-lg bg-[#F8F8FA] dark:bg-[#1a1a2e]">
-        <span className="text-lg opacity-50">{block.icon}</span>
+        <span className="opacity-50">{renderIcon(block.icon)}</span>
       </div>
     );
   }
@@ -254,7 +255,7 @@ function BlockPreview({ block }: { block: BlockDefinition }) {
   // Content / Layout / Media
   return (
     <div className="flex h-[44px] w-full items-center justify-center rounded-lg bg-[#F8F8FA] dark:bg-[#1a1a2e]">
-      <span className="text-lg opacity-50">{block.icon}</span>
+      <span className="opacity-50">{renderIcon(block.icon)}</span>
     </div>
   );
 }
@@ -282,7 +283,7 @@ function DraggableComponentCard({
       {...listeners}
       {...attributes}
     >
-      <span className="text-sm">{component.icon}</span>
+      <span>{renderIcon(component.icon)}</span>
       <div className="flex-1 min-w-0">
         <span className="text-[12px] font-medium text-foreground block truncate">
           {component.label}
