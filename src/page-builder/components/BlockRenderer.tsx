@@ -1372,14 +1372,345 @@ function HTMLBlock({ props, design }: RendererProps) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Generic UI Component Placeholder
+// UI Component Renderers (defined above)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function GenericComponentBlock({ props }: RendererProps) {
-  const label = (props.label as string) || (props.text as string) || (props.content as string) || "";
+// ── Individual UI Component Renderers ──
+
+function ButtonComponent({ props, design }: RendererProps) {
+  const text = (props.text as string) || "Button";
+  const variant = (props.variant as string) || "primary";
+  const accent = `#${design?.mainColor || "634CF8"}`;
   return (
-    <div className="px-4 py-3 min-h-[2.5rem] flex items-center">
-      {label && <span className="text-sm text-foreground">{label}</span>}
+    <div className="px-4 py-4 flex items-center justify-center">
+      <button
+        className="px-6 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm"
+        style={
+          variant === "primary"
+            ? { backgroundColor: accent, color: "#fff" }
+            : { border: `1.5px solid ${accent}`, color: accent, background: "transparent" }
+        }
+      >
+        {text}
+      </button>
+    </div>
+  );
+}
+
+function CardComponent({ props }: RendererProps) {
+  const title = (props.title as string) || "Card Title";
+  const description = (props.description as string) || "Card description goes here.";
+  return (
+    <div className="px-4 py-4">
+      <div className="rounded-xl border border-separator/50 bg-white dark:bg-surface shadow-sm overflow-hidden">
+        <div className="h-32 bg-gradient-to-br from-[#634CF8]/10 to-[#634CF8]/5" />
+        <div className="p-4">
+          <h4 className="text-sm font-semibold text-foreground">{title}</h4>
+          <p className="text-xs text-muted mt-1">{description}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AvatarComponent({ props }: RendererProps) {
+  const name = (props.name as string) || "User";
+  const initials = name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  return (
+    <div className="px-4 py-4 flex items-center gap-3">
+      <div className="h-10 w-10 rounded-full bg-[#634CF8]/15 flex items-center justify-center text-xs font-bold text-[#634CF8]">
+        {initials}
+      </div>
+      <span className="text-sm text-foreground">{name}</span>
+    </div>
+  );
+}
+
+function BadgeComponent({ props, design }: RendererProps) {
+  const text = (props.text as string) || "Badge";
+  const accent = `#${design?.mainColor || "634CF8"}`;
+  return (
+    <div className="px-4 py-4 flex items-center">
+      <span
+        className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
+        style={{ backgroundColor: `${accent}15`, color: accent }}
+      >
+        {text}
+      </span>
+    </div>
+  );
+}
+
+function ChipComponent({ props, design }: RendererProps) {
+  const text = (props.text as string) || "Chip";
+  const accent = `#${design?.mainColor || "634CF8"}`;
+  return (
+    <div className="px-4 py-4 flex items-center gap-2">
+      <span
+        className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium"
+        style={{ borderColor: `${accent}40`, color: accent }}
+      >
+        {text}
+        <span className="ml-1 cursor-pointer opacity-50">×</span>
+      </span>
+    </div>
+  );
+}
+
+function InputComponent({ props }: RendererProps) {
+  const placeholder = (props.placeholder as string) || "Enter text...";
+  const label = (props.label as string) || "Input";
+  return (
+    <div className="px-4 py-4">
+      <label className="text-xs font-semibold text-muted block mb-1.5">{label}</label>
+      <div className="h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 flex items-center">
+        <span className="text-xs text-muted/50">{placeholder}</span>
+      </div>
+    </div>
+  );
+}
+
+function TextFieldComponent({ props }: RendererProps) {
+  const label = (props.label as string) || "Text Field";
+  const placeholder = (props.placeholder as string) || "Enter value...";
+  return (
+    <div className="px-4 py-4">
+      <label className="text-xs font-semibold text-foreground block mb-1.5">{label}</label>
+      <div className="h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 flex items-center">
+        <span className="text-xs text-muted/50">{placeholder}</span>
+      </div>
+      <p className="text-[10px] text-muted/50 mt-1">Helper text</p>
+    </div>
+  );
+}
+
+function TextAreaComponent({ props }: RendererProps) {
+  const label = (props.label as string) || "Text Area";
+  const placeholder = (props.placeholder as string) || "Write something...";
+  return (
+    <div className="px-4 py-4">
+      <label className="text-xs font-semibold text-muted block mb-1.5">{label}</label>
+      <div className="h-24 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 py-2">
+        <span className="text-xs text-muted/50">{placeholder}</span>
+      </div>
+    </div>
+  );
+}
+
+function SelectComponent({ props }: RendererProps) {
+  const label = (props.label as string) || "Select";
+  const placeholder = (props.placeholder as string) || "Choose an option...";
+  return (
+    <div className="px-4 py-4">
+      <label className="text-xs font-semibold text-muted block mb-1.5">{label}</label>
+      <div className="h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 flex items-center justify-between">
+        <span className="text-xs text-muted/50">{placeholder}</span>
+        <span className="text-muted/40 text-[10px]">▼</span>
+      </div>
+    </div>
+  );
+}
+
+function CheckboxComponent({ props, design }: RendererProps) {
+  const label = (props.label as string) || "Checkbox option";
+  const accent = `#${design?.mainColor || "634CF8"}`;
+  return (
+    <div className="px-4 py-4 flex items-center gap-2.5">
+      <div
+        className="h-4.5 w-4.5 rounded border-2 flex items-center justify-center"
+        style={{ borderColor: accent, width: 18, height: 18 }}
+      >
+        <span style={{ color: accent, fontSize: 11, fontWeight: 700 }}>✓</span>
+      </div>
+      <span className="text-sm text-foreground">{label}</span>
+    </div>
+  );
+}
+
+function SwitchComponent({ props, design }: RendererProps) {
+  const label = (props.label as string) || "Toggle option";
+  const accent = `#${design?.mainColor || "634CF8"}`;
+  return (
+    <div className="px-4 py-4 flex items-center justify-between">
+      <span className="text-sm text-foreground">{label}</span>
+      <div className="relative h-5 w-9 rounded-full" style={{ backgroundColor: accent }}>
+        <div className="absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm translate-x-4" />
+      </div>
+    </div>
+  );
+}
+
+function RadioGroupComponent({ props, design }: RendererProps) {
+  const label = (props.label as string) || "Radio Group";
+  const options = (props.options as string[]) || ["Option 1", "Option 2", "Option 3"];
+  const accent = `#${design?.mainColor || "634CF8"}`;
+  return (
+    <div className="px-4 py-4">
+      <label className="text-xs font-semibold text-muted block mb-2">{label}</label>
+      <div className="flex flex-col gap-2">
+        {options.map((opt, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <div
+              className="h-4 w-4 rounded-full border-2 flex items-center justify-center"
+              style={{ borderColor: i === 0 ? accent : "#d4d4d4" }}
+            >
+              {i === 0 && <div className="h-2 w-2 rounded-full" style={{ backgroundColor: accent }} />}
+            </div>
+            <span className="text-sm text-foreground">{opt}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SliderComponent({ props, design }: RendererProps) {
+  const label = (props.label as string) || "Slider";
+  const accent = `#${design?.mainColor || "634CF8"}`;
+  return (
+    <div className="px-4 py-4">
+      <div className="flex items-center justify-between mb-2">
+        <label className="text-xs font-semibold text-muted">{label}</label>
+        <span className="text-xs font-mono text-foreground">50</span>
+      </div>
+      <div className="relative h-2 rounded-full bg-muted/15">
+        <div className="absolute h-2 rounded-full" style={{ backgroundColor: accent, width: "50%" }} />
+        <div
+          className="absolute h-4 w-4 rounded-full border-2 bg-white shadow-sm -translate-y-1"
+          style={{ borderColor: accent, left: "50%", marginLeft: -8 }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function AccordionComponent({ props }: RendererProps) {
+  const items = (props.items as Array<{ title: string; content: string }>) || [
+    { title: "Section 1", content: "Content for section 1" },
+    { title: "Section 2", content: "Content for section 2" },
+    { title: "Section 3", content: "Content for section 3" },
+  ];
+  return (
+    <div className="px-4 py-4">
+      <div className="rounded-lg border border-separator/50 overflow-hidden divide-y divide-separator/40">
+        {items.map((item, i) => (
+          <div key={i} className="px-3 py-2.5 flex items-center justify-between bg-white dark:bg-surface">
+            <span className="text-sm font-medium text-foreground">{item.title}</span>
+            <span className="text-muted/40 text-xs">{i === 0 ? "▲" : "▼"}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TabsComponent({ props, design }: RendererProps) {
+  const tabs = (props.tabs as string[]) || ["Tab 1", "Tab 2", "Tab 3"];
+  const accent = `#${design?.mainColor || "634CF8"}`;
+  return (
+    <div className="px-4 py-4">
+      <div className="flex border-b border-separator/40">
+        {tabs.map((tab, i) => (
+          <button
+            key={i}
+            className="px-4 py-2 text-xs font-semibold border-b-2 transition-colors"
+            style={
+              i === 0
+                ? { color: accent, borderColor: accent }
+                : { color: "#a1a1aa", borderColor: "transparent" }
+            }
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+      <div className="py-3 text-xs text-muted">Tab content area</div>
+    </div>
+  );
+}
+
+function TableComponent({ props }: RendererProps) {
+  const headers = (props.headers as string[]) || ["Name", "Status", "Role"];
+  const rows = (props.rows as string[][]) || [
+    ["Alice", "Active", "Admin"],
+    ["Bob", "Inactive", "User"],
+  ];
+  return (
+    <div className="px-4 py-4">
+      <div className="rounded-lg border border-separator/50 overflow-hidden">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="bg-[#FAFAFA] dark:bg-surface">
+              {headers.map((h, i) => (
+                <th key={i} className="px-3 py-2 text-left font-semibold text-muted">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-separator/30">
+            {rows.map((row, ri) => (
+              <tr key={ri}>
+                {row.map((cell, ci) => (
+                  <td key={ci} className="px-3 py-2 text-foreground">{cell}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function LinkComponent({ props, design }: RendererProps) {
+  const text = (props.text as string) || "Click here";
+  const accent = `#${design?.mainColor || "634CF8"}`;
+  return (
+    <div className="px-4 py-4 flex items-center">
+      <span className="text-sm font-medium underline underline-offset-2" style={{ color: accent }}>
+        {text} →
+      </span>
+    </div>
+  );
+}
+
+function SeparatorComponent() {
+  return (
+    <div className="px-4 py-4">
+      <hr className="border-separator/50" />
+    </div>
+  );
+}
+
+function TooltipComponent({ props }: RendererProps) {
+  const text = (props.text as string) || "Hover me";
+  const tooltip = (props.tooltip as string) || "Tooltip info";
+  return (
+    <div className="px-4 py-4 flex items-center gap-2">
+      <span className="text-sm text-foreground underline decoration-dashed underline-offset-4 decoration-muted/40 cursor-help">
+        {text}
+      </span>
+      <div className="rounded-md bg-foreground/90 text-background px-2 py-1 text-[10px] shadow-lg">
+        {tooltip}
+      </div>
+    </div>
+  );
+}
+
+function PopoverComponent({ props, design }: RendererProps) {
+  const trigger = (props.trigger as string) || "Click me";
+  const accent = `#${design?.mainColor || "634CF8"}`;
+  return (
+    <div className="px-4 py-4">
+      <button
+        className="px-4 py-2 rounded-lg text-xs font-semibold border"
+        style={{ borderColor: `${accent}40`, color: accent }}
+      >
+        {trigger}
+      </button>
+      <div className="mt-2 rounded-lg border border-separator/50 bg-white dark:bg-surface shadow-lg p-3 max-w-[200px]">
+        <p className="text-xs text-foreground font-medium">Popover Title</p>
+        <p className="text-[10px] text-muted mt-1">Popover content goes here.</p>
+      </div>
     </div>
   );
 }
@@ -1418,27 +1749,27 @@ const RENDERERS: Record<string, React.FC<RendererProps>> = {
   divider: DividerBlock,
   code: CodeBlock,
   html: HTMLBlock,
-  // UI Components (generic placeholder renderer)
-  Button: GenericComponentBlock,
-  Card: GenericComponentBlock,
-  Avatar: GenericComponentBlock,
-  Badge: GenericComponentBlock,
-  Chip: GenericComponentBlock,
-  Input: GenericComponentBlock,
-  TextField: GenericComponentBlock,
-  TextArea: GenericComponentBlock,
-  Select: GenericComponentBlock,
-  Checkbox: GenericComponentBlock,
-  Switch: GenericComponentBlock,
-  RadioGroup: GenericComponentBlock,
-  Slider: GenericComponentBlock,
-  Accordion: GenericComponentBlock,
-  Tabs: GenericComponentBlock,
-  Table: GenericComponentBlock,
-  Link: GenericComponentBlock,
-  Separator: GenericComponentBlock,
-  Tooltip: GenericComponentBlock,
-  Popover: GenericComponentBlock,
+  // UI Components (visual renderers)
+  Button: ButtonComponent,
+  Card: CardComponent,
+  Avatar: AvatarComponent,
+  Badge: BadgeComponent,
+  Chip: ChipComponent,
+  Input: InputComponent,
+  TextField: TextFieldComponent,
+  TextArea: TextAreaComponent,
+  Select: SelectComponent,
+  Checkbox: CheckboxComponent,
+  Switch: SwitchComponent,
+  RadioGroup: RadioGroupComponent,
+  Slider: SliderComponent,
+  Accordion: AccordionComponent,
+  Tabs: TabsComponent,
+  Table: TableComponent,
+  Link: LinkComponent,
+  Separator: SeparatorComponent,
+  Tooltip: TooltipComponent,
+  Popover: PopoverComponent,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

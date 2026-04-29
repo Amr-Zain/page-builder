@@ -113,7 +113,49 @@ function SortableBlock({
       />
 
       {/* Render nested DropZones for container blocks */}
-      {zones && zones.length > 0 && (
+      {zones && zones.length > 0 && (() => {
+        // Generate zones dynamically based on block props
+        let visibleZones: Array<{ name: string; label: string }>;
+
+        if (block.type === "columns") {
+          const count = Math.max(1, (block.props.count as number) || 2);
+          visibleZones = Array.from({ length: count }, (_, i) => ({
+            name: `col-${i + 1}`,
+            label: `Column ${i + 1}`,
+          }));
+        } else if (block.type === "grid") {
+          const cols = Math.max(1, (block.props.columns as number) || 2);
+          // Show enough cells: at least cols, plus any extra that have children
+          const childZoneNames = Object.keys(block.children ?? {});
+          const maxUsedIndex = childZoneNames.reduce((max, name) => {
+            const match = name.match(/^cell-(\d+)$/);
+            return match ? Math.max(max, parseInt(match[1])) : max;
+          }, 0);
+          const cellCount = Math.max(cols, maxUsedIndex);
+          visibleZones = Array.from({ length: cellCount }, (_, i) => ({
+            name: `cell-${i + 1}`,
+            label: `Cell ${i + 1}`,
+          }));
+        } else if (block.type === "flex-row") {
+          // Show zones that have children + one extra empty slot
+          const childZoneNames = Object.keys(block.children ?? {});
+          const maxUsedIndex = childZoneNames.reduce((max, name) => {
+            const match = name.match(/^item-(\d+)$/);
+            if (match && (block.children?.[name]?.length ?? 0) > 0) {
+              return Math.max(max, parseInt(match[1]));
+            }
+            return max;
+          }, 0);
+          const itemCount = Math.max(maxUsedIndex + 1, 2);
+          visibleZones = Array.from({ length: itemCount }, (_, i) => ({
+            name: `item-${i + 1}`,
+            label: `Item ${i + 1}`,
+          }));
+        } else {
+          visibleZones = zones;
+        }
+
+        return (
         <div
           className={clsx(
             "mt-1 gap-2",
@@ -126,12 +168,12 @@ function SortableBlock({
                 "grid",
                 previewMode === "mobile"
                   ? "grid-cols-1"
-                  : previewMode === "tablet" && zones.length >= 3
+                  : previewMode === "tablet" && visibleZones.length >= 3
                     ? "grid-cols-2"
-                    : zones.length === 2 && "grid-cols-2",
-                previewMode !== "mobile" && zones.length === 3 && "grid-cols-3",
-                previewMode !== "mobile" && previewMode !== "tablet" && zones.length >= 4 && "grid-cols-4",
-                zones.length === 1 && "grid-cols-1",
+                    : visibleZones.length === 2 && "grid-cols-2",
+                previewMode !== "mobile" && visibleZones.length === 3 && "grid-cols-3",
+                previewMode !== "mobile" && previewMode !== "tablet" && visibleZones.length >= 4 && "grid-cols-4",
+                visibleZones.length === 1 && "grid-cols-1",
               ],
             block.type === "flex-row" && (previewMode === "mobile" ? "flex flex-col" : "flex flex-row"),
             block.type === "flex-col" && "flex flex-col",
@@ -141,10 +183,10 @@ function SortableBlock({
               previewMode === "mobile"
                 ? "grid-cols-1"
                 : previewMode === "tablet"
-                  ? zones.length <= 2 ? "grid-cols-2" : "grid-cols-2"
-                  : zones.length === 2 ? "grid-cols-2"
-                  : zones.length === 3 ? "grid-cols-3"
-                  : zones.length >= 4 ? "grid-cols-4"
+                  ? visibleZones.length <= 2 ? "grid-cols-2" : "grid-cols-2"
+                  : visibleZones.length === 2 ? "grid-cols-2"
+                  : visibleZones.length === 3 ? "grid-cols-3"
+                  : visibleZones.length >= 4 ? "grid-cols-4"
                   : "grid-cols-1",
             ],
           )}
@@ -155,8 +197,8 @@ function SortableBlock({
                   gridTemplateColumns: previewMode === "mobile"
                     ? "1fr"
                     : previewMode === "tablet"
-                      ? `repeat(${Math.min((block.props.columns as number) || zones.length, 2)}, 1fr)`
-                      : (block.props.templateColumns as string) || `repeat(${(block.props.columns as number) || zones.length}, 1fr)`,
+                      ? `repeat(${Math.min((block.props.columns as number) || visibleZones.length, 2)}, 1fr)`
+                      : (block.props.templateColumns as string) || `repeat(${(block.props.columns as number) || visibleZones.length}, 1fr)`,
                   ...(block.props.templateRows ? { gridTemplateRows: block.props.templateRows as string } : {}),
                   gap: `${block.props.gap || "16"}px`,
                   ...(block.props.rowGap ? { rowGap: `${block.props.rowGap}px` } : {}),
@@ -187,7 +229,7 @@ function SortableBlock({
               : {}),
           }}
         >
-          {zones.map((zoneDef) => (
+          {visibleZones.map((zoneDef) => (
             <div
               key={zoneDef.name}
               className={clsx(
@@ -226,7 +268,8 @@ function SortableBlock({
             </div>
           ))}
         </div>
-      )}
+      );
+      })()}
     </div>
   );
 }

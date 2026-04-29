@@ -128,7 +128,48 @@ function PreviewBlock({
   previewMode: string;
 }) {
   const blockDef = BLOCK_DEFINITIONS.find((d) => d.type === block.type);
-  const zones = blockDef?.zones;
+  const staticZones = blockDef?.zones;
+
+  // Generate zones dynamically for layout blocks (same logic as Canvas)
+  let zones: Array<{ name: string; label: string }> | undefined;
+  if (staticZones) {
+    if (block.type === "columns") {
+      const count = Math.max(1, (block.props.count as number) || 2);
+      zones = Array.from({ length: count }, (_, i) => ({
+        name: `col-${i + 1}`,
+        label: `Column ${i + 1}`,
+      }));
+    } else if (block.type === "grid") {
+      const cols = Math.max(1, (block.props.columns as number) || 2);
+      const childZoneNames = Object.keys(block.children ?? {});
+      const maxUsedIndex = childZoneNames.reduce((max, name) => {
+        const match = name.match(/^cell-(\d+)$/);
+        return match ? Math.max(max, parseInt(match[1])) : max;
+      }, 0);
+      const cellCount = Math.max(cols, maxUsedIndex);
+      zones = Array.from({ length: cellCount }, (_, i) => ({
+        name: `cell-${i + 1}`,
+        label: `Cell ${i + 1}`,
+      }));
+    } else if (block.type === "flex-row") {
+      const childZoneNames = Object.keys(block.children ?? {});
+      const maxUsedIndex = childZoneNames.reduce((max, name) => {
+        const match = name.match(/^item-(\d+)$/);
+        if (match && (block.children?.[name]?.length ?? 0) > 0) {
+          return Math.max(max, parseInt(match[1]));
+        }
+        return max;
+      }, 0);
+      const itemCount = Math.max(maxUsedIndex, 1);
+      zones = Array.from({ length: itemCount }, (_, i) => ({
+        name: `item-${i + 1}`,
+        label: `Item ${i + 1}`,
+      }));
+    } else {
+      zones = staticZones;
+    }
+  }
+
   const hasChildren = block.children && Object.values(block.children).some((z) => z.length > 0);
 
   return (
@@ -188,7 +229,7 @@ function PreviewBlock({
                   gridTemplateColumns:
                     previewMode === "mobile"
                       ? "1fr"
-                      : `repeat(${zones.length}, 1fr)`,
+                      : `repeat(${(block.props.count as number) || zones?.length || 2}, 1fr)`,
                   gap: "1.5rem",
                 }
               : {}),

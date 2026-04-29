@@ -232,7 +232,6 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
     },
     zones: [
       { name: "cell-1", label: "Cell 1" },
-      { name: "cell-2", label: "Cell 2" },
     ],
   },
   {
@@ -261,7 +260,6 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
     defaultProps: { gap: "1rem", align: "stretch", justify: "start" },
     zones: [
       { name: "item-1", label: "Item 1" },
-      { name: "item-2", label: "Item 2" },
     ],
   },
   {
@@ -282,7 +280,6 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
     defaultProps: { count: 2 },
     zones: [
       { name: "col-1", label: "Column 1" },
-      { name: "col-2", label: "Column 2" },
     ],
   },
   {
