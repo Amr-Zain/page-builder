@@ -658,7 +658,7 @@ function TeamBlock({ props, design, previewMode }: RendererProps) {
 // FAQ
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function FAQBlock({ props, design }: RendererProps) {
+function FAQBlock({ props }: RendererProps) {
   const title = (props.title as string) || "Frequently asked questions";
   const subtitle =
     (props.subtitle as string) ||
