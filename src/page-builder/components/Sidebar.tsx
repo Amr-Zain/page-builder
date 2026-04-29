@@ -1114,17 +1114,17 @@ export function Sidebar({
             <button
               key={item.id}
               className={clsx(
-                "relative flex flex-col items-center justify-center gap-0.5 py-1.5 md:py-2.5 px-3 md:px-0 md:w-full transition-colors outline-none",
+                "relative flex flex-col items-center justify-center gap-0.5 py-1.5 md:py-2 px-3 md:px-0 md:w-10 md:mx-auto rounded-lg transition-colors outline-none",
                 isActive
-                  ? "text-[#634CF8] bg-[#634CF8]/5"
-                  : "text-muted hover:text-foreground hover:bg-surface",
+                  ? "text-[#634CF8] bg-[#634CF8]/8"
+                  : "text-muted hover:text-foreground hover:bg-surface/80",
               )}
               title={item.label}
               onClick={() => handlePanelChange(item.id)}
             >
               {/* Active left border indicator (desktop only) */}
               {isActive && (
-                <div className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-[#634CF8]" />
+                <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-[#634CF8]" />
               )}
               <span className="text-base leading-none">{item.icon}</span>
               <span className="text-[9px] font-medium leading-tight">{item.label}</span>
