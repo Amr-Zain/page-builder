@@ -91,7 +91,8 @@
         "browser_click",
         "browser_type",
         "browser_wait_for",
-        "browser_run_code"
+        "browser_run_code",
+        "browser_console_messages"
       ]
     }
   }

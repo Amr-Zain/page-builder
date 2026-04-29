@@ -1,0 +1,603 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: ⬡
+        - generic [ref=e7]: Page Builder
+        - button [ref=e9]:
+          - img [ref=e10]
+        - button [ref=e12]:
+          - img [ref=e13]
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - button [disabled] [ref=e17]:
+            - img [ref=e18]
+          - button [disabled] [ref=e21]:
+            - img [ref=e22]
+        - generic [ref=e26]:
+          - button [ref=e27]:
+            - img [ref=e28]
+          - button [ref=e30]:
+            - img [ref=e31]
+          - button [ref=e33]:
+            - img [ref=e34]
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - button "EN" [ref=e38]
+          - button "AR" [ref=e39]
+        - button [ref=e41]:
+          - img [ref=e42]
+        - button "Preview" [ref=e45] [cursor=pointer]
+        - button "HTML" [ref=e46] [cursor=pointer]
+        - button "React" [ref=e47] [cursor=pointer]
+        - button "Publish" [ref=e48] [cursor=pointer]
+    - generic [ref=e49]:
+      - complementary [ref=e52]:
+        - generic [ref=e53]:
+          - button "Blocks" [ref=e54]:
+            - img [ref=e57]
+            - generic [ref=e62]: Blocks
+          - button "UI" [ref=e63]:
+            - img [ref=e65]
+            - generic [ref=e70]: UI
+          - button "Design" [ref=e71]:
+            - img [ref=e73]
+            - generic [ref=e79]: Design
+          - button "Tpl" [ref=e80]:
+            - img [ref=e82]
+            - generic [ref=e85]: Tpl
+          - button "Pages" [ref=e86]:
+            - img [ref=e88]
+            - generic [ref=e92]: Pages
+          - button "Menus" [ref=e93]:
+            - img [ref=e95]
+            - generic [ref=e96]: Menus
+        - generic [ref=e97]:
+          - generic [ref=e99]:
+            - img [ref=e100]
+            - textbox "Search blocks..." [ref=e103]
+          - generic [ref=e104]:
+            - paragraph [ref=e105]: Drag blocks onto the canvas to build your page.
+            - generic [ref=e106]:
+              - button "Sections (14)" [ref=e107]:
+                - generic [ref=e108]:
+                  - text: Sections
+                  - generic [ref=e109]: (14)
+                - img [ref=e110]
+              - generic [ref=e114]:
+                - button "Navigation" [ref=e115]:
+                  - generic [ref=e122]: Navigation
+                - button "Hero" [ref=e123]:
+                  - generic [ref=e128]: Hero
+                - button "Features" [ref=e129]:
+                  - generic [ref=e140]: Features
+                - button "\" Testimonials" [ref=e141]:
+                  - generic [ref=e143]: "\""
+                  - generic [ref=e147]: Testimonials
+                - button "Pricing" [ref=e148]:
+                  - generic [ref=e153]: Pricing
+                - button "99 99 99 Stats" [ref=e154]:
+                  - generic [ref=e155]:
+                    - generic [ref=e157]: "99"
+                    - generic [ref=e160]: "99"
+                    - generic [ref=e163]: "99"
+                  - generic [ref=e165]: Stats
+                - button "Team" [ref=e166]:
+                  - img [ref=e169]
+                  - generic [ref=e174]: Team
+                - button "FAQ" [ref=e175]:
+                  - generic [ref=e183]: FAQ
+                - button "Call to Action" [ref=e184]:
+                  - generic [ref=e188]: Call to Action
+                - button "Contact" [ref=e189]:
+                  - img [ref=e192]
+                  - generic [ref=e195]: Contact
+                - button "Logo Cloud" [ref=e196]:
+                  - img [ref=e199]
+                  - generic [ref=e203]: Logo Cloud
+                - button "Banner" [ref=e204]:
+                  - img [ref=e207]
+                  - generic [ref=e211]: Banner
+                - button "Gallery" [ref=e212]:
+                  - img [ref=e215]
+                  - generic [ref=e219]: Gallery
+                - button "Footer" [ref=e220]:
+                  - generic [ref=e226]: Footer
+            - generic [ref=e227]:
+              - button "Content (4)" [ref=e228]:
+                - generic [ref=e229]:
+                  - text: Content
+                  - generic [ref=e230]: (4)
+                - img [ref=e231]
+              - generic [ref=e233]:
+                - button "Text Rich text content block" [ref=e234]:
+                  - img [ref=e237]
+                  - generic [ref=e239]:
+                    - generic [ref=e240]: Text
+                    - text: Rich text content block
+                  - img [ref=e241]
+                - button "Buttons Group of action buttons" [ref=e248]:
+                  - img [ref=e251]
+                  - generic [ref=e254]:
+                    - generic [ref=e255]: Buttons
+                    - text: Group of action buttons
+                  - img [ref=e256]
+                - button "Code Code snippet block" [ref=e263]:
+                  - img [ref=e266]
+                  - generic [ref=e269]:
+                    - generic [ref=e270]: Code
+                    - text: Code snippet block
+                  - img [ref=e271]
+                - button "HTML Embed Custom HTML embed" [ref=e278]:
+                  - img [ref=e281]
+                  - generic [ref=e283]:
+                    - generic [ref=e284]: HTML Embed
+                    - text: Custom HTML embed
+                  - img [ref=e285]
+            - generic [ref=e292]:
+              - button "Layout (8)" [ref=e293]:
+                - generic [ref=e294]:
+                  - text: Layout
+                  - generic [ref=e295]: (8)
+                - img [ref=e296]
+              - generic [ref=e298]:
+                - button "Container Simple container with a single drop zone" [ref=e299]:
+                  - img [ref=e302]
+                  - generic [ref=e306]:
+                    - generic [ref=e307]: Container
+                    - text: Simple container with a single drop zone
+                  - img [ref=e308]
+                - button "Grid CSS Grid container with configurable columns, rows, and gap" [ref=e315]:
+                  - img [ref=e318]
+                  - generic [ref=e320]:
+                    - generic [ref=e321]: Grid
+                    - text: CSS Grid container with configurable columns, rows, and gap
+                  - img [ref=e322]
+                - button "Flex Container Flexbox container with configurable direction, gap, alignment" [ref=e329]:
+                  - img [ref=e332]
+                  - generic [ref=e337]:
+                    - generic [ref=e338]: Flex Container
+                    - text: Flexbox container with configurable direction, gap, alignment
+                  - img [ref=e339]
+                - button "Flex Row Horizontal flex container" [ref=e346]:
+                  - img [ref=e349]
+                  - generic [ref=e352]:
+                    - generic [ref=e353]: Flex Row
+                    - text: Horizontal flex container
+                  - img [ref=e354]
+                - button "Flex Column Vertical flex container" [ref=e361]:
+                  - img [ref=e364]
+                  - generic [ref=e367]:
+                    - generic [ref=e368]: Flex Column
+                    - text: Vertical flex container
+                  - img [ref=e369]
+                - button "Columns Multi-column layout (2-4 columns)" [ref=e376]:
+                  - img [ref=e379]
+                  - generic [ref=e381]:
+                    - generic [ref=e382]: Columns
+                    - text: Multi-column layout (2-4 columns)
+                  - img [ref=e383]
+                - button "Spacer Vertical spacing" [ref=e390]:
+                  - img [ref=e393]
+                  - generic [ref=e395]:
+                    - generic [ref=e396]: Spacer
+                    - text: Vertical spacing
+                  - img [ref=e397]
+                - button "Divider Horizontal line separator" [ref=e404]:
+                  - img [ref=e407]
+                  - generic [ref=e408]:
+                    - generic [ref=e409]: Divider
+                    - text: Horizontal line separator
+                  - img [ref=e410]
+            - generic [ref=e417]:
+              - button "Media (2)" [ref=e418]:
+                - generic [ref=e419]:
+                  - text: Media
+                  - generic [ref=e420]: (2)
+                - img [ref=e421]
+              - generic [ref=e423]:
+                - button "Image Full-width or contained image" [ref=e424]:
+                  - img [ref=e427]
+                  - generic [ref=e431]:
+                    - generic [ref=e432]: Image
+                    - text: Full-width or contained image
+                  - img [ref=e433]
+                - button "Video Embedded video player" [ref=e440]:
+                  - img [ref=e443]
+                  - generic [ref=e446]:
+                    - generic [ref=e447]: Video
+                    - text: Embedded video player
+                  - img [ref=e448]
+      - generic [ref=e459]:
+        - generic [ref=e462]:
+          - generic [ref=e463]:
+            - button "Drag to reorder" [ref=e464]:
+              - img [ref=e465]
+            - button "Delete block" [ref=e472]:
+              - img [ref=e473]
+          - generic [ref=e476] [cursor=pointer]:
+            - generic [ref=e477]: banner
+            - paragraph [ref=e479]:
+              - text: 🚀 We just launched v2.0 — See what's new
+              - generic [ref=e480]: →
+        - generic [ref=e483]:
+          - generic [ref=e484]:
+            - button "Drag to reorder" [ref=e485]:
+              - img [ref=e486]
+            - button "Delete block" [ref=e493]:
+              - img [ref=e494]
+          - generic [ref=e497] [cursor=pointer]:
+            - generic [ref=e498]: navbar
+            - navigation [ref=e499]:
+              - generic [ref=e500]:
+                - generic [ref=e501]: ◆ Acme
+                - generic [ref=e502]:
+                  - generic [ref=e503]: Products
+                  - generic [ref=e504]: Solutions
+                  - generic [ref=e505]: Pricing
+                  - generic [ref=e506]: Docs
+                - generic [ref=e507]:
+                  - generic [ref=e508]: Log in
+                  - button "Get Started" [ref=e509]
+        - generic [ref=e512]:
+          - generic [ref=e513]:
+            - button "Drag to reorder" [ref=e514]:
+              - img [ref=e515]
+            - button "Delete block" [ref=e522]:
+              - img [ref=e523]
+          - generic [ref=e526] [cursor=pointer]:
+            - generic [ref=e527]: hero
+            - generic [ref=e531]:
+              - generic [ref=e532]: Now in public beta — See what's new
+              - heading "Build products faster than ever" [level=1] [ref=e534]
+              - paragraph [ref=e535]: The modern platform for teams who ship. Streamline your workflow, collaborate in real-time, and deploy with confidence.
+              - generic [ref=e536]:
+                - button "Start for free" [ref=e537]
+                - button "View demo →" [ref=e538]
+              - img "Product screenshot" [ref=e541]
+        - generic [ref=e545]:
+          - generic [ref=e546]:
+            - button "Drag to reorder" [ref=e547]:
+              - img [ref=e548]
+            - button "Delete block" [ref=e555]:
+              - img [ref=e556]
+          - generic [ref=e559] [cursor=pointer]:
+            - generic [ref=e560]: logos
+            - generic [ref=e561]:
+              - paragraph [ref=e562]: Trusted by industry-leading companies
+              - generic [ref=e563]:
+                - generic [ref=e566]: Vercel
+                - generic [ref=e569]: Stripe
+                - generic [ref=e572]: Linear
+                - generic [ref=e575]: Notion
+                - generic [ref=e578]: Figma
+                - generic [ref=e581]: GitHub
+        - generic [ref=e584]:
+          - generic [ref=e585]:
+            - button "Drag to reorder" [ref=e586]:
+              - img [ref=e587]
+            - button "Delete block" [ref=e594]:
+              - img [ref=e595]
+          - generic [ref=e598] [cursor=pointer]:
+            - generic [ref=e599]: features
+            - generic [ref=e600]:
+              - generic [ref=e601]:
+                - heading "Everything you need to ship fast" [level=2] [ref=e602]
+                - paragraph [ref=e603]: Powerful features designed for modern teams. No compromises.
+              - generic [ref=e604]:
+                - generic [ref=e605]:
+                  - generic [ref=e606]: ⚡
+                  - generic [ref=e607]:
+                    - heading "Lightning Fast" [level=3] [ref=e608]
+                    - paragraph [ref=e609]: Built on edge infrastructure for sub-50ms response times globally.
+                - generic [ref=e610]:
+                  - generic [ref=e611]: 🔒
+                  - generic [ref=e612]:
+                    - heading "Enterprise Security" [level=3] [ref=e613]
+                    - paragraph [ref=e614]: SOC 2 Type II certified with end-to-end encryption and SSO.
+                - generic [ref=e615]:
+                  - generic [ref=e616]: 📊
+                  - generic [ref=e617]:
+                    - heading "Real-time Analytics" [level=3] [ref=e618]
+                    - paragraph [ref=e619]: Track every metric that matters with customizable dashboards.
+                - generic [ref=e620]:
+                  - generic [ref=e621]: 🔄
+                  - generic [ref=e622]:
+                    - heading "Seamless Integrations" [level=3] [ref=e623]
+                    - paragraph [ref=e624]: Connect with 200+ tools your team already uses.
+        - generic [ref=e627]:
+          - generic [ref=e628]:
+            - button "Drag to reorder" [ref=e629]:
+              - img [ref=e630]
+            - button "Delete block" [ref=e637]:
+              - img [ref=e638]
+          - generic [ref=e641] [cursor=pointer]:
+            - generic [ref=e642]: stats
+            - generic [ref=e644]:
+              - generic [ref=e645]:
+                - generic [ref=e646]: 50K+
+                - generic [ref=e647]: Active developers
+              - generic [ref=e648]:
+                - generic [ref=e649]: 99.99%
+                - generic [ref=e650]: Uptime SLA
+              - generic [ref=e651]:
+                - generic [ref=e652]: 150ms
+                - generic [ref=e653]: Avg. response time
+              - generic [ref=e654]:
+                - generic [ref=e655]: 2M+
+                - generic [ref=e656]: Deployments/month
+        - generic [ref=e659]:
+          - generic [ref=e660]:
+            - button "Drag to reorder" [ref=e661]:
+              - img [ref=e662]
+            - button "Delete block" [ref=e669]:
+              - img [ref=e670]
+          - generic [ref=e673] [cursor=pointer]:
+            - generic [ref=e674]: testimonials
+            - generic [ref=e675]:
+              - heading "Loved by teams worldwide" [level=2] [ref=e677]
+              - generic [ref=e678]:
+                - generic [ref=e679]:
+                  - generic [ref=e680]:
+                    - generic [ref=e681]:
+                      - generic [ref=e682]: ★
+                      - generic [ref=e683]: ★
+                      - generic [ref=e684]: ★
+                      - generic [ref=e685]: ★
+                      - generic [ref=e686]: ★
+                    - paragraph [ref=e687]: “We migrated our entire infrastructure in a weekend. The developer experience is unmatched — it's like the tool reads your mind.”
+                  - generic [ref=e688]:
+                    - img "Sarah Chen" [ref=e689]
+                    - generic [ref=e690]:
+                      - paragraph [ref=e691]: Sarah Chen
+                      - paragraph [ref=e692]: CTO at Raycast
+                - generic [ref=e693]:
+                  - generic [ref=e694]:
+                    - generic [ref=e695]:
+                      - generic [ref=e696]: ★
+                      - generic [ref=e697]: ★
+                      - generic [ref=e698]: ★
+                      - generic [ref=e699]: ★
+                      - generic [ref=e700]: ★
+                    - paragraph [ref=e701]: “Our deployment frequency went from weekly to multiple times per day. The team has never been more productive.”
+                  - generic [ref=e702]:
+                    - img "Marcus Johnson" [ref=e703]
+                    - generic [ref=e704]:
+                      - paragraph [ref=e705]: Marcus Johnson
+                      - paragraph [ref=e706]: VP Engineering at Vercel
+                - generic [ref=e707]:
+                  - generic [ref=e708]:
+                    - generic [ref=e709]:
+                      - generic [ref=e710]: ★
+                      - generic [ref=e711]: ★
+                      - generic [ref=e712]: ★
+                      - generic [ref=e713]: ★
+                      - generic [ref=e714]: ★
+                    - paragraph [ref=e715]: “Finally, a platform that doesn't make you choose between speed and reliability. It's become essential to how we build.”
+                  - generic [ref=e716]:
+                    - img "Elena Rodriguez" [ref=e717]
+                    - generic [ref=e718]:
+                      - paragraph [ref=e719]: Elena Rodriguez
+                      - paragraph [ref=e720]: Lead Developer at Linear
+        - generic [ref=e723]:
+          - generic [ref=e724]:
+            - button "Drag to reorder" [ref=e725]:
+              - img [ref=e726]
+            - button "Delete block" [ref=e733]:
+              - img [ref=e734]
+          - generic [ref=e737] [cursor=pointer]:
+            - generic [ref=e738]: pricing
+            - generic [ref=e739]:
+              - generic [ref=e740]:
+                - heading "Simple, transparent pricing" [level=2] [ref=e741]
+                - paragraph [ref=e742]: No hidden fees. Cancel anytime.
+              - generic [ref=e743]:
+                - generic [ref=e744]:
+                  - generic [ref=e745]:
+                    - heading "Free" [level=3] [ref=e746]
+                    - paragraph [ref=e747]: For individuals and small projects
+                    - generic [ref=e748]:
+                      - generic [ref=e749]: $0
+                      - generic [ref=e750]: /month
+                  - list [ref=e751]:
+                    - listitem [ref=e752]:
+                      - generic [ref=e753]: ✓
+                      - text: Up to 3 projects
+                    - listitem [ref=e754]:
+                      - generic [ref=e755]: ✓
+                      - text: 1 GB storage
+                    - listitem [ref=e756]:
+                      - generic [ref=e757]: ✓
+                      - text: Community support
+                    - listitem [ref=e758]:
+                      - generic [ref=e759]: ✓
+                      - text: Basic analytics
+                  - button "Get started" [ref=e760]
+                - generic [ref=e761]:
+                  - generic [ref=e762]: Most popular
+                  - generic [ref=e763]:
+                    - heading "Pro" [level=3] [ref=e764]
+                    - paragraph [ref=e765]: For growing teams that need more
+                    - generic [ref=e766]:
+                      - generic [ref=e767]: $29
+                      - generic [ref=e768]: /month
+                  - list [ref=e769]:
+                    - listitem [ref=e770]:
+                      - generic [ref=e771]: ✓
+                      - text: Unlimited projects
+                    - listitem [ref=e772]:
+                      - generic [ref=e773]: ✓
+                      - text: 100 GB storage
+                    - listitem [ref=e774]:
+                      - generic [ref=e775]: ✓
+                      - text: Priority support
+                    - listitem [ref=e776]:
+                      - generic [ref=e777]: ✓
+                      - text: Advanced analytics
+                    - listitem [ref=e778]:
+                      - generic [ref=e779]: ✓
+                      - text: Custom domains
+                    - listitem [ref=e780]:
+                      - generic [ref=e781]: ✓
+                      - text: Team collaboration
+                  - button "Start free trial" [ref=e782]
+                - generic [ref=e783]:
+                  - generic [ref=e784]:
+                    - heading "Enterprise" [level=3] [ref=e785]
+                    - paragraph [ref=e786]: For organizations at scale
+                    - generic [ref=e787]:
+                      - generic [ref=e788]: $99
+                      - generic [ref=e789]: /month
+                  - list [ref=e790]:
+                    - listitem [ref=e791]:
+                      - generic [ref=e792]: ✓
+                      - text: Everything in Pro
+                    - listitem [ref=e793]:
+                      - generic [ref=e794]: ✓
+                      - text: Unlimited storage
+                    - listitem [ref=e795]:
+                      - generic [ref=e796]: ✓
+                      - text: 24/7 dedicated support
+                    - listitem [ref=e797]:
+                      - generic [ref=e798]: ✓
+                      - text: SSO & SAML
+                    - listitem [ref=e799]:
+                      - generic [ref=e800]: ✓
+                      - text: Audit logs
+                    - listitem [ref=e801]:
+                      - generic [ref=e802]: ✓
+                      - text: Custom SLA
+                  - button "Contact sales" [ref=e803]
+        - generic [ref=e806]:
+          - generic [ref=e807]:
+            - button "Drag to reorder" [ref=e808]:
+              - img [ref=e809]
+            - button "Delete block" [ref=e816]:
+              - img [ref=e817]
+          - generic [ref=e820] [cursor=pointer]:
+            - generic [ref=e821]: faq
+            - generic [ref=e822]:
+              - generic [ref=e823]:
+                - heading "Frequently asked questions" [level=2] [ref=e824]
+                - paragraph [ref=e825]: Everything you need to know. Can't find what you're looking for? Reach out to our team.
+              - generic [ref=e826]:
+                - heading "How does the free trial work?" [level=3] [ref=e828]:
+                  - button "How does the free trial work?" [ref=e829]:
+                    - text: How does the free trial work?
+                    - img [ref=e830]
+                - heading "Can I change my plan later?" [level=3] [ref=e833]:
+                  - button "Can I change my plan later?" [ref=e834]:
+                    - text: Can I change my plan later?
+                    - img [ref=e835]
+                - heading "What kind of support do you offer?" [level=3] [ref=e838]:
+                  - button "What kind of support do you offer?" [ref=e839]:
+                    - text: What kind of support do you offer?
+                    - img [ref=e840]
+                - heading "Is my data secure?" [level=3] [ref=e843]:
+                  - button "Is my data secure?" [ref=e844]:
+                    - text: Is my data secure?
+                    - img [ref=e845]
+                - heading "Do you offer refunds?" [level=3] [ref=e848]:
+                  - button "Do you offer refunds?" [ref=e849]:
+                    - text: Do you offer refunds?
+                    - img [ref=e850]
+        - generic [ref=e854]:
+          - generic [ref=e855]:
+            - button "Drag to reorder" [ref=e856]:
+              - img [ref=e857]
+            - button "Delete block" [ref=e864]:
+              - img [ref=e865]
+          - generic [ref=e868] [cursor=pointer]:
+            - generic [ref=e869]: cta
+            - generic [ref=e872]:
+              - heading "Ready to accelerate your workflow?" [level=2] [ref=e873]
+              - paragraph [ref=e874]: Join 50,000+ developers who ship faster. Start your free trial today.
+              - generic [ref=e875]:
+                - button "Get started for free" [ref=e876]
+                - button "Talk to sales" [ref=e877]
+        - generic [ref=e880]:
+          - generic [ref=e881]:
+            - button "Drag to reorder" [ref=e882]:
+              - img [ref=e883]
+            - button "Delete block" [ref=e890]:
+              - img [ref=e891]
+          - generic [ref=e894] [cursor=pointer]:
+            - generic [ref=e895]: footer
+            - contentinfo [ref=e896]:
+              - generic [ref=e897]:
+                - generic [ref=e898]:
+                  - generic [ref=e899]:
+                    - text: ◆ Acme
+                    - paragraph [ref=e900]: Build better products, faster. The modern platform for ambitious teams.
+                  - generic [ref=e901]:
+                    - paragraph [ref=e902]: Product
+                    - list [ref=e903]:
+                      - listitem [ref=e904]: Features
+                      - listitem [ref=e905]: Pricing
+                      - listitem [ref=e906]: Changelog
+                      - listitem [ref=e907]: Docs
+                      - listitem [ref=e908]: API
+                  - generic [ref=e909]:
+                    - paragraph [ref=e910]: Company
+                    - list [ref=e911]:
+                      - listitem [ref=e912]: About
+                      - listitem [ref=e913]: Blog
+                      - listitem [ref=e914]: Careers
+                      - listitem [ref=e915]: Press
+                      - listitem [ref=e916]: Partners
+                  - generic [ref=e917]:
+                    - paragraph [ref=e918]: Resources
+                    - list [ref=e919]:
+                      - listitem [ref=e920]: Community
+                      - listitem [ref=e921]: Help Center
+                      - listitem [ref=e922]: Status
+                      - listitem [ref=e923]: Tutorials
+                  - generic [ref=e924]:
+                    - paragraph [ref=e925]: Legal
+                    - list [ref=e926]:
+                      - listitem [ref=e927]: Privacy
+                      - listitem [ref=e928]: Terms
+                      - listitem [ref=e929]: Security
+                      - listitem [ref=e930]: Cookies
+                - generic [ref=e931]:
+                  - paragraph [ref=e932]: © 2026 Acme Inc. All rights reserved.
+                  - generic [ref=e933]:
+                    - generic [ref=e934]: Twitter
+                    - generic [ref=e935]: GitHub
+                    - generic [ref=e936]: Discord
+                    - generic [ref=e937]: LinkedIn
+      - complementary [ref=e943]:
+        - generic [ref=e944]:
+          - paragraph [ref=e945]:
+            - img [ref=e946]
+            - text: Page Settings
+          - paragraph [ref=e949]: Home
+        - generic [ref=e950]:
+          - button "General" [ref=e951]
+          - button "SEO" [ref=e952]
+          - button "Layers" [ref=e953]
+        - generic [ref=e955]:
+          - generic [ref=e956]:
+            - generic [ref=e957]: Page Title
+            - textbox [ref=e958]: Home
+          - generic [ref=e959]:
+            - generic [ref=e960]: Permalink
+            - generic [ref=e961]:
+              - generic [ref=e962]: /
+              - textbox [ref=e963]: home
+          - generic [ref=e964]:
+            - generic [ref=e965]: Visibility
+            - generic [ref=e966]:
+              - button "Public" [ref=e967]
+              - button "Draft" [ref=e968]
+          - generic [ref=e969]:
+            - generic [ref=e970]:
+              - generic [ref=e971]: Created
+              - generic [ref=e972]: 4/29/2026
+            - generic [ref=e973]:
+              - generic [ref=e974]: Updated
+              - generic [ref=e975]: 4/29/2026
+            - generic [ref=e976]:
+              - generic [ref=e977]: Blocks
+              - generic [ref=e978]: "11"
+  - status [ref=e979]

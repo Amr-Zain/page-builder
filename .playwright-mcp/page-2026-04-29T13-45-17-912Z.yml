@@ -1,0 +1,43 @@
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e5]:
+      - link "ACME" [ref=e7] [cursor=pointer]:
+        - /url: /
+        - img [ref=e8]
+        - paragraph [ref=e10]: ACME
+      - generic [ref=e11]:
+        - link "Twitter" [ref=e12] [cursor=pointer]:
+          - /url: https://twitter.com/hero_ui
+          - img [ref=e13]
+        - link "Discord" [ref=e15] [cursor=pointer]:
+          - /url: https://discord.gg/9b6yyZKmH4
+          - img [ref=e16]
+        - link "Github" [ref=e18] [cursor=pointer]:
+          - /url: https://github.com/heroui-inc/heroui
+          - img [ref=e19]
+        - button "Switch to light mode" [ref=e21] [cursor=pointer]:
+          - img [ref=e22]
+        - button "Sponsor" [ref=e27] [cursor=pointer]:
+          - img
+          - text: Sponsor
+  - main [ref=e28]:
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - text: Make beautiful
+        - text: websites regardless of your design experience.
+        - generic [ref=e31]: Beautiful, fast and modern React UI library.
+      - generic [ref=e32]:
+        - link "Documentation" [ref=e33] [cursor=pointer]:
+          - /url: https://heroui.com
+        - link "GitHub" [ref=e34] [cursor=pointer]:
+          - /url: https://github.com/heroui-inc/heroui
+          - img
+          - text: GitHub
+      - generic [ref=e37]:
+        - text: Get started by editing
+        - code [ref=e38]: pages/index.tsx
+  - contentinfo [ref=e39]:
+    - link "Powered by HeroUI" [ref=e40] [cursor=pointer]:
+      - /url: https://heroui.com?utm_source=vite-template
+      - generic [ref=e41]: Powered by
+      - paragraph [ref=e42]: HeroUI
