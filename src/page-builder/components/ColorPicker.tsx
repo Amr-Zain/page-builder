@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, memo } from "react";
 import { Slider, Label } from "@heroui/react";
 
 /** Preset colors for quick selection */
@@ -27,12 +27,16 @@ function hexToRgba(hex: string, opacity: number): string {
   return `rgba(${r}, ${g}, ${b}, ${(opacity / 100).toFixed(2)})`;
 }
 
+function computeOutput(hex: string, opacity: number): string {
+  if (hex === "transparent") return "transparent";
+  return opacity < 100 ? hexToRgba(hex, opacity) : hex;
+}
+
 /** Parse a color value to extract hex and opacity */
 function parseColor(value: string): { hex: string; opacity: number } {
   if (!value || value === "transparent") {
     return { hex: "#000000", opacity: 100 };
   }
-  // Try rgba format
   const rgbaMatch = value.match(
     /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)/,
   );
@@ -44,22 +48,23 @@ function parseColor(value: string): { hex: string; opacity: number } {
     const hex = `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
     return { hex, opacity: Math.round(a * 100) };
   }
-  // Hex format
   if (value.startsWith("#")) {
-    return { hex: value.length === 4 ? expandShortHex(value) : value, opacity: 100 };
+    const expanded = value.length === 4
+      ? `#${value[1]}${value[1]}${value[2]}${value[2]}${value[3]}${value[3]}`
+      : value;
+    return { hex: expanded, opacity: 100 };
   }
   return { hex: value, opacity: 100 };
 }
 
-function expandShortHex(hex: string): string {
-  const c = hex.replace("#", "");
-  return `#${c[0]}${c[0]}${c[1]}${c[1]}${c[2]}${c[2]}`;
-}
-
 /**
- * Reusable color picker with native input, hex text field, opacity slider, and presets.
+ * Optimized color picker — only emits onChange on:
+ * - Valid hex input (after typing)
+ * - Native color picker release (debounced 250ms)
+ * - Opacity slider release (onChangeEnd)
+ * - Preset click (immediate)
  */
-export function ColorPicker({
+export const ColorPicker = memo(function ColorPicker({
   label,
   value,
   onChange,
@@ -71,6 +76,7 @@ export function ColorPicker({
   const parsed = parseColor(value);
   const [hex, setHex] = useState(parsed.hex);
   const [opacity, setOpacity] = useState(parsed.opacity);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Sync internal state when external value changes
   useEffect(() => {
@@ -79,54 +85,61 @@ export function ColorPicker({
     setOpacity(p.opacity);
   }, [value]);
 
-  const emitTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current); }, []);
 
-  const emitChange = useCallback(
-    (newHex: string, newOpacity: number) => {
-      if (emitTimeout.current) clearTimeout(emitTimeout.current);
-      emitTimeout.current = setTimeout(() => {
-        if (newHex === "transparent") {
-          onChange("transparent");
-          return;
-        }
-        const output = newOpacity < 100 ? hexToRgba(newHex, newOpacity) : newHex;
-        onChange(output);
-      }, 100);
+  // Immediate emit (for presets, hex input confirmation)
+  const emitNow = useCallback(
+    (h: string, o: number) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      onChange(computeOutput(h, o));
     },
     [onChange],
   );
 
-  // Cleanup on unmount
-  useEffect(() => () => { if (emitTimeout.current) clearTimeout(emitTimeout.current); }, []);
+  // Debounced emit (for native color picker dragging)
+  const emitDebounced = useCallback(
+    (h: string, o: number) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => onChange(computeOutput(h, o)), 250);
+    },
+    [onChange],
+  );
 
+  // Hex text input — only emit when valid
   function handleHexChange(newHex: string) {
     setHex(newHex);
     if (/^#[0-9a-fA-F]{6}$/.test(newHex)) {
-      emitChange(newHex, opacity);
+      emitNow(newHex, opacity);
     }
   }
 
+  // Native color picker — debounce heavily (fires on every pixel)
   function handleNativeColorChange(newHex: string) {
     setHex(newHex);
-    emitChange(newHex, opacity);
+    emitDebounced(newHex, opacity);
   }
 
-  function handleOpacityChange(newOpacity: number | number[]) {
-    const val = Array.isArray(newOpacity) ? newOpacity[0] : newOpacity;
-    setOpacity(val);
-    emitChange(hex, val);
+  // Opacity slider — update local state during drag, emit only on release
+  function handleOpacityDrag(val: number | number[]) {
+    setOpacity(Array.isArray(val) ? val[0] : val);
+  }
+  function handleOpacityEnd(val: number | number[]) {
+    const v = Array.isArray(val) ? val[0] : val;
+    setOpacity(v);
+    emitNow(hex, v);
   }
 
+  // Preset — immediate
   function handlePresetClick(presetHex: string) {
     if (presetHex === "transparent") {
       setHex("#000000");
       setOpacity(0);
-      onChange("transparent");
+      emitNow("transparent", 0);
       return;
     }
     setHex(presetHex);
     setOpacity(100);
-    emitChange(presetHex, 100);
+    emitNow(presetHex, 100);
   }
 
   return (
@@ -165,11 +178,12 @@ export function ColorPicker({
         />
       </div>
 
-      {/* Opacity slider */}
+      {/* Opacity slider — onChange for visual feedback, onChangeEnd for state emit */}
       <div className="mb-2">
         <Slider
           value={opacity}
-          onChange={handleOpacityChange}
+          onChange={handleOpacityDrag}
+          onChangeEnd={handleOpacityEnd}
           minValue={0}
           maxValue={100}
           step={1}
@@ -208,4 +222,4 @@ export function ColorPicker({
       </div>
     </div>
   );
-}
+});
