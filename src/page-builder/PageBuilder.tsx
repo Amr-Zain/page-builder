@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import clsx from "clsx";
 import {
   DndContext,
   DragOverlay,
@@ -250,6 +251,19 @@ export default function PageBuilder() {
   const [rightVisible, setRightVisible] = useState(true);
   const [leftWidth, setLeftWidth] = useState(320);
   const [rightWidth, setRightWidth] = useState(300);
+
+  // Auto-hide sidebars on small screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (!window.matchMedia("(min-width: 768px)").matches) {
+        setLeftVisible(false);
+        setRightVisible(false);
+      }
+    };
+    handleResize(); // run on mount
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // ── Menus Management ──
   const [menusState, setMenusState] = useState<MenusState>(
@@ -852,8 +866,24 @@ export default function PageBuilder() {
           }
           onRedo={redo}
           onThemeChange={setTheme}
-          onToggleLeftSidebar={() => setLeftVisible((v) => !v)}
-          onToggleRightSidebar={() => setRightVisible((v) => !v)}
+          onToggleLeftSidebar={() => {
+            setLeftVisible((v) => {
+              const next = !v;
+              if (next && !window.matchMedia("(min-width: 768px)").matches) {
+                setRightVisible(false);
+              }
+              return next;
+            });
+          }}
+          onToggleRightSidebar={() => {
+            setRightVisible((v) => {
+              const next = !v;
+              if (next && !window.matchMedia("(min-width: 768px)").matches) {
+                setLeftVisible(false);
+              }
+              return next;
+            });
+          }}
           onUndo={undo}
         />
 
@@ -863,10 +893,14 @@ export default function PageBuilder() {
           onSelectBlock={selectBlock}
         />
 
-        <div className="flex flex-1 min-h-0">
-          {/* Left sidebar with slide animation */}
+        <div className="flex flex-1 min-h-0 relative">
+          {/* Left sidebar — overlay on mobile, inline on desktop */}
           <div
-            className="shrink-0 transition-all duration-300 ease-out overflow-hidden h-full"
+            className={clsx(
+              "shrink-0 transition-all duration-300 ease-out overflow-hidden h-full",
+              "max-md:fixed max-md:inset-y-12 max-md:left-0 max-md:z-40 max-md:shadow-xl",
+              !leftVisible && "max-md:pointer-events-none",
+            )}
             style={{ width: leftVisible ? `${leftWidth}px` : "0px" }}
           >
             <div className="h-full" style={{ width: `${leftWidth}px` }}>
@@ -900,7 +934,7 @@ export default function PageBuilder() {
             </div>
           </div>
           {leftVisible && (
-            <ResizeHandle side="left" onResize={handleLeftResize} />
+            <ResizeHandle className="hidden md:flex" side="left" onResize={handleLeftResize} />
           )}
 
           <Canvas
@@ -916,13 +950,17 @@ export default function PageBuilder() {
 
           {/* Right sidebar with slide animation */}
           {rightVisible && (
-            <ResizeHandle side="right" onResize={handleRightResize} />
+            <ResizeHandle className="hidden md:flex" side="right" onResize={handleRightResize} />
           )}
           <div
-            className="shrink-0 transition-all duration-300 ease-out overflow-hidden h-full"
+            className={clsx(
+              "shrink-0 transition-all duration-300 ease-out overflow-hidden h-full",
+              "max-md:fixed max-md:inset-y-12 max-md:right-0 max-md:z-40 max-md:shadow-xl",
+              !rightVisible && "max-md:pointer-events-none",
+            )}
             style={{ width: rightVisible ? `${rightWidth}px` : "0px" }}
           >
-            <div className="h-full" style={{ width: `${rightWidth}px` }}>
+            <div className="h-full max-md:w-full" style={{ width: `${rightWidth}px` }}>
               <RightPanel
                 activePage={pagesState.pages.find(
                   (p) => p.id === pagesState.activePageId,
@@ -944,6 +982,17 @@ export default function PageBuilder() {
             </div>
           </div>
         </div>
+
+        {/* Mobile backdrop when sidebar is open */}
+        {(leftVisible || rightVisible) && (
+          <div
+            className="fixed inset-0 z-30 bg-black/30 md:hidden"
+            onClick={() => {
+              setLeftVisible(false);
+              setRightVisible(false);
+            }}
+          />
+        )}
 
         <FloatingBar
           visible={hasUnsavedChanges}

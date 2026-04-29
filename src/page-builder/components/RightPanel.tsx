@@ -83,7 +83,7 @@ export function RightPanel({
 
     return (
       <aside
-        className="shrink-0 border-l border-separator/50 bg-white dark:bg-background flex flex-col items-center justify-center p-6 text-center h-full"
+        className="shrink-0 border-l border-separator/50 bg-white dark:bg-background flex flex-col items-center justify-center p-6 text-center h-full max-md:w-full"
         style={{ width: `${width}px` }}
       >
         <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#F8F8FA] dark:bg-surface mb-4">
@@ -131,7 +131,7 @@ export function RightPanel({
 
   return (
     <aside
-      className="shrink-0 border-l border-separator/50 bg-white dark:bg-background flex flex-col overflow-hidden h-full"
+      className="shrink-0 border-l border-separator/50 bg-white dark:bg-background flex flex-col overflow-hidden h-full max-md:w-full"
       style={{ width: `${width}px` }}
     >
       {/* Header with block info and close button */}
@@ -1553,7 +1553,7 @@ function PageSettingsPanel({
 }) {
   return (
     <aside
-      className="shrink-0 border-l border-separator/50 bg-white dark:bg-background flex flex-col overflow-hidden h-full"
+      className="shrink-0 border-l border-separator/50 bg-white dark:bg-background flex flex-col overflow-hidden h-full max-md:w-full"
       style={{ width: `${width}px` }}
     >
       <div className="px-4 py-3 border-b border-separator/40 bg-[#FAFAFA] dark:bg-surface/50">

@@ -99,11 +99,11 @@ export function Toolbar({
   ];
 
   return (
-    <nav className="sticky top-0 z-40 flex h-12 items-center justify-between border-b border-separator/50 bg-white/90 dark:bg-background/90 backdrop-blur-xl px-3 gap-2">
+    <nav className="sticky top-0 z-40 flex h-12 items-center justify-between border-b border-separator/50 bg-white/90 dark:bg-background/90 backdrop-blur-xl px-2 md:px-3 gap-2 overflow-x-auto">
       {/* ── Left: Logo + Sidebar Toggle ── */}
       <div className="flex items-center gap-2">
         <span className="text-sm font-bold text-[#634CF8]">⬡</span>
-        <span className="text-[13px] font-semibold text-foreground">
+        <span className="hidden md:inline text-[13px] font-semibold text-foreground">
           Page Builder
         </span>
 
@@ -236,7 +236,7 @@ export function Toolbar({
             <Tooltip delay={200} key={device.id}>
               <button
                 className={clsx(
-                  "flex h-7 w-8 items-center justify-center rounded-md transition-all",
+                  "flex h-6 w-6 md:h-7 md:w-8 items-center justify-center rounded-md transition-all",
                   previewMode === device.id
                     ? "bg-white dark:bg-background shadow-sm text-foreground"
                     : "text-muted hover:text-foreground",
@@ -256,7 +256,7 @@ export function Toolbar({
       {/* ── Right: Language, Theme, Actions ── */}
       <div className="flex items-center gap-2">
         {/* Language switcher */}
-        <div className="flex items-center gap-0.5 rounded-lg bg-[#F5F5F5] dark:bg-surface p-0.5">
+        <div className="hidden md:flex items-center gap-0.5 rounded-lg bg-[#F5F5F5] dark:bg-surface p-0.5">
           <button
             className={clsx(
               "flex h-7 items-center justify-center rounded-md px-2 text-[11px] font-semibold transition-all",
@@ -281,7 +281,7 @@ export function Toolbar({
           </button>
         </div>
 
-        <div className="w-px h-5 bg-separator/50" />
+        <div className="hidden md:block w-px h-5 bg-separator/50" />
 
         {/* Theme switcher */}
         <Tooltip delay={200}>
@@ -331,10 +331,10 @@ export function Toolbar({
         <Button size="sm" variant="secondary" onPress={onPreview}>
           Preview
         </Button>
-        <Button size="sm" variant="secondary" onPress={onExportHtml}>
+        <Button className="hidden lg:inline-flex" size="sm" variant="secondary" onPress={onExportHtml}>
           HTML
         </Button>
-        <Button size="sm" variant="secondary" onPress={onExportReact}>
+        <Button className="hidden lg:inline-flex" size="sm" variant="secondary" onPress={onExportReact}>
           React
         </Button>
         <Button size="sm" style={{ backgroundColor: "#634CF8", color: "#fff" }}>

@@ -7,10 +7,13 @@ import clsx from "clsx";
  */
 export function ResizeHandle({
   side,
+  className,
   onResize,
 }: {
   /** Which side this handle is on — determines drag direction */
   side: "left" | "right";
+  /** Optional extra class names */
+  className?: string;
   /** Called with the delta (px) during drag */
   onResize: (delta: number) => void;
 }) {
@@ -52,6 +55,7 @@ export function ResizeHandle({
       className={clsx(
         "relative z-20 flex w-[5px] shrink-0 cursor-col-resize items-center justify-center",
         "group hover:bg-[#634CF8]/10 active:bg-[#634CF8]/15 transition-colors",
+        className,
       )}
       onMouseDown={handleMouseDown}
     >
