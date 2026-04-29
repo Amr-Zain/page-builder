@@ -19,7 +19,6 @@ import {
   TEMPLATES,
 } from "../data";
 import { RADIUS_TOKENS, type RadiusToken } from "../tokens";
-import { BlockSearch } from "./BlockSearch";
 
 // ── Collapsible Section ──
 function CollapsibleSection({
@@ -40,21 +39,21 @@ function CollapsibleSection({
   return (
     <div className="border-b border-separator/40">
       <button
-        className="flex w-full items-center justify-between py-3.5 text-left"
+        className="flex w-full items-center justify-between py-2.5 text-left"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className="text-[13px] font-semibold text-foreground flex items-center gap-1.5">
+        <span className="text-[12px] font-semibold text-foreground flex items-center gap-1.5">
           {icon && <span className="text-sm">{icon}</span>}
           {title}
           {count !== undefined && (
-            <span className="text-[11px] font-normal text-muted">
+            <span className="text-[10px] font-normal text-muted">
               ({count})
             </span>
           )}
         </span>
         <svg
           className={clsx(
-            "h-3.5 w-3.5 text-muted transition-transform duration-200",
+            "h-3 w-3 text-muted transition-transform duration-200",
             !isOpen && "rotate-180",
           )}
           fill="none"
@@ -72,7 +71,7 @@ function CollapsibleSection({
       <div
         className={clsx(
           "grid transition-all duration-200 ease-out",
-          isOpen ? "grid-rows-[1fr] pb-4" : "grid-rows-[0fr]",
+          isOpen ? "grid-rows-[1fr] pb-3" : "grid-rows-[0fr]",
         )}
       >
         <div className="overflow-hidden">{children}</div>
@@ -346,7 +345,7 @@ function SelectionCard({
   return (
     <button
       className={clsx(
-        "flex flex-col items-center gap-2 rounded-lg border-2 p-3 transition-all cursor-pointer",
+        "flex flex-col items-center gap-1.5 rounded-lg border-2 p-2 transition-all cursor-pointer",
         selected
           ? "border-[#634CF8] bg-[#634CF8]/[0.03]"
           : "border-separator/40 bg-white dark:bg-surface hover:border-muted/80",
@@ -389,22 +388,32 @@ function SelectionCard({
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // ── Blocks Panel ──
-function BlocksPanel() {
+function BlocksPanel({ query }: { query: string }) {
   const categories = Object.keys(BLOCK_CATEGORIES) as BlockCategory[];
+  const q = query.toLowerCase().trim();
 
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-[11px] text-muted pb-2 leading-relaxed">
+    <div className="flex flex-col gap-2">
+      <p className="text-[11px] text-muted pb-1 leading-relaxed">
         Drag blocks onto the canvas to build your page.
       </p>
       {categories.map((cat) => {
         const meta = BLOCK_CATEGORIES[cat];
-        const blocks = BLOCK_DEFINITIONS.filter((b) => b.category === cat);
+        const allBlocks = BLOCK_DEFINITIONS.filter((b) => b.category === cat);
+        const blocks = q
+          ? allBlocks.filter(
+              (b) =>
+                b.label.toLowerCase().includes(q) ||
+                b.type.toLowerCase().includes(q) ||
+                b.description.toLowerCase().includes(q),
+            )
+          : allBlocks;
+        if (blocks.length === 0) return null;
         const isSections = cat === "sections";
         return (
           <CollapsibleSection
             count={blocks.length}
-            defaultOpen={isSections}
+            defaultOpen={isSections || !!q}
             icon={meta.icon}
             key={cat}
             title={meta.label}
@@ -425,28 +434,51 @@ function BlocksPanel() {
           </CollapsibleSection>
         );
       })}
+      {q && categories.every((cat) => {
+        const blocks = BLOCK_DEFINITIONS.filter((b) => b.category === cat);
+        return blocks.filter(
+          (b) =>
+            b.label.toLowerCase().includes(q) ||
+            b.type.toLowerCase().includes(q) ||
+            b.description.toLowerCase().includes(q),
+        ).length === 0;
+      }) && (
+        <div className="rounded-lg bg-[#F8F8FA] dark:bg-surface p-3 text-center">
+          <p className="text-[11px] text-muted">No blocks match &ldquo;{query}&rdquo;</p>
+        </div>
+      )}
     </div>
   );
 }
 
 // ── Components Panel ──
-function ComponentsPanel() {
+function ComponentsPanel({ query }: { query: string }) {
   const categories = Object.keys(
     COMPONENT_CATEGORIES,
   ) as (keyof typeof COMPONENT_CATEGORIES)[];
+  const q = query.toLowerCase().trim();
 
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-[12px] text-muted py-2 leading-relaxed">
+    <div className="flex flex-col gap-2">
+      <p className="text-[11px] text-muted py-1 leading-relaxed">
         UI elements to use inside blocks.
       </p>
       {categories.map((cat) => {
         const meta = COMPONENT_CATEGORIES[cat];
-        const comps = COMPONENT_DEFINITIONS.filter((c) => c.category === cat);
+        const allComps = COMPONENT_DEFINITIONS.filter((c) => c.category === cat);
+        const comps = q
+          ? allComps.filter(
+              (c) =>
+                c.label.toLowerCase().includes(q) ||
+                c.type.toLowerCase().includes(q) ||
+                c.description.toLowerCase().includes(q),
+            )
+          : allComps;
+        if (comps.length === 0) return null;
         return (
           <CollapsibleSection
             count={comps.length}
-            defaultOpen
+            defaultOpen={!!q || true}
             icon={meta.icon}
             key={cat}
             title={meta.label}
@@ -467,23 +499,27 @@ function ComponentsPanel() {
 function DesignPanel({
   design,
   onUpdate,
+  query,
 }: {
   design: DesignSettings;
   onUpdate: <K extends keyof DesignSettings>(
     key: K,
     value: DesignSettings[K],
   ) => void;
+  query: string;
 }) {
+  const q = query.toLowerCase().trim();
+  const show = (label: string) => !q || label.toLowerCase().includes(q);
   return (
-    <div className="flex flex-col gap-3">
-      <CollapsibleSection title="Mood">
-        <div className="flex gap-3">
+    <div className="flex flex-col gap-1">
+      {show("mood light dark theme") && <CollapsibleSection title="Mood">
+        <div className="flex gap-2">
           <SelectionCard
             label="Light"
             selected={design.mood === "light"}
             onClick={() => onUpdate("mood", "light")}
           >
-            <div className="flex h-[48px] w-[48px] items-center justify-center rounded-xl bg-white border border-separator/50">
+            <div className="flex h-[40px] w-[40px] items-center justify-center rounded-lg bg-white border border-separator/50">
               <svg
                 className="h-5 w-5 text-gray-300"
                 fill="none"
@@ -504,7 +540,7 @@ function DesignPanel({
             selected={design.mood === "dark"}
             onClick={() => onUpdate("mood", "dark")}
           >
-            <div className="flex h-[48px] w-[48px] items-center justify-center rounded-xl bg-[#1A1A2E]">
+            <div className="flex h-[40px] w-[40px] items-center justify-center rounded-lg bg-[#1A1A2E]">
               <svg
                 className="h-5 w-5 text-white"
                 fill="currentColor"
@@ -515,9 +551,9 @@ function DesignPanel({
             </div>
           </SelectionCard>
         </div>
-      </CollapsibleSection>
+      </CollapsibleSection>}
 
-      <CollapsibleSection title="Main Color">
+      {show("color main brand hex") && <CollapsibleSection title="Main Color">
         <div className="flex items-center gap-3">
           <input
             aria-label="Main color hex code"
@@ -571,10 +607,10 @@ function DesignPanel({
             />
           ))}
         </div>
-      </CollapsibleSection>
+      </CollapsibleSection>}
 
-      <CollapsibleSection title="Background Theme">
-        <div className="flex gap-3">
+      {show("background theme solid pattern gradient opacity") && <CollapsibleSection title="Background Theme">
+        <div className="flex gap-2">
           {(["solid", "pattern", "gradient"] as const).map((theme) => (
             <SelectionCard
               key={theme}
@@ -584,7 +620,7 @@ function DesignPanel({
             >
               <div
                 className={clsx(
-                  "h-[48px] w-[56px] rounded-lg",
+                  "h-[36px] w-[48px] rounded-md",
                   theme === "solid" &&
                     "bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800",
                   theme === "pattern" && "bg-[#F7F7F8] dark:bg-surface",
@@ -614,9 +650,9 @@ function DesignPanel({
             %{design.backgroundOpacity}
           </div>
         </div>
-      </CollapsibleSection>
+      </CollapsibleSection>}
 
-      <CollapsibleSection title="Typographies">
+      {show("typography font inter jakarta poppins sora grotesk") && <CollapsibleSection title="Typographies">
         <div className="grid grid-cols-3 gap-2">
           {(
             [
@@ -650,9 +686,9 @@ function DesignPanel({
               selected={design.typography === font.id}
               onClick={() => onUpdate("typography", font.id)}
             >
-              <div className="flex h-[48px] w-full items-center justify-center rounded-lg bg-[#F8F8FA] dark:bg-[#1a1a2e]">
+              <div className="flex h-[38px] w-full items-center justify-center rounded-md bg-[#F8F8FA] dark:bg-[#1a1a2e]">
                 <span
-                  className="text-[24px] font-bold text-foreground"
+                  className="text-[20px] font-bold text-foreground"
                   style={{ fontFamily: font.family }}
                 >
                   Aa
@@ -661,9 +697,9 @@ function DesignPanel({
             </SelectionCard>
           ))}
         </div>
-      </CollapsibleSection>
+      </CollapsibleSection>}
 
-      <CollapsibleSection title="Radius">
+      {show("radius border rounded corner") && <CollapsibleSection title="Radius">
         <div className="grid grid-cols-4 gap-2">
           {(
             [
@@ -688,17 +724,17 @@ function DesignPanel({
                 }
               >
                 <div
-                  className="h-[36px] w-full border-2 border-separator/40 bg-[#F8F8FA] dark:bg-[#1a1a2e]"
+                  className="h-[28px] w-full border-2 border-separator/40 bg-[#F8F8FA] dark:bg-[#1a1a2e]"
                   style={{ borderRadius: token.value }}
                 />
               </SelectionCard>
             );
           })}
         </div>
-      </CollapsibleSection>
+      </CollapsibleSection>}
 
       {/* ── HeroUI Color Tokens ── */}
-      <CollapsibleSection defaultOpen={false} title="Color Tokens">
+      {show("color token accent success warning danger") && <CollapsibleSection defaultOpen={false} title="Color Tokens">
         <div className="flex flex-col gap-2">
           <p className="text-[10px] text-muted mb-1">
             Semantic colors from HeroUI theme
@@ -757,10 +793,10 @@ function DesignPanel({
             </div>
           ))}
         </div>
-      </CollapsibleSection>
+      </CollapsibleSection>}
 
       {/* ── Border & Separator ── */}
-      <CollapsibleSection defaultOpen={false} title="Borders">
+      {show("border separator width style") && <CollapsibleSection defaultOpen={false} title="Borders">
         <div className="flex flex-col gap-3">
           <div>
             <p className="text-[11px] font-medium text-muted mb-2">
@@ -789,10 +825,10 @@ function DesignPanel({
             </div>
           </div>
         </div>
-      </CollapsibleSection>
+      </CollapsibleSection>}
 
       {/* ── Shadows ── */}
-      <CollapsibleSection defaultOpen={false} title="Shadows">
+      {show("shadow elevation") && <CollapsibleSection defaultOpen={false} title="Shadows">
         <div className="grid grid-cols-2 gap-2">
           {[
             { name: "None", shadow: "none" },
@@ -818,10 +854,10 @@ function DesignPanel({
             </div>
           ))}
         </div>
-      </CollapsibleSection>
+      </CollapsibleSection>}
 
       {/* ── Spacing ── */}
-      <CollapsibleSection defaultOpen={false} title="Spacing Scale">
+      {show("spacing padding margin gap") && <CollapsibleSection defaultOpen={false} title="Spacing Scale">
         <div className="flex flex-col gap-1">
           <p className="text-[10px] text-muted mb-1">
             Base: --spacing = 0.25rem (4px)
@@ -851,10 +887,10 @@ function DesignPanel({
             </div>
           ))}
         </div>
-      </CollapsibleSection>
+      </CollapsibleSection>}
 
       {/* ── Opacity ── */}
-      <CollapsibleSection defaultOpen={false} title="Opacity">
+      {show("opacity transparency") && <CollapsibleSection defaultOpen={false} title="Opacity">
         <div className="flex gap-2">
           {[100, 80, 60, 40, 20].map((o) => (
             <div className="flex flex-col items-center gap-1" key={o}>
@@ -869,10 +905,10 @@ function DesignPanel({
         <p className="text-[10px] text-muted mt-2">
           Disabled opacity: 0.5 (--disabled-opacity)
         </p>
-      </CollapsibleSection>
+      </CollapsibleSection>}
 
       {/* ── Animations ── */}
-      <CollapsibleSection defaultOpen={false} title="Animations">
+      {show("animation easing transition") && <CollapsibleSection defaultOpen={false} title="Animations">
         <div className="flex flex-col gap-2">
           <p className="text-[10px] text-muted">
             Easing curves from HeroUI theme
@@ -898,10 +934,10 @@ function DesignPanel({
             </div>
           ))}
         </div>
-      </CollapsibleSection>
+      </CollapsibleSection>}
 
       {/* ── Cursor ── */}
-      <CollapsibleSection defaultOpen={false} title="Cursor">
+      {show("cursor pointer disabled") && <CollapsibleSection defaultOpen={false} title="Cursor">
         <div className="flex gap-3">
           {[
             { name: "Interactive", value: "pointer", icon: "👆" },
@@ -917,7 +953,7 @@ function DesignPanel({
             </div>
           ))}
         </div>
-      </CollapsibleSection>
+      </CollapsibleSection>}
     </div>
   );
 }
@@ -925,16 +961,27 @@ function DesignPanel({
 // ── Templates Panel ──
 function TemplatesPanel({
   onSelect,
+  query,
 }: {
   onSelect: (template: Template) => void;
+  query: string;
 }) {
+  const q = query.toLowerCase().trim();
+  const filtered = q
+    ? TEMPLATES.filter(
+        (t) =>
+          t.name.toLowerCase().includes(q) ||
+          t.category.toLowerCase().includes(q),
+      )
+    : TEMPLATES;
+
   return (
     <div className="flex flex-col gap-3 pt-2">
-      <p className="text-[12px] text-muted leading-relaxed">
+      <p className="text-[11px] text-muted leading-relaxed">
         Choose a template to start with.
       </p>
       <div className="grid grid-cols-2 gap-3">
-        {TEMPLATES.map((template) => (
+        {filtered.map((template) => (
           <button
             className="group flex flex-col overflow-hidden rounded-xl border-2 border-separator/40 bg-white dark:bg-surface transition-all hover:border-[#634CF8]/40 hover:shadow-md active:scale-[0.98]"
             key={template.id}
@@ -964,6 +1011,55 @@ function TemplatesPanel({
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN SIDEBAR
 // ═══════════════════════════════════════════════════════════════════════════════
+
+// ── Sidebar Search Input ──
+function SidebarSearch({
+  placeholder,
+  value,
+  onChange,
+}: {
+  placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="relative">
+      <svg
+        className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+        />
+      </svg>
+      <input
+        className="w-full h-8 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface pl-9 pr-8 text-[11px] text-foreground outline-none focus:border-[#634CF8] placeholder:text-muted/50"
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            onChange("");
+            (e.target as HTMLInputElement).blur();
+          }
+        }}
+      />
+      {value && (
+        <button
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted hover:text-foreground"
+          onClick={() => onChange("")}
+        >
+          ✕
+        </button>
+      )}
+    </div>
+  );
+}
 
 // ── Nav Items ──
 const NAV_ITEMS: { id: SidebarPanel; icon: string; label: string }[] = [
@@ -997,30 +1093,38 @@ export function Sidebar({
   onPanelChange: (panel: SidebarPanel) => void;
   onTemplateSelect: (template: Template) => void;
 }) {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Clear search when switching tabs
+  const handlePanelChange = (panel: SidebarPanel) => {
+    setSearchQuery("");
+    onPanelChange(panel);
+  };
+
   return (
     <aside
       className="flex h-full shrink-0 border-r border-separator/50 bg-white dark:bg-background overflow-hidden"
       style={{ width: `${width}px` }}
     >
-      {/* Left icon strip — 48px wide vertical nav */}
-      <div className="flex flex-col w-12 shrink-0 border-r border-separator/50 bg-[#FAFAFA] dark:bg-[#0f0f1a] py-2">
+      {/* Left icon strip — vertical on desktop, horizontal bottom bar on mobile */}
+      <div className="flex w-full md:w-12 md:flex-col shrink-0 border-t md:border-t-0 md:border-r border-separator/50 bg-[#FAFAFA] dark:bg-[#0f0f1a] py-1 md:py-2 overflow-x-auto md:overflow-x-visible order-last md:order-first">
         {NAV_ITEMS.map((item) => {
           const isActive = activePanel === item.id;
           return (
             <button
               key={item.id}
               className={clsx(
-                "relative flex flex-col items-center justify-center gap-0.5 w-full py-2.5 transition-colors outline-none",
+                "relative flex flex-col items-center justify-center gap-0.5 py-1.5 md:py-2.5 px-3 md:px-0 md:w-full transition-colors outline-none",
                 isActive
                   ? "text-[#634CF8] bg-[#634CF8]/5"
                   : "text-muted hover:text-foreground hover:bg-surface",
               )}
               title={item.label}
-              onClick={() => onPanelChange(item.id)}
+              onClick={() => handlePanelChange(item.id)}
             >
-              {/* Active left border indicator */}
+              {/* Active left border indicator (desktop only) */}
               {isActive && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-[#634CF8]" />
+                <div className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-[#634CF8]" />
               )}
               <span className="text-base leading-none">{item.icon}</span>
               <span className="text-[9px] font-medium leading-tight">{item.label}</span>
@@ -1031,17 +1135,27 @@ export function Sidebar({
 
       {/* Right content area */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 min-w-0">
-        {/* Sticky BlockSearch above all panels */}
-        <div className="sticky top-0 z-10 bg-white dark:bg-background pt-3 pb-2 mt-3">
-          <BlockSearch />
+        {/* Sticky search above all panels */}
+        <div className="sticky top-0 z-10 bg-white dark:bg-background pt-3 pb-2">
+          <SidebarSearch
+            placeholder={
+              activePanel === "blocks" ? "Search blocks..."
+              : activePanel === "components" ? "Search components..."
+              : activePanel === "design" ? "Search design options..."
+              : activePanel === "templates" ? "Search templates..."
+              : "Search..."
+            }
+            value={searchQuery}
+            onChange={setSearchQuery}
+          />
         </div>
-        {activePanel === "blocks" && <BlocksPanel />}
-        {activePanel === "components" && <ComponentsPanel />}
+        {activePanel === "blocks" && <BlocksPanel query={searchQuery} />}
+        {activePanel === "components" && <ComponentsPanel query={searchQuery} />}
         {activePanel === "design" && (
-          <DesignPanel design={design} onUpdate={onDesignUpdate} />
+          <DesignPanel design={design} onUpdate={onDesignUpdate} query={searchQuery} />
         )}
         {activePanel === "templates" && (
-          <TemplatesPanel onSelect={onTemplateSelect} />
+          <TemplatesPanel onSelect={onTemplateSelect} query={searchQuery} />
         )}
         {activePanel === "pages" && pagesPanel}
         {activePanel === "menus" && menusPanel}
