@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { useState, useRef } from "react";
 import { Tabs, Switch, Label } from "@heroui/react";
+import { X, ChevronUp, ChevronDown, Copy, Trash2 } from "lucide-react";
 
 import type { BlockInstance, BlockType, BlockStyleOverrides } from "../types";
 import type { Page } from "../pages";
@@ -150,19 +151,7 @@ export function RightPanel({
           title="Deselect"
           onClick={onDeselect}
         >
-          <svg
-            className="h-3.5 w-3.5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M6 18L18 6M6 6l12 12"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-            />
-          </svg>
+          <X size={14} />
         </button>
       </div>
 
@@ -170,25 +159,25 @@ export function RightPanel({
       <div className="flex items-center gap-0.5 px-3 py-2 border-b border-separator/40">
         <ActionBtn
           disabled={isFirst}
-          icon="↑"
+          icon={<ChevronUp size={14} />}
           label="Up"
           onClick={() => onMoveUp(block.id)}
         />
         <ActionBtn
           disabled={isLast}
-          icon="↓"
+          icon={<ChevronDown size={14} />}
           label="Down"
           onClick={() => onMoveDown(block.id)}
         />
         <ActionBtn
-          icon="⧉"
+          icon={<Copy size={14} />}
           label="Copy"
           onClick={() => onDuplicate(block.id)}
         />
         <div className="flex-1" />
         <ActionBtn
           danger
-          icon="✕"
+          icon={<Trash2 size={14} />}
           label="Delete"
           onClick={() => onDelete(block.id)}
         />
@@ -1782,7 +1771,7 @@ function ActionBtn({
   disabled,
   onClick,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   danger?: boolean;
   disabled?: boolean;
@@ -1801,7 +1790,7 @@ function ActionBtn({
       title={label}
       onClick={onClick}
     >
-      <span className="text-[11px]">{icon}</span>
+      <span className="text-[11px] flex items-center">{icon}</span>
       {label}
     </button>
   );

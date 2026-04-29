@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { Slider } from "@heroui/react";
 import clsx from "clsx";
+import { ChevronUp, GripVertical, Search, LayoutGrid, Component, Palette, FileText, Files, Menu, Sun, Moon } from "lucide-react";
 
 import type {
   BlockDefinition,
@@ -51,22 +52,12 @@ function CollapsibleSection({
             </span>
           )}
         </span>
-        <svg
+        <ChevronUp
           className={clsx(
             "h-3 w-3 text-muted transition-transform duration-200",
             !isOpen && "rotate-180",
           )}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            d="M18 15l-6-6-6 6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-          />
-        </svg>
+        />
       </button>
       <div
         className={clsx(
@@ -135,18 +126,7 @@ function DraggableBlockCardList({ block }: { block: BlockDefinition }) {
         </span>
         <span className="text-[9px] text-muted/60">{block.description}</span>
       </div>
-      <svg
-        className="h-3.5 w-3.5 text-muted/30 shrink-0"
-        fill="currentColor"
-        viewBox="0 0 16 16"
-      >
-        <circle cx="5" cy="4" r="1" />
-        <circle cx="11" cy="4" r="1" />
-        <circle cx="5" cy="8" r="1" />
-        <circle cx="11" cy="8" r="1" />
-        <circle cx="5" cy="12" r="1" />
-        <circle cx="11" cy="12" r="1" />
-      </svg>
+      <GripVertical size={14} className="text-muted/30 shrink-0" />
     </div>
   );
 }
@@ -312,18 +292,7 @@ function DraggableComponentCard({
         </span>
       </div>
       {/* Drag indicator */}
-      <svg
-        className="h-3.5 w-3.5 text-muted/30 shrink-0"
-        fill="currentColor"
-        viewBox="0 0 16 16"
-      >
-        <circle cx="5" cy="4" r="1" />
-        <circle cx="11" cy="4" r="1" />
-        <circle cx="5" cy="8" r="1" />
-        <circle cx="11" cy="8" r="1" />
-        <circle cx="5" cy="12" r="1" />
-        <circle cx="11" cy="12" r="1" />
-      </svg>
+      <GripVertical size={14} className="text-muted/30 shrink-0" />
     </div>
   );
 }
@@ -520,19 +489,7 @@ function DesignPanel({
             onClick={() => onUpdate("mood", "light")}
           >
             <div className="flex h-[40px] w-[40px] items-center justify-center rounded-lg bg-white border border-separator/50">
-              <svg
-                className="h-5 w-5 text-gray-300"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                />
-              </svg>
+              <Sun className="h-5 w-5 text-gray-300" />
             </div>
           </SelectionCard>
           <SelectionCard
@@ -541,13 +498,7 @@ function DesignPanel({
             onClick={() => onUpdate("mood", "dark")}
           >
             <div className="flex h-[40px] w-[40px] items-center justify-center rounded-lg bg-[#1A1A2E]">
-              <svg
-                className="h-5 w-5 text-white"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-              </svg>
+              <Moon className="h-5 w-5 text-white" />
             </div>
           </SelectionCard>
         </div>
@@ -1024,19 +975,9 @@ function SidebarSearch({
 }) {
   return (
     <div className="relative">
-      <svg
+      <Search
         className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-        />
-      </svg>
+      />
       <input
         className="w-full h-8 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface pl-9 pr-8 text-[11px] text-foreground outline-none focus:border-[#634CF8] placeholder:text-muted/50"
         placeholder={placeholder}
@@ -1062,13 +1003,13 @@ function SidebarSearch({
 }
 
 // ── Nav Items ──
-const NAV_ITEMS: { id: SidebarPanel; icon: string; label: string }[] = [
-  { id: "blocks", icon: "📐", label: "Blocks" },
-  { id: "components", icon: "🔘", label: "UI" },
-  { id: "design", icon: "🎨", label: "Design" },
-  { id: "templates", icon: "📋", label: "Tpl" },
-  { id: "pages", icon: "📄", label: "Pages" },
-  { id: "menus", icon: "☰", label: "Menus" },
+const NAV_ITEMS: { id: SidebarPanel; icon: React.ReactNode; label: string }[] = [
+  { id: "blocks", icon: <LayoutGrid size={16} />, label: "Blocks" },
+  { id: "components", icon: <Component size={16} />, label: "UI" },
+  { id: "design", icon: <Palette size={16} />, label: "Design" },
+  { id: "templates", icon: <FileText size={16} />, label: "Tpl" },
+  { id: "pages", icon: <Files size={16} />, label: "Pages" },
+  { id: "menus", icon: <Menu size={16} />, label: "Menus" },
 ];
 
 export function Sidebar({
@@ -1126,7 +1067,7 @@ export function Sidebar({
               {isActive && (
                 <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-[#634CF8]" />
               )}
-              <span className="text-base leading-none">{item.icon}</span>
+              <span className="text-base leading-none flex items-center justify-center">{item.icon}</span>
               <span className="text-[9px] font-medium leading-tight">{item.label}</span>
             </button>
           );

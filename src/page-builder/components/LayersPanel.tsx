@@ -16,6 +16,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import clsx from "clsx";
+import { ChevronRight, ChevronUp, ChevronDown, Copy, X, GripVertical } from "lucide-react";
 import type { BlockInstance, BlockStyleOverrides } from "../types";
 import { BLOCK_DEFINITIONS } from "../data";
 import { flattenTree, type FlattenedBlock } from "../tree-utils";
@@ -395,13 +396,13 @@ function SortableLayerRow({
     >
       {/* Drag Handle */}
       <button
-        className="h-4 w-4 flex items-center justify-center rounded text-[10px] text-muted/40 hover:text-muted cursor-grab active:cursor-grabbing shrink-0"
+        className="h-4 w-4 flex items-center justify-center rounded text-muted/40 hover:text-muted cursor-grab active:cursor-grabbing shrink-0"
         {...attributes}
         {...listeners}
         title="Drag to reorder"
         onClick={(e) => e.stopPropagation()}
       >
-        ⠿
+        <GripVertical size={12} />
       </button>
 
       {/* Indent spacer */}
@@ -410,21 +411,20 @@ function SortableLayerRow({
       {/* Expand/Collapse Chevron */}
       {isContainer ? (
         <button
-          className="h-4 w-4 flex items-center justify-center rounded text-[10px] text-muted hover:text-foreground shrink-0 transition-transform"
+          className="h-4 w-4 flex items-center justify-center rounded text-muted hover:text-foreground shrink-0 transition-transform"
           title={isExpanded ? "Collapse" : "Expand"}
           onClick={(e) => {
             e.stopPropagation();
             onToggleExpand(block.id);
           }}
         >
-          <span
+          <ChevronRight
+            size={12}
             className={clsx(
-              "inline-block transition-transform duration-150",
+              "transition-transform duration-150",
               isExpanded ? "rotate-90" : "rotate-0"
             )}
-          >
-            ▶
-          </span>
+          />
         </button>
       ) : (
         <span className="w-4 shrink-0" />
@@ -461,7 +461,7 @@ function SortableLayerRow({
       {/* Actions */}
       <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
-          className="h-5 w-5 flex items-center justify-center rounded text-[9px] text-muted hover:text-foreground hover:bg-white dark:hover:bg-background disabled:opacity-20"
+          className="h-5 w-5 flex items-center justify-center rounded text-muted hover:text-foreground hover:bg-white dark:hover:bg-background disabled:opacity-20"
           disabled={siblingInfo.index === 0}
           title="Move up"
           onClick={(e) => {
@@ -469,10 +469,10 @@ function SortableLayerRow({
             onMoveUp(block.id);
           }}
         >
-          ↑
+          <ChevronUp size={12} />
         </button>
         <button
-          className="h-5 w-5 flex items-center justify-center rounded text-[9px] text-muted hover:text-foreground hover:bg-white dark:hover:bg-background disabled:opacity-20"
+          className="h-5 w-5 flex items-center justify-center rounded text-muted hover:text-foreground hover:bg-white dark:hover:bg-background disabled:opacity-20"
           disabled={siblingInfo.index === siblingInfo.total - 1}
           title="Move down"
           onClick={(e) => {
@@ -480,27 +480,27 @@ function SortableLayerRow({
             onMoveDown(block.id);
           }}
         >
-          ↓
+          <ChevronDown size={12} />
         </button>
         <button
-          className="h-5 w-5 flex items-center justify-center rounded text-[9px] text-muted hover:text-foreground hover:bg-white dark:hover:bg-background"
+          className="h-5 w-5 flex items-center justify-center rounded text-muted hover:text-foreground hover:bg-white dark:hover:bg-background"
           title="Duplicate"
           onClick={(e) => {
             e.stopPropagation();
             onDuplicate(block.id);
           }}
         >
-          ⧉
+          <Copy size={12} />
         </button>
         <button
-          className="h-5 w-5 flex items-center justify-center rounded text-[9px] text-danger hover:bg-danger/10"
+          className="h-5 w-5 flex items-center justify-center rounded text-danger hover:bg-danger/10"
           title="Delete"
           onClick={(e) => {
             e.stopPropagation();
             onDelete(block.id);
           }}
         >
-          ✕
+          <X size={12} />
         </button>
       </div>
     </div>

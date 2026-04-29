@@ -6,6 +6,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import clsx from "clsx";
+import { GripVertical, X } from "lucide-react";
 
 import type { BlockInstance, DesignSettings } from "../types";
 import { BLOCK_DEFINITIONS } from "../data";
@@ -89,14 +90,7 @@ function SortableBlock({
           {...attributes}
           {...listeners}
         >
-          <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 16 16">
-            <circle cx="5" cy="4" r="1.2" />
-            <circle cx="11" cy="4" r="1.2" />
-            <circle cx="5" cy="8" r="1.2" />
-            <circle cx="11" cy="8" r="1.2" />
-            <circle cx="5" cy="12" r="1.2" />
-            <circle cx="11" cy="12" r="1.2" />
-          </svg>
+          <GripVertical size={12} />
         </button>
         <button
           className="flex h-6 w-6 items-center justify-center rounded-md bg-white/90 dark:bg-surface/90 backdrop-blur-sm border border-separator/50 text-muted hover:text-danger hover:border-danger/30 shadow-sm transition-colors"
@@ -106,19 +100,7 @@ function SortableBlock({
             onDelete();
           }}
         >
-          <svg
-            className="h-3 w-3"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M6 18L18 6M6 6l12 12"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-            />
-          </svg>
+          <X size={12} />
         </button>
       </div>
 

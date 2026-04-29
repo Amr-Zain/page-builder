@@ -1,5 +1,6 @@
 import { Button, Tooltip } from "@heroui/react";
 import clsx from "clsx";
+import { Monitor, Tablet, Smartphone, Undo2, Redo2, PanelLeft, PanelRight, Moon, Sun } from "lucide-react";
 
 export function Toolbar({
   previewMode,
@@ -42,59 +43,17 @@ export function Toolbar({
     {
       id: "desktop" as const,
       label: "Desktop",
-      icon: (
-        <svg
-          className="h-4 w-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-          />
-        </svg>
-      ),
+      icon: <Monitor size={16} />,
     },
     {
       id: "tablet" as const,
       label: "Tablet",
-      icon: (
-        <svg
-          className="h-4 w-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            d="M12 18h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-          />
-        </svg>
-      ),
+      icon: <Tablet size={16} />,
     },
     {
       id: "mobile" as const,
       label: "Mobile",
-      icon: (
-        <svg
-          className="h-4 w-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-          />
-        </svg>
-      ),
+      icon: <Smartphone size={16} />,
     },
   ];
 
@@ -120,19 +79,7 @@ export function Toolbar({
             )}
             onClick={onToggleLeftSidebar}
           >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M3 3h7v18H3zM10 3h11v18H10"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-              />
-            </svg>
+            <PanelLeft size={16} />
           </button>
           <Tooltip.Content>
             <p className="text-xs">
@@ -152,19 +99,7 @@ export function Toolbar({
             )}
             onClick={onToggleRightSidebar}
           >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M14 3h7v18h-7zM3 3h11v18H3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-              />
-            </svg>
+            <PanelRight size={16} />
           </button>
           <Tooltip.Content>
             <p className="text-xs">
@@ -184,19 +119,7 @@ export function Toolbar({
               disabled={!canUndo}
               onClick={onUndo}
             >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M3 10h10a5 5 0 015 5v2M3 10l4-4M3 10l4 4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                />
-              </svg>
+              <Undo2 size={16} />
             </button>
             <Tooltip.Content>
               <p className="text-xs">Undo</p>
@@ -208,19 +131,7 @@ export function Toolbar({
               disabled={!canRedo}
               onClick={onRedo}
             >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M21 10H11a5 5 0 00-5 5v2M21 10l-4-4M21 10l-4 4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                />
-              </svg>
+              <Redo2 size={16} />
             </button>
             <Tooltip.Content>
               <p className="text-xs">Redo</p>
@@ -290,33 +201,9 @@ export function Toolbar({
             onClick={() => onThemeChange(theme === "light" ? "dark" : "light")}
           >
             {theme === "light" ? (
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                />
-              </svg>
+              <Moon size={16} />
             ) : (
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                />
-              </svg>
+              <Sun size={16} />
             )}
           </button>
           <Tooltip.Content>

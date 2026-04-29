@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Button, Tooltip } from "@heroui/react";
+import { CornerLeftUp, Copy, Trash2 } from "lucide-react";
 
 import type { BlockInstance } from "../types";
 import { BLOCK_DEFINITIONS } from "../data";
@@ -120,19 +121,7 @@ export function ActionBar({
                 onPress={onSelectParent}
                 className="text-background/70 dark:text-foreground/70 hover:text-background dark:hover:text-foreground h-7 w-7 min-w-7"
               >
-                <svg
-                  className="h-3.5 w-3.5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M9 11l-4 4m0 0l4 4m-4-4h11a4 4 0 000-8h-1"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                  />
-                </svg>
+                <CornerLeftUp size={14} />
               </Button>
               <Tooltip.Content>
                 <p>Select Parent</p>
@@ -156,19 +145,7 @@ export function ActionBar({
               onPress={onDuplicate}
               className="text-background/70 dark:text-foreground/70 hover:text-background dark:hover:text-foreground h-7 w-7 min-w-7"
             >
-              <svg
-                className="h-3.5 w-3.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                />
-              </svg>
+              <Copy size={14} />
             </Button>
             <Tooltip.Content>
               <p>Duplicate</p>
@@ -183,19 +160,7 @@ export function ActionBar({
               onPress={onDelete}
               className="text-background/70 dark:text-foreground/70 hover:text-danger h-7 w-7 min-w-7"
             >
-              <svg
-                className="h-3.5 w-3.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                />
-              </svg>
+              <Trash2 size={14} />
             </Button>
             <Tooltip.Content>
               <p>Delete</p>
