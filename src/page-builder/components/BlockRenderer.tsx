@@ -10,17 +10,26 @@ function radiusValue(token: string): string {
   return t ? t.value : "0.5rem";
 }
 
+/** Check if preview is mobile-sized (mobile or tablet) */
+function isMobile(previewMode?: string): boolean {
+  return previewMode === "mobile";
+}
+function isTabletOrMobile(previewMode?: string): boolean {
+  return previewMode === "mobile" || previewMode === "tablet";
+}
+
 /** Shared renderer props */
 interface RendererProps {
   props: Record<string, unknown>;
   design: DesignSettings;
+  previewMode?: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Navbar
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function NavbarBlock({ props, design }: RendererProps) {
+function NavbarBlock({ props, design, previewMode }: RendererProps) {
   const logo = (props.logo as string) || "Acme";
   const links = (props.links as string[]) || [
     "Products",
@@ -28,21 +37,28 @@ function NavbarBlock({ props, design }: RendererProps) {
     "Pricing",
     "Docs",
   ];
+  const mobile = isMobile(previewMode);
 
   return (
-    <nav className="flex items-center justify-between px-8 py-4 border-b border-separator/50">
-      <div className="flex items-center gap-10">
+    <nav className={clsx(
+      "flex items-center justify-between border-b border-separator/50",
+      mobile ? "flex-wrap gap-2 px-4 py-3" : "flex-row px-4 sm:px-8 py-4 gap-3 sm:gap-0",
+    )}>
+      <div className={clsx("flex items-center", mobile ? "gap-4" : "gap-10")}>
         <span
-          className="text-xl font-bold tracking-tight"
+          className={clsx("font-bold tracking-tight", mobile ? "text-base" : "text-xl")}
           style={{ color: `#${design.mainColor}` }}
         >
           ◆ {logo}
         </span>
-        <div className="hidden md:flex items-center gap-8">
+        <div className={clsx("flex items-center flex-wrap", mobile ? "gap-2" : "gap-4 md:gap-8")}>
           {links.map((link, i) => (
             <span
               key={i}
-              className="text-sm text-muted hover:text-foreground cursor-pointer transition-colors font-medium"
+              className={clsx(
+                "text-muted hover:text-foreground cursor-pointer transition-colors font-medium",
+                mobile ? "text-xs" : "text-sm",
+              )}
             >
               {link}
             </span>
@@ -50,9 +66,11 @@ function NavbarBlock({ props, design }: RendererProps) {
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <span className="text-sm text-muted hover:text-foreground cursor-pointer transition-colors font-medium">
-          Log in
-        </span>
+        {!mobile && (
+          <span className="text-sm text-muted hover:text-foreground cursor-pointer transition-colors font-medium">
+            Log in
+          </span>
+        )}
         <Button
           size="sm"
           style={{
@@ -88,7 +106,7 @@ function HeroBlock({ props, design }: RendererProps) {
           backgroundImage: `radial-gradient(circle at 25% 25%, #${design.mainColor} 0%, transparent 50%), radial-gradient(circle at 75% 75%, #${design.mainColor} 0%, transparent 50%)`,
         }}
       />
-      <div className="relative px-8 py-24 md:py-32 max-w-5xl mx-auto">
+      <div className="relative px-4 sm:px-8 py-16 sm:py-24 md:py-32 max-w-5xl mx-auto">
         <div className="flex flex-col items-center text-center gap-6">
           <div
             className="inline-flex items-center gap-2 px-3 py-1 text-xs font-medium rounded-full border border-separator"
@@ -100,13 +118,13 @@ function HeroBlock({ props, design }: RendererProps) {
             />
             Now in public beta — See what&apos;s new
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold leading-[1.1] tracking-tight text-foreground max-w-3xl">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-[1.1] tracking-tight text-foreground max-w-3xl">
             {headline}
           </h1>
-          <p className="text-lg md:text-xl text-muted max-w-2xl leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-muted max-w-2xl leading-relaxed">
             {subtitle}
           </p>
-          <div className="flex items-center gap-4 mt-4">
+          <div className="flex flex-col sm:flex-row items-center gap-4 mt-4">
             <Button
               size="lg"
               style={{
@@ -153,8 +171,9 @@ function HeroBlock({ props, design }: RendererProps) {
 // Features
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function FeaturesBlock({ props, design }: RendererProps) {
+function FeaturesBlock({ props, design, previewMode }: RendererProps) {
   const title = (props.title as string) || "Everything you need to ship fast";
+  const mobile = isMobile(previewMode);
   const subtitle =
     (props.subtitle as string) ||
     "Powerful features designed for modern teams. No compromises.";
@@ -190,14 +209,17 @@ function FeaturesBlock({ props, design }: RendererProps) {
   ];
 
   return (
-    <div className="px-8 py-20 max-w-6xl mx-auto">
-      <div className="text-center mb-14">
+    <div className="px-4 sm:px-8 py-16 sm:py-20 max-w-6xl mx-auto">
+      <div className="text-center mb-10 sm:mb-14">
         <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
           {title}
         </h2>
         <p className="mt-4 text-lg text-muted max-w-2xl mx-auto">{subtitle}</p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className={clsx(
+        "grid gap-6",
+        mobile ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+      )}>
         {items.map((item, i) => (
           <Card
             key={i}
@@ -242,7 +264,7 @@ function ContentBlock({ props }: RendererProps) {
     "Our platform handles the complexity of modern development — from CI/CD pipelines to infrastructure management — so your team can move faster without sacrificing quality or reliability. Thousands of companies trust us to power their most critical workflows.";
 
   return (
-    <div className="px-8 py-16 max-w-3xl mx-auto">
+    <div className="px-4 sm:px-8 py-12 sm:py-16 max-w-3xl mx-auto">
       <h2 className="text-3xl font-bold text-foreground tracking-tight mb-6">
         {heading}
       </h2>
@@ -258,8 +280,10 @@ function ContentBlock({ props }: RendererProps) {
 // Testimonials
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function TestimonialsBlock({ props, design }: RendererProps) {
+function TestimonialsBlock({ props, design, previewMode }: RendererProps) {
   const title = (props.title as string) || "Loved by teams worldwide";
+  const mobile = isMobile(previewMode);
+  const tablet = isTabletOrMobile(previewMode);
   const testimonials = [
     {
       quote:
@@ -285,13 +309,16 @@ function TestimonialsBlock({ props, design }: RendererProps) {
   ];
 
   return (
-    <div className="px-8 py-20 max-w-6xl mx-auto">
-      <div className="text-center mb-14">
+    <div className="px-4 sm:px-8 py-16 sm:py-20 max-w-6xl mx-auto">
+      <div className="text-center mb-10 sm:mb-14">
         <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
           {title}
         </h2>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className={clsx(
+        "grid gap-6",
+        mobile ? "grid-cols-1" : tablet ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+      )}>
         {testimonials.map((t, i) => (
           <Card
             key={i}
@@ -334,8 +361,10 @@ function TestimonialsBlock({ props, design }: RendererProps) {
 // Pricing
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function PricingBlock({ props, design }: RendererProps) {
+function PricingBlock({ props, design, previewMode }: RendererProps) {
   const title = (props.title as string) || "Simple, transparent pricing";
+  const mobile = isMobile(previewMode);
+  const tablet = isTabletOrMobile(previewMode);
   const subtitle =
     (props.subtitle as string) || "No hidden fees. Cancel anytime.";
 
@@ -389,14 +418,17 @@ function PricingBlock({ props, design }: RendererProps) {
   ];
 
   return (
-    <div className="px-8 py-20 max-w-6xl mx-auto">
-      <div className="text-center mb-14">
+    <div className="px-4 sm:px-8 py-16 sm:py-20 max-w-6xl mx-auto">
+      <div className="text-center mb-10 sm:mb-14">
         <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
           {title}
         </h2>
         <p className="mt-4 text-lg text-muted">{subtitle}</p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+      <div className={clsx(
+        "grid gap-6 items-start",
+        mobile ? "grid-cols-1" : tablet ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+      )}>
         {tiers.map((tier) => (
           <Card
             key={tier.name}
@@ -469,24 +501,31 @@ function PricingBlock({ props, design }: RendererProps) {
 // Stats
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function StatsBlock({ props, design }: RendererProps) {
+function StatsBlock({ props, design, previewMode }: RendererProps) {
   const items = (props.items as Array<{ value: string; label: string }>) || [
     { value: "50K+", label: "Active developers" },
     { value: "99.99%", label: "Uptime SLA" },
     { value: "150ms", label: "Avg. response time" },
     { value: "2M+", label: "Deployments per month" },
   ];
+  const mobile = isMobile(previewMode);
 
   return (
     <div
-      className="px-8 py-20"
+      className="px-4 sm:px-8 py-16 sm:py-20"
       style={{ backgroundColor: `#${design.mainColor}06` }}
     >
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto text-center">
+      <div className={clsx(
+        "grid gap-6 sm:gap-8 max-w-5xl mx-auto text-center",
+        mobile ? "grid-cols-2" : "grid-cols-2 md:grid-cols-4",
+      )}>
         {items.map((item, i) => (
           <div key={i} className="flex flex-col items-center">
             <span
-              className="text-4xl md:text-5xl font-bold tracking-tight"
+              className={clsx(
+                "font-bold tracking-tight",
+                mobile ? "text-2xl" : "text-4xl md:text-5xl",
+              )}
               style={{ color: `#${design.mainColor}` }}
             >
               {item.value}
@@ -505,8 +544,9 @@ function StatsBlock({ props, design }: RendererProps) {
 // Team
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function TeamBlock({ props, design }: RendererProps) {
+function TeamBlock({ props, design, previewMode }: RendererProps) {
   const title = (props.title as string) || "Meet the team";
+  const mobile = isMobile(previewMode);
   const subtitle =
     (props.subtitle as string) ||
     "The people behind the product. We're a small, focused team passionate about developer tools.";
@@ -535,14 +575,17 @@ function TeamBlock({ props, design }: RendererProps) {
   ];
 
   return (
-    <div className="px-8 py-20 max-w-5xl mx-auto">
-      <div className="text-center mb-14">
+    <div className="px-4 sm:px-8 py-16 sm:py-20 max-w-5xl mx-auto">
+      <div className="text-center mb-10 sm:mb-14">
         <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
           {title}
         </h2>
         <p className="mt-4 text-lg text-muted max-w-2xl mx-auto">{subtitle}</p>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div className={clsx(
+        "grid gap-8",
+        mobile ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-4",
+      )}>
         {members.map((m, i) => (
           <div key={i} className="text-center group">
             <div
@@ -598,8 +641,8 @@ function FAQBlock({ props, design }: RendererProps) {
   ];
 
   return (
-    <div className="px-8 py-20 max-w-3xl mx-auto">
-      <div className="text-center mb-14">
+    <div className="px-4 sm:px-8 py-16 sm:py-20 max-w-3xl mx-auto">
+      <div className="text-center mb-10 sm:mb-14">
         <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
           {title}
         </h2>
@@ -628,8 +671,9 @@ function FAQBlock({ props, design }: RendererProps) {
 // Gallery
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function GalleryBlock({ props, design }: RendererProps) {
+function GalleryBlock({ props, design, previewMode }: RendererProps) {
   const title = (props.title as string) || "Gallery";
+  const mobile = isMobile(previewMode);
   const images = [
     "https://img.heroui.chat/image/ai?w=800&h=400&u=10",
     "https://img.heroui.chat/image/ai?w=800&h=400&u=11",
@@ -640,13 +684,16 @@ function GalleryBlock({ props, design }: RendererProps) {
   ];
 
   return (
-    <div className="px-8 py-20 max-w-6xl mx-auto">
+    <div className="px-4 sm:px-8 py-16 sm:py-20 max-w-6xl mx-auto">
       {title && (
-        <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight text-center mb-12">
+        <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight text-center mb-8 sm:mb-12">
           {title}
         </h2>
       )}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className={clsx(
+        "grid gap-4",
+        mobile ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3",
+      )}>
         {images.map((src, i) => (
           <div
             key={i}
@@ -680,7 +727,7 @@ function CTABlock({ props, design }: RendererProps) {
 
   return (
     <div
-      className="relative overflow-hidden px-8 py-20"
+      className="relative overflow-hidden px-4 py-12 sm:px-8 sm:py-16 md:px-12 md:py-20"
       style={{ backgroundColor: `#${design.mainColor}` }}
     >
       <div
@@ -697,7 +744,7 @@ function CTABlock({ props, design }: RendererProps) {
         <p className="mt-4 text-lg text-white/80 max-w-xl mx-auto">
           {subtitle}
         </p>
-        <div className="flex items-center justify-center gap-4 mt-8">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
           <Button
             size="lg"
             style={{
@@ -730,15 +777,19 @@ function CTABlock({ props, design }: RendererProps) {
 // Contact
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function ContactBlock({ props, design }: RendererProps) {
+function ContactBlock({ props, design, previewMode }: RendererProps) {
   const title = (props.title as string) || "Get in touch";
+  const mobile = isMobile(previewMode);
   const subtitle =
     (props.subtitle as string) ||
     "Have a question or want to work together? Drop us a message.";
 
   return (
-    <div className="px-8 py-20 max-w-5xl mx-auto">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+    <div className="px-4 sm:px-8 py-16 sm:py-20 max-w-5xl mx-auto">
+      <div className={clsx(
+        "grid gap-10",
+        mobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 md:gap-16",
+      )}>
         <div>
           <h2 className="text-3xl font-bold text-foreground tracking-tight">
             {title}
@@ -841,11 +892,11 @@ function LogosBlock({ props }: RendererProps) {
   const logos = ["Vercel", "Stripe", "Linear", "Notion", "Figma", "GitHub"];
 
   return (
-    <div className="px-8 py-16">
-      <p className="text-center text-xs uppercase tracking-widest text-muted font-medium mb-10">
+    <div className="px-4 sm:px-8 py-12 sm:py-16">
+      <p className="text-center text-xs uppercase tracking-widest text-muted font-medium mb-8 sm:mb-10">
         {title}
       </p>
-      <div className="flex items-center justify-center gap-12 flex-wrap max-w-4xl mx-auto">
+      <div className="flex items-center justify-center gap-6 sm:gap-12 flex-wrap max-w-4xl mx-auto">
         {logos.map((name, i) => (
           <div
             key={i}
@@ -886,9 +937,10 @@ function BannerBlock({ props, design }: RendererProps) {
 // Footer
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function FooterBlock({ props, design }: RendererProps) {
+function FooterBlock({ props, design, previewMode }: RendererProps) {
   const copyright =
     (props.copyright as string) || "© 2025 Acme Inc. All rights reserved.";
+  const mobile = isMobile(previewMode);
 
   const columns = [
     {
@@ -910,10 +962,13 @@ function FooterBlock({ props, design }: RendererProps) {
   ];
 
   return (
-    <footer className="px-8 py-16 border-t border-separator/50">
+    <footer className="px-4 sm:px-8 py-12 sm:py-16 border-t border-separator/50">
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
-          <div className="col-span-2 md:col-span-1">
+        <div className={clsx(
+          "grid gap-8",
+          mobile ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5",
+        )}>
+          <div className={mobile ? "col-span-2" : "col-span-2 sm:col-span-3 lg:col-span-1"}>
             <span
               className="text-lg font-bold tracking-tight"
               style={{ color: `#${design.mainColor}` }}
@@ -966,7 +1021,7 @@ function FooterBlock({ props, design }: RendererProps) {
 
 function TextBlock({ props }: RendererProps) {
   return (
-    <div className="px-8 py-10 max-w-3xl mx-auto">
+    <div className="px-4 sm:px-8 py-8 sm:py-10 max-w-3xl mx-auto">
       <p className="text-base text-foreground leading-relaxed">
         {(props.content as string) ||
           "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."}
@@ -987,7 +1042,7 @@ function ImageBlock({ props, design }: RendererProps) {
   const caption = props.caption as string | undefined;
 
   return (
-    <div className="px-8 py-8 max-w-4xl mx-auto">
+    <div className="px-4 sm:px-8 py-6 sm:py-8 max-w-4xl mx-auto">
       <div
         className="overflow-hidden border border-separator/40"
         style={{ borderRadius: radiusValue(design.radius) }}
@@ -1183,10 +1238,17 @@ function ColumnsBlock({ props, design }: RendererProps) {
   const cols = Array.from({ length: count }, (_, i) => i + 1);
 
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 sm:px-8 py-8">
       <div
-        className="grid gap-6"
-        style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }}
+        className={clsx(
+          "grid gap-6",
+          "grid-cols-1",
+          count === 2 && "md:grid-cols-2",
+          count === 3 && "md:grid-cols-3",
+          count >= 4 && "sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
+          count >= 5 && "lg:grid-cols-5",
+          count >= 6 && "lg:grid-cols-6",
+        )}
       >
         {cols.map((col) => (
           <div
@@ -1511,10 +1573,7 @@ export function BlockRenderer({
   return (
     <div
       className={clsx(
-        "relative group cursor-pointer transition-all",
-        isSelected
-          ? "ring-2 ring-[#634CF8] ring-offset-2 rounded-lg"
-          : "hover:ring-1 hover:ring-[#634CF8]/30 hover:ring-offset-1 rounded-lg",
+        "relative group cursor-pointer transition-all rounded-lg",
         animationClass,
         cssClass,
       )}
@@ -1536,7 +1595,7 @@ export function BlockRenderer({
         {block.type}
       </div>
 
-      <Renderer design={design} props={block.props} />
+      <Renderer design={design} props={block.props} previewMode={previewMode} />
 
       {/* Responsive visibility overlay */}
       {hiddenForViewport && (
