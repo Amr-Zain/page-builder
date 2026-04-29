@@ -1129,19 +1129,11 @@ function ButtonGroupBlock({ props, design }: RendererProps) {
 // Container
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function ContainerBlock({ props, design }: RendererProps) {
+function ContainerBlock({ props }: RendererProps) {
   const maxWidth = (props.maxWidth as string) || "1200px";
 
   return (
-    <div className="px-4 py-6">
-      <div
-        className="border-2 border-dashed border-separator/50 min-h-[6rem] flex flex-col items-center justify-center gap-2 p-4"
-        style={{ maxWidth, margin: "0 auto", borderRadius: radiusValue(design.radius) }}
-      >
-        <span className="text-xs font-semibold text-muted/60 uppercase tracking-wider">📦 Container</span>
-        <span className="text-[10px] text-muted/40">max-width: {maxWidth}</span>
-      </div>
-    </div>
+    <div style={{ maxWidth, margin: "0 auto" }} className="min-h-[1rem]" />
   );
 }
 
@@ -1149,84 +1141,32 @@ function ContainerBlock({ props, design }: RendererProps) {
 // Grid
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function GridBlock({ props }: RendererProps) {
-  const cols = Number(props.columns) || 2;
-
-  return (
-    <div className="p-4 rounded-lg border border-dashed border-separator/40 min-h-[80px]">
-      <div className="text-[10px] text-muted/60 mb-2 font-mono">
-        ⊞ Grid · {cols} cols · gap {String(props.gap || 16)}px
-      </div>
-    </div>
-  );
+function GridBlock() {
+  return <div className="min-h-[1rem]" />;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Flex Container
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function FlexContainerBlock({ props }: RendererProps) {
-  return (
-    <div className="p-4 rounded-lg border border-dashed border-separator/40 min-h-[80px]">
-      <div className="text-[10px] text-muted/60 mb-2 font-mono">
-        ⇔ Flex · {String(props.direction || "row")} · gap {String(props.gap || 16)}px
-      </div>
-    </div>
-  );
+function FlexContainerBlock() {
+  return <div className="min-h-[1rem]" />;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Flex Row
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function FlexRowBlock({ props, design }: RendererProps) {
-  const gap = (props.gap as string) || "1rem";
-
-  return (
-    <div className="px-8 py-6">
-      <div className="mb-2 flex items-center gap-2">
-        <span className="text-xs font-semibold text-muted/60 uppercase tracking-wider">↔️ Flex Row</span>
-      </div>
-      <div className="flex flex-row items-stretch" style={{ gap }}>
-        <div
-          className="flex-1 min-h-[5rem] border-2 border-dotted border-separator/40 flex items-center justify-center text-[10px] text-muted/50"
-          style={{ borderRadius: radiusValue(design.radius) }}
-        >
-          ← Item 1
-        </div>
-        <div
-          className="flex-1 min-h-[5rem] border-2 border-dotted border-separator/40 flex items-center justify-center text-[10px] text-muted/50"
-          style={{ borderRadius: radiusValue(design.radius) }}
-        >
-          Item 2 →
-        </div>
-      </div>
-    </div>
-  );
+function FlexRowBlock() {
+  return <div className="min-h-[1rem]" />;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Flex Column
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function FlexColBlock({ props, design }: RendererProps) {
-  const gap = (props.gap as string) || "1rem";
-
-  return (
-    <div className="px-8 py-6">
-      <div className="mb-2 flex items-center gap-2">
-        <span className="text-xs font-semibold text-muted/60 uppercase tracking-wider">↕️ Flex Column</span>
-      </div>
-      <div className="flex flex-col" style={{ gap }}>
-        <div
-          className="min-h-[4rem] border-2 border-dotted border-separator/40 flex items-center justify-center text-[10px] text-muted/50"
-          style={{ borderRadius: radiusValue(design.radius) }}
-        >
-          ↑ Content ↓
-        </div>
-      </div>
-    </div>
-  );
+function FlexColBlock() {
+  return <div className="min-h-[1rem]" />;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

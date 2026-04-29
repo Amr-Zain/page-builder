@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import type { BlockInstance, DesignSettings } from "../types";
 import { BlockRenderer } from "./BlockRenderer";
+import { BLOCK_DEFINITIONS } from "../data";
 
 const FONT_FAMILIES: Record<string, string> = {
   inter: "'Inter', system-ui, sans-serif",
@@ -91,12 +92,11 @@ export function PreviewMode({
           style={{ maxWidth: canvasWidth, fontFamily }}
         >
           {blocks.map((block) => (
-            <BlockRenderer
+            <PreviewBlock
               block={block}
               design={design}
-              isSelected={false}
+              previewMode={device}
               key={block.id}
-              onClick={() => {}}
             />
           ))}
         </div>
@@ -109,6 +109,111 @@ export function PreviewMode({
           preview
         </span>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Recursively renders a block and its nested children for preview.
+ * Passes previewMode so blocks can adapt their layout.
+ */
+function PreviewBlock({
+  block,
+  design,
+  previewMode,
+}: {
+  block: BlockInstance;
+  design: DesignSettings;
+  previewMode: string;
+}) {
+  const blockDef = BLOCK_DEFINITIONS.find((d) => d.type === block.type);
+  const zones = blockDef?.zones;
+  const hasChildren = block.children && Object.values(block.children).some((z) => z.length > 0);
+
+  return (
+    <div>
+      <BlockRenderer
+        block={block}
+        design={design}
+        isSelected={false}
+        previewMode={previewMode}
+        onClick={() => {}}
+      />
+      {/* Render nested children for container blocks */}
+      {zones && hasChildren && (
+        <div
+          className={clsx("px-4")}
+          style={{
+            ...(block.type === "grid"
+              ? {
+                  display: "grid",
+                  gridTemplateColumns:
+                    previewMode === "mobile"
+                      ? "1fr"
+                      : previewMode === "tablet"
+                        ? `repeat(${Math.min((block.props.columns as number) || 2, 2)}, 1fr)`
+                        : (block.props.templateColumns as string) ||
+                          `repeat(${(block.props.columns as number) || 2}, 1fr)`,
+                  gap: `${block.props.gap || "16"}px`,
+                }
+              : {}),
+            ...(block.type === "flex-container"
+              ? {
+                  display: "flex",
+                  flexDirection: previewMode === "mobile"
+                    ? "column" as const
+                    : (block.props.direction as React.CSSProperties["flexDirection"]) || "row",
+                  gap: `${block.props.gap || "16"}px`,
+                  flexWrap: (block.props.wrap as React.CSSProperties["flexWrap"]) || "nowrap",
+                }
+              : {}),
+            ...(block.type === "flex-row"
+              ? {
+                  display: "flex",
+                  flexDirection: previewMode === "mobile" ? "column" as const : "row" as const,
+                  gap: (block.props.gap as string) || "1rem",
+                }
+              : {}),
+            ...(block.type === "flex-col"
+              ? {
+                  display: "flex",
+                  flexDirection: "column" as const,
+                  gap: (block.props.gap as string) || "1rem",
+                }
+              : {}),
+            ...(block.type === "columns"
+              ? {
+                  display: "grid",
+                  gridTemplateColumns:
+                    previewMode === "mobile"
+                      ? "1fr"
+                      : `repeat(${zones.length}, 1fr)`,
+                  gap: "1.5rem",
+                }
+              : {}),
+            ...(block.type === "container"
+              ? { maxWidth: (block.props.maxWidth as string) || "1200px", margin: "0 auto" }
+              : {}),
+          }}
+        >
+          {zones.map((zoneDef) => {
+            const zoneBlocks = block.children?.[zoneDef.name] ?? [];
+            if (zoneBlocks.length === 0) return null;
+            return (
+              <div key={zoneDef.name} style={{ minWidth: 0, flex: block.type === "flex-row" ? 1 : undefined }}>
+                {zoneBlocks.map((child) => (
+                  <PreviewBlock
+                    key={child.id}
+                    block={child}
+                    design={design}
+                    previewMode={previewMode}
+                  />
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
