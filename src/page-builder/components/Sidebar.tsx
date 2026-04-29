@@ -557,7 +557,7 @@ function DesignPanel({
         <div className="flex items-center gap-3">
           <input
             aria-label="Main color hex code"
-            className="h-10 flex-1 rounded-xl border border-separator/60 bg-white dark:bg-surface px-3 text-sm font-mono text-foreground outline-none focus:border-[#634CF8] transition-colors"
+            className="h-9 flex-1 min-w-0 rounded-lg border border-separator/60 bg-white dark:bg-surface px-3 text-sm font-mono text-foreground outline-none focus:border-[#634CF8] transition-colors"
             value={design.mainColor}
             onChange={(e) =>
               onUpdate("mainColor", e.target.value.replace("#", ""))
@@ -565,7 +565,7 @@ function DesignPanel({
           />
           <div className="relative">
             <div
-              className="h-10 w-10 shrink-0 rounded-xl shadow-sm cursor-pointer hover:scale-105 transition-transform"
+              className="h-9 w-9 shrink-0 rounded-lg shadow-sm cursor-pointer hover:scale-105 transition-transform"
               style={{ backgroundColor: `#${design.mainColor}` }}
             />
             <input
@@ -583,7 +583,7 @@ function DesignPanel({
           Enter hex code or click the swatch to pick a color.
         </p>
         {/* Quick color presets */}
-        <div className="flex gap-1.5 mt-3">
+        <div className="flex flex-wrap gap-1.5 mt-3">
           {[
             "634CF8",
             "3B82F6",
@@ -597,7 +597,7 @@ function DesignPanel({
           ].map((c) => (
             <button
               className={clsx(
-                "h-6 w-6 rounded-lg transition-all hover:scale-110",
+                "h-5 w-5 rounded-md transition-all hover:scale-110",
                 design.mainColor === c && "ring-2 ring-offset-1 ring-[#634CF8]",
               )}
               key={c}
@@ -610,7 +610,7 @@ function DesignPanel({
       </CollapsibleSection>}
 
       {show("background theme solid pattern gradient opacity") && <CollapsibleSection title="Background Theme">
-        <div className="flex gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {(["solid", "pattern", "gradient"] as const).map((theme) => (
             <SelectionCard
               key={theme}
@@ -1134,7 +1134,7 @@ export function Sidebar({
       </div>
 
       {/* Right content area */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 min-w-0">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 min-w-0">
         {/* Sticky search above all panels */}
         <div className="sticky top-0 z-10 bg-white dark:bg-background pt-3 pb-2">
           <SidebarSearch
