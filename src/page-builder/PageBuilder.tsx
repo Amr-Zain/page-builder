@@ -27,6 +27,7 @@ import {
   DEFAULT_BLOCKS,
   DEFAULT_DESIGN,
   BLOCK_DEFINITIONS,
+  COMPONENT_DEFINITIONS,
   createBlockId,
 } from "./data";
 import {
@@ -494,13 +495,15 @@ export default function PageBuilder() {
     setActiveDragId(active.id as string);
     const data = active.data.current;
     if (data?.type === "sidebar-block") {
-      const def = BLOCK_DEFINITIONS.find((b) => b.type === data.blockType);
-      setActiveDragLabel(def ? `${def.icon} ${def.label}` : data.blockType);
+      const def = BLOCK_DEFINITIONS.find((b) => b.type === data.blockType)
+        || COMPONENT_DEFINITIONS.find((c) => c.type === (data.blockType as string));
+      setActiveDragLabel(def ? `${def.label}` : data.blockType);
     } else {
       const block = findBlock(state.blocks, active.id as string);
       if (block) {
-        const def = BLOCK_DEFINITIONS.find((b) => b.type === block.type);
-        setActiveDragLabel(def ? `${def.icon} ${def.label}` : block.type);
+        const def = BLOCK_DEFINITIONS.find((b) => b.type === block.type)
+          || COMPONENT_DEFINITIONS.find((c) => c.type === (block.type as string));
+        setActiveDragLabel(def ? def.label : block.type);
       }
     }
   }
@@ -516,12 +519,13 @@ export default function PageBuilder() {
     // ── Sidebar block drop (new block creation) ──
     if (activeData?.type === "sidebar-block") {
       const blockType = activeData.blockType as BlockType;
-      const def = BLOCK_DEFINITIONS.find((b) => b.type === blockType);
+      const def = BLOCK_DEFINITIONS.find((b) => b.type === blockType)
+        || COMPONENT_DEFINITIONS.find((c) => c.type === (blockType as string));
       pushHistory();
       const newBlock: BlockInstance = {
         id: createBlockId(),
         type: blockType,
-        props: def ? { ...def.defaultProps } : {},
+        props: def && "defaultProps" in def ? { ...def.defaultProps } : {},
       };
 
       // Check if dropping into a nested zone (compound ID: parentId:zoneName)
