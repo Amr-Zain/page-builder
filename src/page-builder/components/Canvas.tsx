@@ -74,22 +74,22 @@ function SortableBlock({
       data-block-id={block.id}
       style={style}
     >
-      {/* Drag handle + actions — left gutter */}
+      {/* Drag handle + actions — overlay on top-right, Puck-style */}
       <div
         className={clsx(
-          "absolute -left-11 top-1/2 -translate-y-1/2 flex flex-col gap-1 transition-all duration-150",
+          "absolute top-2 right-2 z-20 flex items-center gap-1 transition-all duration-150",
           isSelected
-            ? "opacity-100 translate-x-0"
-            : "opacity-0 -translate-x-1 group-hover/block:opacity-100 group-hover/block:translate-x-0",
+            ? "opacity-100"
+            : "opacity-0 group-hover/block:opacity-100",
         )}
       >
         <button
-          className="flex h-7 w-7 items-center justify-center rounded-md bg-white dark:bg-surface border border-separator/50 text-muted hover:text-foreground hover:border-[#634CF8]/30 cursor-grab active:cursor-grabbing shadow-sm transition-colors"
+          className="flex h-6 w-6 items-center justify-center rounded-md bg-white/90 dark:bg-surface/90 backdrop-blur-sm border border-separator/50 text-muted hover:text-foreground hover:border-[#634CF8]/30 cursor-grab active:cursor-grabbing shadow-sm transition-colors"
           title="Drag to reorder"
           {...attributes}
           {...listeners}
         >
-          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16">
+          <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 16 16">
             <circle cx="5" cy="4" r="1.2" />
             <circle cx="11" cy="4" r="1.2" />
             <circle cx="5" cy="8" r="1.2" />
@@ -99,7 +99,7 @@ function SortableBlock({
           </svg>
         </button>
         <button
-          className="flex h-7 w-7 items-center justify-center rounded-md bg-white dark:bg-surface border border-separator/50 text-muted hover:text-danger hover:border-danger/30 shadow-sm transition-colors"
+          className="flex h-6 w-6 items-center justify-center rounded-md bg-white/90 dark:bg-surface/90 backdrop-blur-sm border border-separator/50 text-muted hover:text-danger hover:border-danger/30 shadow-sm transition-colors"
           title="Delete block"
           onClick={(e) => {
             e.stopPropagation();
@@ -107,16 +107,16 @@ function SortableBlock({
           }}
         >
           <svg
-            className="h-3.5 w-3.5"
+            className="h-3 w-3"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
             <path
-              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              d="M6 18L18 6M6 6l12 12"
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={1.5}
+              strokeWidth={2}
             />
           </svg>
         </button>
@@ -142,26 +142,39 @@ function SortableBlock({
               block.type !== "container" &&
               block.type !== "columns" && [
                 "grid",
-                zones.length === 2 && "grid-cols-2",
-                zones.length === 3 && "grid-cols-3",
-                zones.length >= 4 && "grid-cols-4",
+                previewMode === "mobile"
+                  ? "grid-cols-1"
+                  : previewMode === "tablet" && zones.length >= 3
+                    ? "grid-cols-2"
+                    : zones.length === 2 && "grid-cols-2",
+                previewMode !== "mobile" && zones.length === 3 && "grid-cols-3",
+                previewMode !== "mobile" && previewMode !== "tablet" && zones.length >= 4 && "grid-cols-4",
                 zones.length === 1 && "grid-cols-1",
               ],
-            block.type === "flex-row" && "flex flex-row",
+            block.type === "flex-row" && (previewMode === "mobile" ? "flex flex-col" : "flex flex-row"),
             block.type === "flex-col" && "flex flex-col",
             block.type === "container" && "flex flex-col max-w-full mx-auto",
             block.type === "columns" && [
               "grid",
-              zones.length === 2 && "grid-cols-2",
-              zones.length === 3 && "grid-cols-3",
-              zones.length >= 4 && "grid-cols-4",
+              previewMode === "mobile"
+                ? "grid-cols-1"
+                : previewMode === "tablet"
+                  ? zones.length <= 2 ? "grid-cols-2" : "grid-cols-2"
+                  : zones.length === 2 ? "grid-cols-2"
+                  : zones.length === 3 ? "grid-cols-3"
+                  : zones.length >= 4 ? "grid-cols-4"
+                  : "grid-cols-1",
             ],
           )}
           style={{
             ...(block.type === "grid"
               ? {
                   display: "grid",
-                  gridTemplateColumns: (block.props.templateColumns as string) || `repeat(${(block.props.columns as number) || zones.length}, 1fr)`,
+                  gridTemplateColumns: previewMode === "mobile"
+                    ? "1fr"
+                    : previewMode === "tablet"
+                      ? `repeat(${Math.min((block.props.columns as number) || zones.length, 2)}, 1fr)`
+                      : (block.props.templateColumns as string) || `repeat(${(block.props.columns as number) || zones.length}, 1fr)`,
                   ...(block.props.templateRows ? { gridTemplateRows: block.props.templateRows as string } : {}),
                   gap: `${block.props.gap || "16"}px`,
                   ...(block.props.rowGap ? { rowGap: `${block.props.rowGap}px` } : {}),
@@ -287,12 +300,16 @@ function CanvasDropZone({
       className={clsx(
         "transition-all duration-150 mx-4",
         isOver
-          ? "h-[2px] bg-[#634CF8] my-1.5 shadow-[0_0_6px_rgba(99,76,248,0.3)]"
+          ? "h-1 bg-[#634CF8] my-2 rounded-full shadow-[0_0_8px_rgba(99,76,248,0.4)]"
           : isDragActive
-            ? "h-6 rounded-md border-2 border-dashed border-[#634CF8]/30 bg-[#634CF8]/[0.02] my-0.5"
-            : "h-3",
+            ? "h-10 rounded-lg border-2 border-dashed border-[#634CF8]/30 bg-[#634CF8]/[0.03] my-1 flex items-center justify-center"
+            : "h-2 my-0.5",
       )}
-    />
+    >
+      {isDragActive && !isOver && (
+        <span className="text-[9px] text-[#634CF8]/40 font-medium">Drop here</span>
+      )}
+    </div>
   );
 }
 
@@ -405,7 +422,7 @@ export function Canvas({
             items={blocks.map((b) => b.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="pl-14 pr-4 py-2 flex flex-col">
+            <div className="px-4 py-2 flex flex-col">
               {blocks.map((block, index) => (
                 <div key={block.id}>
                   {index === 0 && (

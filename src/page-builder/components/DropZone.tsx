@@ -84,10 +84,10 @@ export function DropZone({
           isEmpty && [
             "border-2 border-dashed flex items-center justify-center",
             isOver
-              ? "border-[#634CF8] bg-[#634CF8]/5 min-h-[96px]"
+              ? "border-[#634CF8] bg-[#634CF8]/5 min-h-[80px] md:min-h-[96px]"
               : isDragActive
-                ? "border-[#634CF8]/40 bg-[#634CF8]/[0.03] min-h-[80px]"
-                : "border-separator/40 min-h-[64px]",
+                ? "border-[#634CF8]/40 bg-[#634CF8]/[0.03] min-h-[64px] md:min-h-[80px]"
+                : "border-separator/40 min-h-[48px] md:min-h-[64px]",
           ],
           !isEmpty && [
             "min-h-[32px]",
@@ -100,7 +100,7 @@ export function DropZone({
           <div className="flex flex-col items-center gap-1 py-3">
             <span
               className={clsx(
-                "text-[11px] font-medium transition-colors",
+                "text-[10px] md:text-[11px] font-medium transition-colors",
                 isOver ? "text-[#634CF8]" : "text-muted/60",
               )}
             >
