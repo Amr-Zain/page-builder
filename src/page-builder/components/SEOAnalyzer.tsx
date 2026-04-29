@@ -213,7 +213,7 @@ export function SEOAnalyzer({
                   )}
                   onClick={() => setPreviewMode("desktop")}
                 >
-                  🖥 Desktop
+                  Desktop
                 </button>
                 <button
                   className={clsx(
@@ -224,7 +224,7 @@ export function SEOAnalyzer({
                   )}
                   onClick={() => setPreviewMode("mobile")}
                 >
-                  📱 Mobile
+                  Mobile
                 </button>
               </div>
             </div>

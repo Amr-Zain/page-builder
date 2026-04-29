@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button, Drawer } from "@heroui/react";
 import clsx from "clsx";
+import { FileText } from "lucide-react";
 
 import type { Page } from "../pages";
 
@@ -121,7 +122,7 @@ export function PagesPanel({
                           : "bg-[#F5F5F5] dark:bg-surface",
                       )}
                     >
-                      📄
+                      <FileText size={18} className={clsx(isActive ? "text-[#634CF8]" : "text-muted")} />
                     </div>
                     <div className="min-w-0">
                       <p className="text-[13px] font-semibold text-foreground truncate">

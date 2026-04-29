@@ -6,7 +6,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import clsx from "clsx";
-import { GripVertical, X } from "lucide-react";
+import { GripVertical, X, Construction, Download } from "lucide-react";
 
 import type { BlockInstance, DesignSettings } from "../types";
 import { BLOCK_DEFINITIONS } from "../data";
@@ -260,7 +260,7 @@ function CanvasDropZone({
             isOver ? "bg-[#634CF8]/10" : "bg-surface",
           )}
         >
-          <span className="text-3xl">{isOver ? "📥" : "🏗️"}</span>
+          <span className="text-3xl">{isOver ? <Download size={32} /> : <Construction size={32} />}</span>
         </div>
         <div>
           <p className="text-sm font-semibold text-foreground">
@@ -387,7 +387,7 @@ export function Canvas({
         {blocks.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-4 text-center min-h-[400px] m-6">
             <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-[#634CF8]/10">
-              <span className="text-3xl">🏗️</span>
+              <span className="text-3xl"><Construction size={32} /></span>
             </div>
             <div>
               <p className="text-sm font-semibold text-foreground">

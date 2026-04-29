@@ -16,7 +16,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import clsx from "clsx";
-import { ChevronRight, ChevronUp, ChevronDown, Copy, X, GripVertical } from "lucide-react";
+import { ChevronRight, ChevronUp, ChevronDown, Copy, X, GripVertical, Package, EyeOff, Diamond } from "lucide-react";
 import type { BlockInstance, BlockStyleOverrides } from "../types";
 import { BLOCK_DEFINITIONS } from "../data";
 import { flattenTree, type FlattenedBlock } from "../tree-utils";
@@ -286,7 +286,7 @@ function ZoneLabelRow({ label, depth }: { label: string; depth: number }) {
       className="flex items-center gap-1.5 py-1 text-[9px] font-semibold text-muted/70 uppercase tracking-wider"
       style={{ paddingLeft: depth * 16 }}
     >
-      <span className="text-[8px]">◆</span>
+      <Diamond size={8} className="text-muted/70" />
       {label}
     </div>
   );
@@ -298,7 +298,7 @@ function DragOverlayItem({ block }: { block: BlockInstance }) {
   const def = BLOCK_DEFINITIONS.find((d) => d.type === block.type);
   return (
     <div className="flex items-center gap-2 rounded-lg bg-white dark:bg-surface border-2 border-[#634CF8] shadow-xl px-3 py-2 pointer-events-none opacity-90">
-      <span className="text-xs">{def?.icon || "📦"}</span>
+      <span className="text-xs">{def?.icon || <Package size={12} />}</span>
       <span className="text-[11px] font-medium text-foreground">
         {def?.label || block.type}
       </span>
@@ -431,7 +431,7 @@ function SortableLayerRow({
       )}
 
       {/* Icon */}
-      <span className="text-xs shrink-0">{def?.icon || "📦"}</span>
+      <span className="text-xs shrink-0">{def?.icon || <Package size={12} />}</span>
 
       {/* Label */}
       <div className="flex-1 min-w-0">
@@ -451,10 +451,10 @@ function SortableLayerRow({
       {/* Visibility Indicator */}
       {hasHiddenViewport && (
         <span
-          className="text-[10px] text-muted/50 shrink-0 line-through decoration-muted/70"
+          className="text-[10px] text-muted/50 shrink-0"
           title="Some viewports hidden"
         >
-          👁️
+          <EyeOff size={12} />
         </span>
       )}
 

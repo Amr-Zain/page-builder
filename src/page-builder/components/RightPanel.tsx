@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { useState, useRef } from "react";
-import { Tabs, Switch, Label } from "@heroui/react";
-import { X, ChevronUp, ChevronDown, Copy, Trash2, AlignLeft, AlignCenter, AlignRight, AlignJustify } from "lucide-react";
+import { Switch, Label } from "@heroui/react";
+import { X, ChevronUp, ChevronDown, Copy, Trash2, AlignLeft, AlignCenter, AlignRight, AlignJustify, Globe, Monitor, Tablet, Smartphone, MousePointerClick, FileText } from "lucide-react";
 
 import type { BlockInstance, BlockType, BlockStyleOverrides } from "../types";
 import type { Page } from "../pages";
@@ -60,6 +60,9 @@ export function RightPanel({
   // Remember last active tab per block type
   const tabMemory = useRef<Map<BlockType, PropertyTab>>(new Map());
 
+  // Must be called before any early returns to satisfy Rules of Hooks
+  const [activeTab, setActiveTab] = useState<PropertyTab>("content");
+
   if (!block) {
     // Show page settings when no block is selected
     if (activePage && onUpdatePageSettings) {
@@ -88,7 +91,7 @@ export function RightPanel({
         style={{ width: `${width}px` }}
       >
         <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#F8F8FA] dark:bg-surface mb-4">
-          <span className="text-2xl">👆</span>
+          <span className="text-2xl"><MousePointerClick size={24} className="text-muted" /></span>
         </div>
         <p className="text-[13px] font-semibold text-foreground">
           Select a block
@@ -106,10 +109,11 @@ export function RightPanel({
   const isLast = blockIndex === blocks.length - 1;
 
   // Get remembered tab for this block type, default to "content"
-  const rememberedTab = tabMemory.current.get(block.type) || "content";
+  const rememberedTab = tabMemory.current.get(block.type) || activeTab;
 
-  function handleTabChange(key: React.Key) {
-    if (block) tabMemory.current.set(block.type, key as PropertyTab);
+  function handleTabChange(tab: PropertyTab) {
+    setActiveTab(tab);
+    if (block) tabMemory.current.set(block.type, tab);
   }
 
   function set(key: string, value: unknown) {
@@ -184,49 +188,38 @@ export function RightPanel({
       </div>
 
       {/* Tabbed property panel */}
-      <div className="flex-1 overflow-y-auto">
-        <Tabs
-          defaultSelectedKey={rememberedTab}
-          onSelectionChange={handleTabChange}
-          className="w-full"
-        >
-          <Tabs.ListContainer className="border-b border-separator/40">
-            <Tabs.List aria-label="Property tabs" className="w-full">
-              <Tabs.Tab id="content" className="flex-1 text-[11px]">
-                Content
-                <Tabs.Indicator />
-              </Tabs.Tab>
-              <Tabs.Tab id="style" className="flex-1 text-[11px]">
-                Style
-                <Tabs.Indicator />
-              </Tabs.Tab>
-              <Tabs.Tab id="advanced" className="flex-1 text-[11px]">
-                Advanced
-                <Tabs.Indicator />
-              </Tabs.Tab>
-            </Tabs.List>
-          </Tabs.ListContainer>
+      <div className="flex border-b border-separator/40">
+        {(["content", "style", "advanced"] as const).map((tab) => (
+          <button
+            className={clsx(
+              "flex-1 py-2 text-[11px] font-semibold transition-colors border-b-2",
+              rememberedTab === tab
+                ? "text-[#634CF8] border-[#634CF8]"
+                : "text-muted border-transparent hover:text-foreground",
+            )}
+            key={tab}
+            onClick={() => handleTabChange(tab)}
+          >
+            {tab === "content" ? "Content" : tab === "style" ? "Style" : "Advanced"}
+          </button>
+        ))}
+      </div>
 
-          {/* ═══ Content Tab ═══ */}
-          <Tabs.Panel id="content" className="px-4 py-4">
-            <ContentTabFields block={block} set={set} />
-          </Tabs.Panel>
-
-          {/* ═══ Style Tab ═══ */}
-          <Tabs.Panel id="style" className="px-4 py-4">
-            <StyleTab style={styleOverrides} setStyle={setStyle} />
-          </Tabs.Panel>
-
-          {/* ═══ Advanced Tab ═══ */}
-          <Tabs.Panel id="advanced" className="px-4 py-4">
-            <AdvancedTab
-              block={block}
-              style={styleOverrides}
-              set={set}
-              setStyle={setStyle}
-            />
-          </Tabs.Panel>
-        </Tabs>
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        {rememberedTab === "content" && (
+          <ContentTabFields block={block} set={set} />
+        )}
+        {rememberedTab === "style" && (
+          <StyleTab style={styleOverrides} setStyle={setStyle} />
+        )}
+        {rememberedTab === "advanced" && (
+          <AdvancedTab
+            block={block}
+            style={styleOverrides}
+            set={set}
+            setStyle={setStyle}
+          />
+        )}
       </div>
     </aside>
   );
@@ -904,7 +897,7 @@ function ContentTabFields({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[11px] font-semibold text-foreground">
-                🌐 Global Block
+                <Globe size={12} className="inline" /> Global Block
               </p>
               <p className="text-[9px] text-muted">Appears on all pages</p>
             </div>
@@ -946,9 +939,9 @@ function ContentTabFields({
                 })
               }
             >
-              <option value="localStorage">💾 Save to Browser</option>
-              <option value="email">✉️ Send Email</option>
-              <option value="webhook">🔗 Webhook</option>
+              <option value="localStorage">Save to Browser</option>
+              <option value="email">Send Email</option>
+              <option value="webhook">Webhook</option>
             </select>
             {(block.props._formAction as Record<string, unknown>)?.method === "email" && (
               <Field
@@ -1416,7 +1409,7 @@ function AdvancedTab({
               <Switch.Thumb />
             </Switch.Control>
             <Switch.Content>
-              <Label className="text-[11px]">🖥️ Desktop</Label>
+              <Label className="text-[11px]"><Monitor size={12} className="inline" /> Desktop</Label>
             </Switch.Content>
           </Switch>
           <Switch
@@ -1427,7 +1420,7 @@ function AdvancedTab({
               <Switch.Thumb />
             </Switch.Control>
             <Switch.Content>
-              <Label className="text-[11px]">📱 Tablet</Label>
+              <Label className="text-[11px]"><Tablet size={12} className="inline" /> Tablet</Label>
             </Switch.Content>
           </Switch>
           <Switch
@@ -1438,7 +1431,7 @@ function AdvancedTab({
               <Switch.Thumb />
             </Switch.Control>
             <Switch.Content>
-              <Label className="text-[11px]">📲 Mobile</Label>
+              <Label className="text-[11px]"><Smartphone size={12} className="inline" /> Mobile</Label>
             </Switch.Content>
           </Switch>
         </div>
@@ -1467,7 +1460,7 @@ function AdvancedTab({
                 })
               }
             >
-              {mode === "contained" ? "📦 Contained" : "↔️ Full Width"}
+              {mode === "contained" ? "Contained" : "Full Width"}
             </button>
           ))}
         </div>
@@ -1519,7 +1512,7 @@ function PageSettingsPanel({
     >
       <div className="px-4 py-3 border-b border-separator/40 bg-[#FAFAFA] dark:bg-surface/50">
         <p className="text-[13px] font-semibold text-foreground">
-          📄 Page Settings
+          <FileText size={14} className="inline" /> Page Settings
         </p>
         <p className="text-[10px] text-muted">
           {activePage.settings.title}
@@ -1597,7 +1590,7 @@ function PageSettingsPanel({
                       })
                     }
                   >
-                    {v === "public" ? "🌐 Public" : "📝 Draft"}
+                    {v === "public" ? "Public" : "Draft"}
                   </button>
                 ))}
               </div>

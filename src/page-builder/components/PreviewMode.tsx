@@ -1,5 +1,6 @@
 import { Button } from "@heroui/react";
 import clsx from "clsx";
+import { Monitor, Tablet, Smartphone } from "lucide-react";
 import { useState } from "react";
 
 import type { BlockInstance, DesignSettings } from "../types";
@@ -55,7 +56,7 @@ export function PreviewMode({
               key={d}
               onClick={() => setDevice(d)}
             >
-              {d === "desktop" ? "🖥" : d === "tablet" ? "📱" : "📲"}
+              {d === "desktop" ? <Monitor size={14} /> : d === "tablet" ? <Tablet size={14} /> : <Smartphone size={14} />}
             </button>
           ))}
         </div>

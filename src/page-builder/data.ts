@@ -479,23 +479,23 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
 export const BLOCK_CATEGORIES = {
   sections: {
     label: "Sections",
-    icon: "📐",
+    icon: "",
     description: "Full page sections",
   },
   content: {
     label: "Content",
-    icon: "📝",
+    icon: "",
     description: "Text and media blocks",
   },
-  layout: { label: "Layout", icon: "▥", description: "Structure and spacing" },
-  media: { label: "Media", icon: "🖼️", description: "Images and video" },
+  layout: { label: "Layout", icon: "", description: "Structure and spacing" },
+  media: { label: "Media", icon: "", description: "Images and video" },
 } as const;
 
 export const COMPONENT_CATEGORIES = {
-  actions: { label: "Actions", icon: "🔘" },
-  display: { label: "Display", icon: "📊" },
-  forms: { label: "Forms", icon: "📝" },
-  navigation: { label: "Navigation", icon: "🧭" },
+  actions: { label: "Actions", icon: "" },
+  display: { label: "Display", icon: "" },
+  forms: { label: "Forms", icon: "" },
+  navigation: { label: "Navigation", icon: "" },
 } as const;
 
 // ── Default Design ──
