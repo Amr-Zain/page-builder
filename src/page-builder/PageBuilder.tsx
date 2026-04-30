@@ -139,6 +139,7 @@ export default function PageBuilder() {
   const initialTab = (initialParams.get("tab") || "blocks") as SidebarPanel;
   const initialDevice = (initialParams.get("device") || "desktop") as "desktop" | "tablet" | "mobile";
   const initialMood = initialParams.get("mood") as "light" | "dark" | null;
+  const initialMode = initialParams.get("mode");
 
   // Load persisted state or use defaults
   const persisted = useRef(loadState());
@@ -156,15 +157,19 @@ export default function PageBuilder() {
     expandedLayerIds: new Set<string>(),
   }));
 
+  // Preview mode state — must be before URL sync effect
+  const [isPreviewOpen, setIsPreviewOpen] = useState(initialMode === "preview");
+
   // Sync state to URL search params
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     params.set("tab", state.sidebarPanel);
     params.set("device", state.previewMode);
     params.set("mood", state.design.mood);
+    params.set("mode", isPreviewOpen ? "preview" : "edit");
     const newUrl = `${window.location.pathname}?${params.toString()}`;
     window.history.replaceState(null, "", newUrl);
-  }, [state.sidebarPanel, state.previewMode, state.design.mood]);
+  }, [state.sidebarPanel, state.previewMode, state.design.mood, isPreviewOpen]);
 
   // ── Dirty tracking (must be before pages section) ──
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -316,7 +321,6 @@ export default function PageBuilder() {
       return "light";
     }
   });
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   // Persist theme & language
   useEffect(() => {

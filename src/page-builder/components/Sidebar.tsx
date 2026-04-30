@@ -497,7 +497,7 @@ function DesignPanel({
       </CollapsibleSection>}
 
       {/* ── Theme Colors (based on active mood) ── */}
-      {show("text background color light dark theme foreground muted surface") && <CollapsibleSection defaultOpen={false} key={`theme-colors-${design.mood}`} title={`Theme Colors (${design.mood === "dark" ? "Dark" : "Light"})`}>
+      {show("text background color light dark theme foreground muted surface") && <CollapsibleSection defaultOpen={false} title={`Theme Colors (${design.mood === "dark" ? "Dark" : "Light"})`}>
         <div className="flex flex-col gap-3">
           <p className="text-[10px] text-muted mb-1">
             {design.mood === "dark" ? "🌙 Dark" : "☀️ Light"} mode colors — switch mood above to edit the other
@@ -505,26 +505,31 @@ function DesignPanel({
           {design.mood === "light" ? (
             <>
               <ColorPicker
+                key="light-foreground"
                 label="Text (Foreground)"
                 value={design.lightForeground || "#1c1c1e"}
                 onChange={(v) => onUpdate("lightForeground", v)}
               />
               <ColorPicker
+                key="light-background"
                 label="Background"
                 value={design.lightBackground || "#f7f7f8"}
                 onChange={(v) => onUpdate("lightBackground", v)}
               />
               <ColorPicker
+                key="light-muted"
                 label="Muted Text"
                 value={design.lightMuted || "#71717a"}
                 onChange={(v) => onUpdate("lightMuted", v)}
               />
               <ColorPicker
+                key="light-surface"
                 label="Surface"
                 value={design.lightSurface || "#ffffff"}
                 onChange={(v) => onUpdate("lightSurface", v)}
               />
               <ColorPicker
+                key="light-separator"
                 label="Separator / Border"
                 value={design.lightSeparator || "#e4e4e7"}
                 onChange={(v) => onUpdate("lightSeparator", v)}
@@ -533,26 +538,31 @@ function DesignPanel({
           ) : (
             <>
               <ColorPicker
+                key="dark-foreground"
                 label="Text (Foreground)"
                 value={design.darkForeground || "#fafafa"}
                 onChange={(v) => onUpdate("darkForeground", v)}
               />
               <ColorPicker
+                key="dark-background"
                 label="Background"
                 value={design.darkBackground || "#18181b"}
                 onChange={(v) => onUpdate("darkBackground", v)}
               />
               <ColorPicker
+                key="dark-muted"
                 label="Muted Text"
                 value={design.darkMuted || "#a1a1aa"}
                 onChange={(v) => onUpdate("darkMuted", v)}
               />
               <ColorPicker
+                key="dark-surface"
                 label="Surface"
                 value={design.darkSurface || "#27272a"}
                 onChange={(v) => onUpdate("darkSurface", v)}
               />
               <ColorPicker
+                key="dark-separator"
                 label="Separator / Border"
                 value={design.darkSeparator || "#3f3f46"}
                 onChange={(v) => onUpdate("darkSeparator", v)}
@@ -569,7 +579,7 @@ function DesignPanel({
           onChange={(v) => onUpdate("mainColor", v.replace("#", "").replace(/^rgba?\(.*\)$/, "634CF8"))}
         />
         {/* Quick color presets */}
-        <div className="flex flex-wrap gap-1.5 mt-2">
+        {/* <div className="flex flex-wrap gap-1.5 mt-2">
           {[
             "634CF8",
             "3B82F6",
@@ -592,7 +602,7 @@ function DesignPanel({
               onClick={() => onUpdate("mainColor", c)}
             />
           ))}
-        </div>
+        </div> */}
       </CollapsibleSection>}
 
       {show("background theme solid pattern gradient opacity") && <CollapsibleSection title="Background Theme">
@@ -617,7 +627,7 @@ function DesignPanel({
             </SelectionCard>
           ))}
         </div>
-        <div className="mt-4 flex items-center gap-3">
+        <div className="mt-4 flex items-center gap-3 px-1">
           <div className="flex-1">
             <Slider
               aria-label="Background opacity"

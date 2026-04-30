@@ -179,7 +179,7 @@ export const ColorPicker = memo(function ColorPicker({
       </div>
 
       {/* Opacity slider — onChange for visual feedback, onChangeEnd for state emit */}
-      <div className="mb-2">
+      <div className="mb-2 px-1">
         <Slider
           value={opacity}
           onChange={handleOpacityDrag}

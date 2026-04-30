@@ -83,11 +83,12 @@ export function PreviewMode({
         <div
           className={clsx(
             "mx-auto overflow-hidden transition-all duration-300 bg-background text-foreground",
-            design.mood === "dark" ? "dark" : "",
+            design.mood === "dark" ? "dark" : "light",
             device === "desktop"
               ? "rounded-none shadow-none"
               : "rounded-xl shadow-2xl border border-separator/30",
           )}
+          data-theme={design.mood}
           style={{
             maxWidth: canvasWidth,
             fontFamily,

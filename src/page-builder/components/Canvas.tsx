@@ -381,7 +381,8 @@ export function Canvas({
     }[design.typography] || "system-ui, sans-serif";
 
   // The page preview should reflect the design mood, not the builder theme
-  const pageMoodClass = design.mood === "dark" ? "dark" : "";
+  // Explicitly set both light/dark to isolate from the builder's root theme
+  const pageMoodClass = design.mood === "dark" ? "dark" : "light";
 
   // Background styles based on design settings
   const bgStyles: React.CSSProperties = {};
@@ -422,6 +423,7 @@ export function Canvas({
             ? "rounded-none shadow-none border-x border-separator/20"
             : "rounded-xl shadow-xl border border-separator/30",
         )}
+        data-theme={design.mood}
         style={{
           maxWidth: canvasWidth,
           fontFamily,
