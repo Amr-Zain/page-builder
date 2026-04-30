@@ -24,10 +24,12 @@ export function PreviewMode({
   blocks,
   design,
   onClose,
+  isDraft,
 }: {
   blocks: BlockInstance[];
   design: DesignSettings;
   onClose: () => void;
+  isDraft?: boolean;
 }) {
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">(
     "desktop",
@@ -41,6 +43,13 @@ export function PreviewMode({
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-[#F0F0F3] dark:bg-[#0a0a0a]">
+      {/* Draft Preview indicator */}
+      {isDraft && (
+        <div className="w-full bg-amber-500 text-white text-center text-xs font-semibold py-1.5 z-[60]">
+          Draft Preview — This page is not published
+        </div>
+      )}
+
       {/* Floating toolbar */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-2xl bg-foreground/90 dark:bg-surface/95 backdrop-blur-xl shadow-2xl border border-white/10 px-4 py-2">
         {/* Device switcher */}

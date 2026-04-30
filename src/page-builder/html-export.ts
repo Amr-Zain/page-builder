@@ -575,7 +575,7 @@ export function generateHtml(options: HtmlExportOptions): string {
     : "";
 
   return `<!DOCTYPE html>
-<html lang="en" class="${moodClass}">
+${!pageSettings.published ? "<!-- DRAFT - Not Published -->\n" : ""}<html lang="en" class="${moodClass}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />

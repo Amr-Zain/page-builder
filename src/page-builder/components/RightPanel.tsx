@@ -5,6 +5,7 @@ import { X, ChevronUp, ChevronDown, Copy, Trash2, AlignLeft, AlignCenter, AlignR
 
 import type { BlockInstance, BlockType, BlockStyleOverrides } from "../types";
 import type { Page } from "../pages";
+import type { ConditionalField, FieldDependency } from "../field-conditions";
 import { BLOCK_DEFINITIONS } from "../data";
 import { renderIcon } from "../icon-map";
 import {
@@ -16,6 +17,7 @@ import {
 import { LayersPanel } from "./LayersPanel";
 import { SEOAnalyzer } from "./SEOAnalyzer";
 import { ColorPicker } from "./ColorPicker";
+import { useConditionalFields } from "../hooks/useConditionalFields";
 
 /** Remember last active tab per block type */
 type PropertyTab = "content" | "style" | "advanced";
@@ -35,6 +37,8 @@ export function RightPanel({
   onDuplicate,
   onDeselect,
   onUpdatePageSettings,
+  fieldConditions,
+  fieldDependencies,
 }: {
   block: BlockInstance | null;
   blocks: BlockInstance[];
@@ -53,6 +57,8 @@ export function RightPanel({
     id: string,
     settings: Partial<Page["settings"]>,
   ) => void;
+  fieldConditions?: ConditionalField[];
+  fieldDependencies?: FieldDependency[];
 }) {
   const [settingsTab, setSettingsTab] = useState<"page" | "seo" | "layers">(
     "page",
@@ -63,6 +69,13 @@ export function RightPanel({
 
   // Must be called before any early returns to satisfy Rules of Hooks
   const [activeTab, setActiveTab] = useState<PropertyTab>("content");
+
+  // Field conditions hook - must be called before early returns
+  const { isFieldVisible, fieldErrors, dependencyManager } = useConditionalFields(
+    fieldConditions ?? [],
+    fieldDependencies ?? [],
+    block?.props ?? {}
+  );
 
   if (!block) {
     // Show page settings when no block is selected
@@ -119,7 +132,12 @@ export function RightPanel({
 
   function set(key: string, value: unknown) {
     if (!block) return;
-    onUpdate(block.id, { ...block.props, [key]: value });
+    let updatedProps = { ...block.props, [key]: value };
+    // Execute field dependencies when a source field changes
+    if (fieldDependencies && fieldDependencies.length > 0) {
+      updatedProps = dependencyManager.executeDependencies(key, updatedProps);
+    }
+    onUpdate(block.id, updatedProps);
   }
 
   // Style overrides helper
@@ -208,7 +226,7 @@ export function RightPanel({
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
         {rememberedTab === "content" && (
-          <ContentTabFields block={block} set={set} />
+          <ContentTabFields block={block} set={set} isFieldVisible={isFieldVisible} fieldErrors={fieldErrors} />
         )}
         {rememberedTab === "style" && (
           <StyleTab style={styleOverrides} setStyle={setStyle} />
@@ -234,10 +252,22 @@ export function RightPanel({
 function ContentTabFields({
   block,
   set,
+  isFieldVisible,
+  fieldErrors,
 }: {
   block: BlockInstance;
   set: (key: string, value: unknown) => void;
+  isFieldVisible?: (fieldName: string) => boolean;
+  fieldErrors?: Record<string, string[]>;
 }) {
+  // Helper to check if a field should be rendered
+  const shouldShow = (fieldName: string) =>
+    !isFieldVisible || isFieldVisible(fieldName);
+
+  // Helper to get errors for a field
+  const getErrors = (fieldName: string) =>
+    fieldErrors?.[fieldName] ?? undefined;
+
   return (
     <div className="flex flex-col gap-4">
       <p className="text-[10px] font-bold uppercase tracking-widest text-muted/60 mb-1">
@@ -247,11 +277,14 @@ function ContentTabFields({
       {/* ── Navbar ── */}
       {block.type === "navbar" && (
         <>
-          <Field
-            label="Logo"
-            value={(block.props.logo as string) || ""}
-            onChange={(v) => set("logo", v)}
-          />
+          {shouldShow("logo") && (
+            <Field
+              label="Logo"
+              value={(block.props.logo as string) || ""}
+              errors={getErrors("logo")}
+              onChange={(v) => set("logo", v)}
+            />
+          )}
           <LinksEditor
             addLabel="Add nav link"
             items={(block.props.links as string[]) || []}
@@ -265,22 +298,31 @@ function ContentTabFields({
       {/* ── Hero ── */}
       {block.type === "hero" && (
         <>
-          <Field
-            label="Headline"
-            value={(block.props.headline as string) || ""}
-            onChange={(v) => set("headline", v)}
-          />
-          <Field
-            label="Subtitle"
-            multiline
-            value={(block.props.subtitle as string) || ""}
-            onChange={(v) => set("subtitle", v)}
-          />
-          <Field
-            label="Button Text"
-            value={(block.props.ctaText as string) || ""}
-            onChange={(v) => set("ctaText", v)}
-          />
+          {shouldShow("headline") && (
+            <Field
+              label="Headline"
+              value={(block.props.headline as string) || ""}
+              errors={getErrors("headline")}
+              onChange={(v) => set("headline", v)}
+            />
+          )}
+          {shouldShow("subtitle") && (
+            <Field
+              label="Subtitle"
+              multiline
+              value={(block.props.subtitle as string) || ""}
+              errors={getErrors("subtitle")}
+              onChange={(v) => set("subtitle", v)}
+            />
+          )}
+          {shouldShow("ctaText") && (
+            <Field
+              label="Button Text"
+              value={(block.props.ctaText as string) || ""}
+              errors={getErrors("ctaText")}
+              onChange={(v) => set("ctaText", v)}
+            />
+          )}
           <ImagePicker
             label="Hero Image"
             value={(block.props.heroImage as string) || ""}
@@ -1704,13 +1746,16 @@ function Field({
   multiline,
   placeholder,
   onChange,
+  errors,
 }: {
   label: string;
   value: string;
   multiline?: boolean;
   placeholder?: string;
   onChange: (v: string) => void;
+  errors?: string[];
 }) {
+  const hasError = errors && errors.length > 0;
   return (
     <div>
       <label className="text-[11px] font-semibold text-muted block mb-1.5">
@@ -1718,18 +1763,31 @@ function Field({
       </label>
       {multiline ? (
         <textarea
-          className="w-full rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 py-2 text-[12px] text-foreground outline-none focus:border-[#634CF8] focus:bg-white dark:focus:bg-background transition-all resize-none h-24 leading-relaxed"
+          className={clsx(
+            "w-full rounded-lg border bg-[#FAFAFA] dark:bg-surface px-3 py-2 text-[12px] text-foreground outline-none focus:bg-white dark:focus:bg-background transition-all resize-none h-24 leading-relaxed",
+            hasError ? "border-red-500 focus:border-red-500" : "border-separator/50 focus:border-[#634CF8]"
+          )}
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
       ) : (
         <input
-          className="w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] text-foreground outline-none focus:border-[#634CF8] focus:bg-white dark:focus:bg-background transition-all"
+          className={clsx(
+            "w-full h-9 rounded-lg border bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] text-foreground outline-none focus:bg-white dark:focus:bg-background transition-all",
+            hasError ? "border-red-500 focus:border-red-500" : "border-separator/50 focus:border-[#634CF8]"
+          )}
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
+      )}
+      {hasError && (
+        <div className="mt-1">
+          {errors.map((err, i) => (
+            <p key={i} className="text-red-500 text-xs">{err}</p>
+          ))}
+        </div>
       )}
     </div>
   );

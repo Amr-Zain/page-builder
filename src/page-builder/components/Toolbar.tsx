@@ -1,6 +1,6 @@
 import { Button, Tooltip } from "@heroui/react";
 import clsx from "clsx";
-import { Monitor, Tablet, Smartphone, Undo2, Redo2, PanelLeft, PanelRight, Moon, Sun } from "lucide-react";
+import { Monitor, Tablet, Smartphone, Undo2, Redo2, PanelLeft, PanelRight, Moon, Sun, Globe, GlobeLock } from "lucide-react";
 
 export function Toolbar({
   previewMode,
@@ -20,6 +20,11 @@ export function Toolbar({
   onPreview,
   onExportHtml,
   onExportReact,
+  isPublished,
+  pageTitle,
+  pageSlug,
+  onPublish,
+  onUnpublish,
 }: {
   previewMode: "desktop" | "tablet" | "mobile";
   onPreviewModeChange: (mode: "desktop" | "tablet" | "mobile") => void;
@@ -38,6 +43,11 @@ export function Toolbar({
   onPreview: () => void;
   onExportHtml: () => void;
   onExportReact: () => void;
+  isPublished?: boolean;
+  pageTitle?: string;
+  pageSlug?: string;
+  onPublish?: () => void;
+  onUnpublish?: () => void;
 }) {
   const devices = [
     {
@@ -224,9 +234,41 @@ export function Toolbar({
         <Button className="hidden lg:inline-flex" size="sm" variant="secondary" onPress={onExportReact}>
           React
         </Button>
-        <Button size="sm" style={{ backgroundColor: "#634CF8", color: "#fff" }}>
-          Publish
-        </Button>
+        {isPublished ? (
+          <Tooltip delay={200}>
+            <Button
+              size="sm"
+              variant="secondary"
+              onPress={onUnpublish}
+            >
+              <GlobeLock size={14} />
+              Unpublish
+            </Button>
+            <Tooltip.Content>
+              <p className="text-xs">Revert to draft</p>
+            </Tooltip.Content>
+          </Tooltip>
+        ) : (
+          <Tooltip delay={200}>
+            <Button
+              size="sm"
+              style={{ backgroundColor: "#634CF8", color: "#fff" }}
+              onPress={() => {
+                if (!pageTitle?.trim() || !pageSlug?.trim()) {
+                  alert("Cannot publish: Title and slug must not be empty.");
+                  return;
+                }
+                onPublish?.();
+              }}
+            >
+              <Globe size={14} />
+              Publish
+            </Button>
+            <Tooltip.Content>
+              <p className="text-xs">Publish this page</p>
+            </Tooltip.Content>
+          </Tooltip>
+        )}
       </div>
     </nav>
   );

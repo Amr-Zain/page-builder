@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
 import clsx from "clsx";
 import {
   DndContext,
@@ -67,6 +68,10 @@ import {
   loadMenus,
   saveMenus,
 } from "./menus";
+import { VersionManager } from "./version-history";
+import { type PageBuilderConfig, useBuilderConfig } from "./builder-config";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { ProjectStorage } from "./project-storage";
 
 const MIN_LEFT = 300;
 const MAX_LEFT = 480;
@@ -133,7 +138,46 @@ function updateBlockInTree(
   });
 }
 
-export default function PageBuilder() {
+export default function PageBuilder({ config }: { config?: PageBuilderConfig } = {}) {
+  // Initialize override manager and plugin context
+  const { manager } = useBuilderConfig(config);
+
+  // Read optional projectId from route params
+  const { projectId: routeProjectId } = useParams<{ projectId?: string }>();
+
+  // Resolve the effective project ID
+  const [resolvedProjectId, setResolvedProjectId] = useState<string | null>(null);
+  const [projectNotFound, setProjectNotFound] = useState(false);
+
+  useEffect(() => {
+    if (routeProjectId) {
+      // Validate the project exists
+      const project = ProjectStorage.getProject(routeProjectId);
+      if (project) {
+        setResolvedProjectId(routeProjectId);
+        setProjectNotFound(false);
+      } else {
+        setProjectNotFound(true);
+        setResolvedProjectId(null);
+      }
+    } else {
+      // No projectId in URL: load most recently updated project or create one
+      const projects = ProjectStorage.listProjects();
+      if (projects.length > 0) {
+        const sorted = [...projects].sort(
+          (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+        );
+        setResolvedProjectId(sorted[0].id);
+        setProjectNotFound(false);
+      } else {
+        // Create a new project
+        const newProject = ProjectStorage.createProject("My Website");
+        setResolvedProjectId(newProject.id);
+        setProjectNotFound(false);
+      }
+    }
+  }, [routeProjectId]);
+
   // Read initial values from URL search params
   const initialParams = new URLSearchParams(window.location.search);
   const initialTab = (initialParams.get("tab") || "blocks") as SidebarPanel;
@@ -179,9 +223,20 @@ export default function PageBuilder() {
   const markDirty = useCallback(() => setHasUnsavedChanges(true), []);
 
   // ── Pages Management ──
-  const [pagesState, setPagesState] = useState<PagesState>(
-    () => loadPages() || getDefaultPagesState(),
-  );
+  const [pagesState, setPagesState] = useState<PagesState>(() => {
+    if (resolvedProjectId) {
+      return ProjectStorage.loadProjectPages(resolvedProjectId);
+    }
+    return loadPages() || getDefaultPagesState();
+  });
+
+  // Reload pages when resolvedProjectId changes
+  useEffect(() => {
+    if (resolvedProjectId) {
+      const loaded = ProjectStorage.loadProjectPages(resolvedProjectId);
+      setPagesState(loaded);
+    }
+  }, [resolvedProjectId]);
 
   // Sync active page blocks/design with builder state
   useEffect(() => {
@@ -217,7 +272,40 @@ export default function PageBuilder() {
   }, [state.blocks, state.design]);
 
   useEffect(() => {
-    savePages(pagesState);
+    if (resolvedProjectId) {
+      ProjectStorage.saveProjectPages(resolvedProjectId, pagesState);
+    } else {
+      savePages(pagesState);
+    }
+  }, [pagesState, resolvedProjectId]);
+
+  // Auto-create version snapshots on save (debounced to avoid excessive versions)
+  const versionManagerRef = useRef(new VersionManager());
+  const versionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const activePage = pagesState.pages.find((p) => p.id === pagesState.activePageId);
+    if (!activePage) return;
+
+    // Debounce version creation: only create a version after 5 seconds of inactivity
+    if (versionTimerRef.current) {
+      clearTimeout(versionTimerRef.current);
+    }
+
+    versionTimerRef.current = setTimeout(() => {
+      versionManagerRef.current.createVersion(
+        activePage.id,
+        activePage.blocks,
+        activePage.design,
+        activePage.settings,
+      );
+    }, 5000);
+
+    return () => {
+      if (versionTimerRef.current) {
+        clearTimeout(versionTimerRef.current);
+      }
+    };
   }, [pagesState]);
 
   const handleSelectPage = useCallback((id: string) => {
@@ -853,11 +941,26 @@ export default function PageBuilder() {
   }, [state.blocks, state.design, pagesState]);
 
   // ── Preview Mode ──
+  if (projectNotFound) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen gap-4 bg-background">
+        <p className="text-lg text-foreground">Project not found</p>
+        <Link
+          to="/projects"
+          className="text-sm text-accent hover:underline"
+        >
+          ← Back to Projects
+        </Link>
+      </div>
+    );
+  }
+
   if (isPreviewOpen) {
     return (
       <PreviewMode
         blocks={state.blocks}
         design={state.design}
+        isDraft={!(pagesState.pages.find((p) => p.id === pagesState.activePageId)?.settings.published)}
         onClose={() => setIsPreviewOpen(false)}
       />
     );
@@ -878,43 +981,82 @@ export default function PageBuilder() {
       onDragStart={handleDragStart}
     >
       <div className="flex h-screen flex-col bg-background overflow-hidden">
-        <Toolbar
-          canRedo={future.length > 0}
-          canUndo={history.length > 0}
-          language={language}
-          leftSidebarVisible={leftVisible}
-          previewMode={state.previewMode}
-          rightSidebarVisible={rightVisible}
-          theme={theme}
-          onLanguageChange={setLanguage}
-          onPreview={() => setIsPreviewOpen(true)}
-          onExportHtml={handleExportHtml}
-          onExportReact={handleExportReact}
-          onPreviewModeChange={(mode) =>
-            setState((s) => ({ ...s, previewMode: mode }))
+        {(() => {
+          const toolbarProps = {
+            canRedo: future.length > 0,
+            canUndo: history.length > 0,
+            language,
+            leftSidebarVisible: leftVisible,
+            previewMode: state.previewMode,
+            rightSidebarVisible: rightVisible,
+            theme,
+            isPublished: pagesState.pages.find((p) => p.id === pagesState.activePageId)?.settings.published ?? false,
+            pageTitle: pagesState.pages.find((p) => p.id === pagesState.activePageId)?.settings.title ?? "",
+            pageSlug: pagesState.pages.find((p) => p.id === pagesState.activePageId)?.settings.slug ?? "",
+            onPublish: () => {
+              setPagesState((ps) => ({
+                ...ps,
+                pages: ps.pages.map((p) =>
+                  p.id === ps.activePageId
+                    ? { ...p, settings: { ...p.settings, published: true, updatedAt: new Date().toISOString() } }
+                    : p,
+                ),
+              }));
+            },
+            onUnpublish: () => {
+              setPagesState((ps) => ({
+                ...ps,
+                pages: ps.pages.map((p) =>
+                  p.id === ps.activePageId
+                    ? { ...p, settings: { ...p.settings, published: false, updatedAt: new Date().toISOString() } }
+                    : p,
+                ),
+              }));
+            },
+            onLanguageChange: setLanguage,
+            onPreview: () => setIsPreviewOpen(true),
+            onExportHtml: handleExportHtml,
+            onExportReact: handleExportReact,
+            onPreviewModeChange: (mode: "desktop" | "tablet" | "mobile") =>
+              setState((s) => ({ ...s, previewMode: mode })),
+            onRedo: redo,
+            onThemeChange: setTheme,
+            onToggleLeftSidebar: () => {
+              setLeftVisible((v) => {
+                const next = !v;
+                if (next && !window.matchMedia("(min-width: 768px)").matches) {
+                  setRightVisible(false);
+                }
+                return next;
+              });
+            },
+            onToggleRightSidebar: () => {
+              setRightVisible((v) => {
+                const next = !v;
+                if (next && !window.matchMedia("(min-width: 768px)").matches) {
+                  setLeftVisible(false);
+                }
+                return next;
+              });
+            },
+            onUndo: undo,
+          };
+          const ToolbarComponent = manager.getComponent(
+            "Toolbar",
+            Toolbar as unknown as React.ComponentType<Record<string, unknown>>,
+          );
+          if (ToolbarComponent !== Toolbar) {
+            return (
+              <ErrorBoundary
+                componentName="Toolbar"
+                fallback={<Toolbar {...toolbarProps} />}
+              >
+                <ToolbarComponent {...toolbarProps} />
+              </ErrorBoundary>
+            );
           }
-          onRedo={redo}
-          onThemeChange={setTheme}
-          onToggleLeftSidebar={() => {
-            setLeftVisible((v) => {
-              const next = !v;
-              if (next && !window.matchMedia("(min-width: 768px)").matches) {
-                setRightVisible(false);
-              }
-              return next;
-            });
-          }}
-          onToggleRightSidebar={() => {
-            setRightVisible((v) => {
-              const next = !v;
-              if (next && !window.matchMedia("(min-width: 768px)").matches) {
-                setLeftVisible(false);
-              }
-              return next;
-            });
-          }}
-          onUndo={undo}
-        />
+          return <Toolbar {...toolbarProps} />;
+        })()}
 
         <BreadcrumbNav
           blocks={state.blocks}
@@ -933,49 +1075,97 @@ export default function PageBuilder() {
             style={{ width: leftVisible ? `${leftWidth}px` : "0px" }}
           >
             <div className="h-full" style={{ width: `${leftWidth}px` }}>
-              <Sidebar
-                activePanel={state.sidebarPanel}
-                design={state.design}
-                pagesPanel={
-                  <PagesPanel
-                    activePageId={pagesState.activePageId}
-                    pages={pagesState.pages}
-                    onCreatePage={handleCreatePage}
-                    onDeletePage={handleDeletePage}
-                    onDuplicatePage={handleDuplicatePage}
-                    onSelectPage={handleSelectPage}
-                    onUpdatePageSettings={handleUpdatePageSettings}
-                  />
+              {(() => {
+                const sidebarProps = {
+                  activePanel: state.sidebarPanel,
+                  design: state.design,
+                  pagesPanel: (
+                    <PagesPanel
+                      activePageId={pagesState.activePageId}
+                      pages={pagesState.pages}
+                      onCreatePage={handleCreatePage}
+                      onDeletePage={handleDeletePage}
+                      onDuplicatePage={handleDuplicatePage}
+                      onSelectPage={handleSelectPage}
+                      onUpdatePageSettings={handleUpdatePageSettings}
+                    />
+                  ),
+                  menusPanel: (
+                    <MenuManager
+                      menus={menusState.menus}
+                      onUpdate={handleUpdateMenus}
+                    />
+                  ),
+                  width: leftWidth,
+                  onDesignUpdate: updateDesign,
+                  onPanelChange: (panel: SidebarPanel) =>
+                    setState((s) => ({ ...s, sidebarPanel: panel })),
+                  onTemplateSelect: applyTemplate,
+                  onBlockSelect: (blockType: BlockType) => {
+                    const def = BLOCK_DEFINITIONS.find((b) => b.type === blockType)
+                      || COMPONENT_DEFINITIONS.find((c) => c.type === (blockType as string));
+                    pushHistory();
+                    const newBlock: BlockInstance = {
+                      id: createBlockId(),
+                      type: blockType,
+                      props: def && "defaultProps" in def ? { ...def.defaultProps } : {},
+                    };
+                    setState((s) => ({
+                      ...s,
+                      blocks: [...s.blocks, newBlock],
+                      selectedBlockId: newBlock.id,
+                    }));
+                  },
+                };
+                const SidebarComponent = manager.getComponent(
+                  "Sidebar",
+                  Sidebar as unknown as React.ComponentType<Record<string, unknown>>,
+                );
+                if (SidebarComponent !== Sidebar) {
+                  return (
+                    <ErrorBoundary
+                      componentName="Sidebar"
+                      fallback={<Sidebar {...sidebarProps} />}
+                    >
+                      <SidebarComponent {...sidebarProps} />
+                    </ErrorBoundary>
+                  );
                 }
-                menusPanel={
-                  <MenuManager
-                    menus={menusState.menus}
-                    onUpdate={handleUpdateMenus}
-                  />
-                }
-                width={leftWidth}
-                onDesignUpdate={updateDesign}
-                onPanelChange={(panel: SidebarPanel) =>
-                  setState((s) => ({ ...s, sidebarPanel: panel }))
-                }
-                onTemplateSelect={applyTemplate}
-              />
+                return <Sidebar {...sidebarProps} />;
+              })()}
             </div>
           </div>
           {leftVisible && (
             <ResizeHandle className="hidden md:flex" side="left" onResize={handleLeftResize} />
           )}
 
-          <Canvas
-            blocks={state.blocks}
-            design={state.design}
-            isDragActive={activeDragId !== null}
-            hoveredBlockId={state.hoveredBlockId}
-            previewMode={state.previewMode}
-            selectedBlockId={state.selectedBlockId}
-            onBlockDelete={deleteBlock}
-            onBlockSelect={selectBlock}
-          />
+          {(() => {
+            const canvasProps = {
+              blocks: state.blocks,
+              design: state.design,
+              isDragActive: activeDragId !== null,
+              hoveredBlockId: state.hoveredBlockId,
+              previewMode: state.previewMode,
+              selectedBlockId: state.selectedBlockId,
+              onBlockDelete: deleteBlock,
+              onBlockSelect: selectBlock,
+            };
+            const CanvasComponent = manager.getComponent(
+              "Canvas",
+              Canvas as unknown as React.ComponentType<Record<string, unknown>>,
+            );
+            if (CanvasComponent !== Canvas) {
+              return (
+                <ErrorBoundary
+                  componentName="Canvas"
+                  fallback={<Canvas {...canvasProps} />}
+                >
+                  <CanvasComponent {...canvasProps} />
+                </ErrorBoundary>
+              );
+            }
+            return <Canvas {...canvasProps} />;
+          })()}
 
           {/* Right sidebar with slide animation */}
           {rightVisible && (
@@ -990,24 +1180,41 @@ export default function PageBuilder() {
             style={{ width: rightVisible ? `${rightWidth}px` : "0px" }}
           >
             <div className="h-full max-md:w-full" style={{ width: `${rightWidth}px` }}>
-              <RightPanel
-                activePage={pagesState.pages.find(
-                  (p) => p.id === pagesState.activePageId,
-                )}
-                block={selectedBlock}
-                blocks={state.blocks}
-                width={rightWidth}
-                expandedLayerIds={state.expandedLayerIds}
-                onToggleExpand={toggleExpandLayer}
-                onHoverBlock={setHoveredBlockId}
-                onDelete={deleteBlock}
-                onDeselect={() => selectBlock(null)}
-                onDuplicate={duplicateBlock}
-                onMoveDown={moveBlockDown}
-                onMoveUp={moveBlockUp}
-                onUpdate={updateBlockProps}
-                onUpdatePageSettings={handleUpdatePageSettings}
-              />
+              {(() => {
+                const rightPanelProps = {
+                  activePage: pagesState.pages.find(
+                    (p) => p.id === pagesState.activePageId,
+                  ),
+                  block: selectedBlock,
+                  blocks: state.blocks,
+                  width: rightWidth,
+                  expandedLayerIds: state.expandedLayerIds,
+                  onToggleExpand: toggleExpandLayer,
+                  onHoverBlock: setHoveredBlockId,
+                  onDelete: deleteBlock,
+                  onDeselect: () => selectBlock(null),
+                  onDuplicate: duplicateBlock,
+                  onMoveDown: moveBlockDown,
+                  onMoveUp: moveBlockUp,
+                  onUpdate: updateBlockProps,
+                  onUpdatePageSettings: handleUpdatePageSettings,
+                };
+                const RightPanelComponent = manager.getComponent(
+                  "RightPanel",
+                  RightPanel as unknown as React.ComponentType<Record<string, unknown>>,
+                );
+                if (RightPanelComponent !== RightPanel) {
+                  return (
+                    <ErrorBoundary
+                      componentName="RightPanel"
+                      fallback={<RightPanel {...rightPanelProps} />}
+                    >
+                      <RightPanelComponent {...rightPanelProps} />
+                    </ErrorBoundary>
+                  );
+                }
+                return <RightPanel {...rightPanelProps} />;
+              })()}
             </div>
           </div>
         </div>

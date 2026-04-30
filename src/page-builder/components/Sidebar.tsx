@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { Slider } from "@heroui/react";
 import clsx from "clsx";
@@ -7,6 +7,7 @@ import { ChevronUp, GripVertical, Search, LayoutGrid, Component, Palette, FileTe
 import type {
   BlockDefinition,
   BlockCategory,
+  BlockType,
   ComponentDefinition,
   DesignSettings,
   SidebarPanel,
@@ -22,6 +23,9 @@ import {
 } from "../data";
 import { RADIUS_TOKENS, type RadiusToken } from "../tokens";
 import { ColorPicker } from "./ColorPicker";
+import { EnhancedSearch } from "./EnhancedSearch";
+import { SearchEngine } from "../search-engine";
+import type { SearchableItem } from "../search-engine";
 
 // ── Collapsible Section ──
 function CollapsibleSection({
@@ -1052,6 +1056,7 @@ export function Sidebar({
   onDesignUpdate,
   onPanelChange,
   onTemplateSelect,
+  onBlockSelect,
 }: {
   activePanel: SidebarPanel;
   design: DesignSettings;
@@ -1064,8 +1069,41 @@ export function Sidebar({
   ) => void;
   onPanelChange: (panel: SidebarPanel) => void;
   onTemplateSelect: (template: Template) => void;
+  onBlockSelect?: (blockType: BlockType) => void;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Initialize SearchEngine with block and component definitions
+  const searchEngine = useMemo(() => {
+    const engine = new SearchEngine();
+    const items: SearchableItem[] = [
+      ...BLOCK_DEFINITIONS.map((block) => ({
+        id: `block-${block.type}`,
+        label: block.label,
+        description: block.description,
+        keywords: [block.type, block.category],
+        category: block.category,
+        metadata: { blockType: block.type, kind: "block" as const },
+      })),
+      ...COMPONENT_DEFINITIONS.map((comp) => ({
+        id: `component-${comp.type}`,
+        label: comp.label,
+        description: comp.description,
+        keywords: [comp.type, comp.category],
+        category: comp.category,
+        metadata: { blockType: comp.type, kind: "component" as const },
+      })),
+    ];
+    engine.getIndex().build(items);
+    return engine;
+  }, []);
+
+  // Handle search result selection
+  const handleSearchSelect = (item: SearchableItem) => {
+    if (onBlockSelect && item.metadata?.blockType) {
+      onBlockSelect(item.metadata.blockType as BlockType);
+    }
+  };
 
   // Clear search when switching tabs
   const handlePanelChange = (panel: SidebarPanel) => {
@@ -1109,17 +1147,25 @@ export function Sidebar({
       <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 min-w-0">
         {/* Sticky search above all panels */}
         <div className="sticky top-0 z-10 bg-white dark:bg-background pt-3 pb-2">
-          <SidebarSearch
-            placeholder={
-              activePanel === "blocks" ? "Search blocks..."
-              : activePanel === "components" ? "Search components..."
-              : activePanel === "design" ? "Search design options..."
-              : activePanel === "templates" ? "Search templates..."
-              : "Search..."
-            }
-            value={searchQuery}
-            onChange={setSearchQuery}
-          />
+          {(activePanel === "blocks" || activePanel === "components") ? (
+            <EnhancedSearch
+              searchEngine={searchEngine}
+              onSelect={handleSearchSelect}
+              placeholder={
+                activePanel === "blocks" ? "Search blocks..." : "Search components..."
+              }
+            />
+          ) : (
+            <SidebarSearch
+              placeholder={
+                activePanel === "design" ? "Search design options..."
+                : activePanel === "templates" ? "Search templates..."
+                : "Search..."
+              }
+              value={searchQuery}
+              onChange={setSearchQuery}
+            />
+          )}
         </div>
         {activePanel === "blocks" && <BlocksPanel query={searchQuery} />}
         {activePanel === "components" && <ComponentsPanel query={searchQuery} />}
