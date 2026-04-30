@@ -309,12 +309,20 @@ function FeaturesBlock({ props, design, previewMode }: RendererProps) {
 
 function ContentBlock({ props }: RendererProps) {
   const heading = (props.heading as string) || "Why teams choose us";
-  const body =
-    (props.body as string) ||
-    "We started with a simple observation: building great software shouldn't require fighting your tools. Every feature we ship is designed to remove friction from your workflow, so you can focus on what matters — creating products your users love.";
-  const body2 =
-    (props.body2 as string) ||
-    "Our platform handles the complexity of modern development — from CI/CD pipelines to infrastructure management — so your team can move faster without sacrificing quality or reliability. Thousands of companies trust us to power their most critical workflows.";
+  const body = (props.body as string) || "We started with a simple observation: building great software shouldn't require fighting your tools.";
+  const body2 = (props.body2 as string) || "";
+
+  const renderText = (text: string) => {
+    if (text.includes("<")) {
+      return (
+        <div
+          className="text-base text-muted leading-relaxed [&_ol]:list-decimal [&_ul]:list-disc [&_ol]:pl-6 [&_ul]:pl-6 [&_li]:mb-1 [&_p]:mb-2 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:text-lg [&_h3]:font-semibold [&_blockquote]:border-l-4 [&_blockquote]:border-separator [&_blockquote]:pl-4 [&_blockquote]:italic [&_a]:text-[#634CF8] [&_a]:underline"
+          dangerouslySetInnerHTML={{ __html: text }}
+        />
+      );
+    }
+    return <p className="text-base text-muted leading-relaxed">{text}</p>;
+  };
 
   return (
     <div className="px-4 sm:px-8 py-12 sm:py-16 max-w-3xl mx-auto">
@@ -322,8 +330,8 @@ function ContentBlock({ props }: RendererProps) {
         {heading}
       </h2>
       <div className="space-y-4">
-        <p className="text-base text-muted leading-relaxed">{body}</p>
-        <p className="text-base text-muted leading-relaxed">{body2}</p>
+        {renderText(body)}
+        {body2 && renderText(body2)}
       </div>
     </div>
   );
@@ -1072,12 +1080,19 @@ function FooterBlock({ props, design, previewMode }: RendererProps) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function TextBlock({ props }: RendererProps) {
+  const content = (props.content as string) || "Start typing your content here...";
+  const isHtml = content.includes("<");
+
   return (
     <div className="px-4 sm:px-8 py-8 sm:py-10 max-w-3xl mx-auto">
-      <p className="text-base text-foreground leading-relaxed">
-        {(props.content as string) ||
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."}
-      </p>
+      {isHtml ? (
+        <div
+          className="text-base text-foreground leading-relaxed prose prose-sm max-w-none [&_ol]:list-decimal [&_ul]:list-disc [&_ol]:pl-6 [&_ul]:pl-6 [&_li]:mb-1 [&_p]:mb-2 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:text-lg [&_h3]:font-semibold [&_blockquote]:border-l-4 [&_blockquote]:border-separator [&_blockquote]:pl-4 [&_blockquote]:italic [&_a]:text-[#634CF8] [&_a]:underline"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      ) : (
+        <p className="text-base text-foreground leading-relaxed">{content}</p>
+      )}
     </div>
   );
 }

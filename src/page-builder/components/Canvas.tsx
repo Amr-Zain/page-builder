@@ -416,16 +416,34 @@ export function Canvas({
       <div
         ref={setCanvasRef}
         className={clsx(
-          "mx-auto min-h-full overflow-hidden transition-all duration-300",
+          "mx-auto min-h-full overflow-hidden transition-all duration-300 bg-background text-foreground",
           pageMoodClass,
-          design.mood === "dark"
-            ? "bg-[#0f0f1a] text-white"
-            : "bg-white text-[#1a1a2e]",
           previewMode === "desktop"
             ? "rounded-none shadow-none border-x border-separator/20"
             : "rounded-xl shadow-xl border border-separator/30",
         )}
-        style={{ maxWidth: canvasWidth, fontFamily, ...bgStyles }}
+        style={{
+          maxWidth: canvasWidth,
+          fontFamily,
+          ...bgStyles,
+          // Only override CSS variables when user has set custom values
+          ...(design.mood === "dark" ? {
+            ...(design.darkForeground ? { "--foreground": design.darkForeground } as React.CSSProperties : {}),
+            ...(design.darkBackground ? { "--background": design.darkBackground } as React.CSSProperties : {}),
+            ...(design.darkMuted ? { "--muted": design.darkMuted } as React.CSSProperties : {}),
+            ...(design.darkSurface ? { "--surface": design.darkSurface } as React.CSSProperties : {}),
+            ...(design.darkSeparator ? { "--separator": design.darkSeparator } as React.CSSProperties : {}),
+          } : {
+            ...(design.lightForeground ? { "--foreground": design.lightForeground } as React.CSSProperties : {}),
+            ...(design.lightBackground ? { "--background": design.lightBackground } as React.CSSProperties : {}),
+            ...(design.lightMuted ? { "--muted": design.lightMuted } as React.CSSProperties : {}),
+            ...(design.lightSurface ? { "--surface": design.lightSurface } as React.CSSProperties : {}),
+            ...(design.lightSeparator ? { "--separator": design.lightSeparator } as React.CSSProperties : {}),
+          }),
+          ...(design.successColor ? { "--success": `#${design.successColor}` } as React.CSSProperties : {}),
+          ...(design.warningColor ? { "--warning": `#${design.warningColor}` } as React.CSSProperties : {}),
+          ...(design.dangerColor ? { "--danger": `#${design.dangerColor}` } as React.CSSProperties : {}),
+        }}
       >
         {blocks.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-4 text-center min-h-[400px] m-6">

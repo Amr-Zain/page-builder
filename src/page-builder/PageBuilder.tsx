@@ -134,18 +134,37 @@ function updateBlockInTree(
 }
 
 export default function PageBuilder() {
+  // Read initial values from URL search params
+  const initialParams = new URLSearchParams(window.location.search);
+  const initialTab = (initialParams.get("tab") || "blocks") as SidebarPanel;
+  const initialDevice = (initialParams.get("device") || "desktop") as "desktop" | "tablet" | "mobile";
+  const initialMood = initialParams.get("mood") as "light" | "dark" | null;
+
   // Load persisted state or use defaults
   const persisted = useRef(loadState());
   const [state, setState] = useState<BuilderState>(() => ({
     blocks: persisted.current?.blocks || DEFAULT_BLOCKS,
-    design: persisted.current?.design || DEFAULT_DESIGN,
+    design: {
+      ...(persisted.current?.design || DEFAULT_DESIGN),
+      ...(initialMood ? { mood: initialMood } : {}),
+    },
     selectedBlockId: null,
-    sidebarPanel: "blocks",
+    sidebarPanel: initialTab,
     isDrawerOpen: false,
-    previewMode: "desktop",
+    previewMode: initialDevice,
     hoveredBlockId: null,
     expandedLayerIds: new Set<string>(),
   }));
+
+  // Sync state to URL search params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("tab", state.sidebarPanel);
+    params.set("device", state.previewMode);
+    params.set("mood", state.design.mood);
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState(null, "", newUrl);
+  }, [state.sidebarPanel, state.previewMode, state.design.mood]);
 
   // ── Dirty tracking (must be before pages section) ──
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -381,9 +400,11 @@ export default function PageBuilder() {
         (e.key === "Delete" || e.key === "Backspace") &&
         state.selectedBlockId
       ) {
-        // Don't delete if user is typing in an input
+        // Don't delete if user is typing in an input or contenteditable
         const tag = (e.target as HTMLElement)?.tagName;
         if (tag === "INPUT" || tag === "TEXTAREA") return;
+        const el = e.target as HTMLElement;
+        if (el?.isContentEditable || el?.closest?.("[contenteditable]")) return;
         e.preventDefault();
         deleteBlock(state.selectedBlockId);
         return;

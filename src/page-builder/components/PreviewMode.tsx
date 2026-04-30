@@ -82,15 +82,33 @@ export function PreviewMode({
       <div className="flex-1 overflow-y-auto pt-16 pb-8 px-4">
         <div
           className={clsx(
-            "mx-auto overflow-hidden transition-all duration-300",
-            design.mood === "dark"
-              ? "bg-[#0f0f1a] text-white"
-              : "bg-white text-[#1a1a2e]",
+            "mx-auto overflow-hidden transition-all duration-300 bg-background text-foreground",
+            design.mood === "dark" ? "dark" : "",
             device === "desktop"
               ? "rounded-none shadow-none"
               : "rounded-xl shadow-2xl border border-separator/30",
           )}
-          style={{ maxWidth: canvasWidth, fontFamily }}
+          style={{
+            maxWidth: canvasWidth,
+            fontFamily,
+            // Only override CSS variables when user has set custom values
+            ...(design.mood === "dark" ? {
+              ...(design.darkForeground ? { "--foreground": design.darkForeground } as React.CSSProperties : {}),
+              ...(design.darkBackground ? { "--background": design.darkBackground } as React.CSSProperties : {}),
+              ...(design.darkMuted ? { "--muted": design.darkMuted } as React.CSSProperties : {}),
+              ...(design.darkSurface ? { "--surface": design.darkSurface } as React.CSSProperties : {}),
+              ...(design.darkSeparator ? { "--separator": design.darkSeparator } as React.CSSProperties : {}),
+            } : {
+              ...(design.lightForeground ? { "--foreground": design.lightForeground } as React.CSSProperties : {}),
+              ...(design.lightBackground ? { "--background": design.lightBackground } as React.CSSProperties : {}),
+              ...(design.lightMuted ? { "--muted": design.lightMuted } as React.CSSProperties : {}),
+              ...(design.lightSurface ? { "--surface": design.lightSurface } as React.CSSProperties : {}),
+              ...(design.lightSeparator ? { "--separator": design.lightSeparator } as React.CSSProperties : {}),
+            }),
+            ...(design.successColor ? { "--success": `#${design.successColor}` } as React.CSSProperties : {}),
+            ...(design.warningColor ? { "--warning": `#${design.warningColor}` } as React.CSSProperties : {}),
+            ...(design.dangerColor ? { "--danger": `#${design.dangerColor}` } as React.CSSProperties : {}),
+          }}
         >
           {blocks.map((block) => (
             <PreviewBlock

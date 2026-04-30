@@ -195,6 +195,29 @@ export interface DesignSettings {
   backgroundOpacity: number;
   typography: TypographyType;
   radius: RadiusType;
+  // Customizable color tokens
+  successColor?: string;
+  warningColor?: string;
+  dangerColor?: string;
+  // Theme color overrides (light mode)
+  lightForeground?: string;
+  lightBackground?: string;
+  lightMuted?: string;
+  lightSurface?: string;
+  lightSeparator?: string;
+  // Theme color overrides (dark mode)
+  darkForeground?: string;
+  darkBackground?: string;
+  darkMuted?: string;
+  darkSurface?: string;
+  darkSeparator?: string;
+  // Customizable border
+  borderWidth?: string;
+  borderStyle?: "solid" | "dashed" | "dotted";
+  // Customizable shadow
+  shadow?: "none" | "sm" | "md" | "lg";
+  // Customizable base spacing multiplier
+  spacingBase?: number;
 }
 
 // ── Template ──

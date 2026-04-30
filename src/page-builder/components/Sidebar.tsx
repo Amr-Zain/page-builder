@@ -21,6 +21,7 @@ import {
   TEMPLATES,
 } from "../data";
 import { RADIUS_TOKENS, type RadiusToken } from "../tokens";
+import { ColorPicker } from "./ColorPicker";
 
 // ── Collapsible Section ──
 function CollapsibleSection({
@@ -495,37 +496,80 @@ function DesignPanel({
         </div>
       </CollapsibleSection>}
 
-      {show("color main brand hex") && <CollapsibleSection title="Main Color">
-        <div className="flex items-center gap-3">
-          <input
-            aria-label="Main color hex code"
-            className="h-9 flex-1 min-w-0 rounded-lg border border-separator/60 bg-white dark:bg-surface px-3 text-sm font-mono text-foreground outline-none focus:border-[#634CF8] transition-colors"
-            value={design.mainColor}
-            onChange={(e) =>
-              onUpdate("mainColor", e.target.value.replace("#", ""))
-            }
-          />
-          <div className="relative">
-            <div
-              className="h-9 w-9 shrink-0 rounded-lg shadow-sm cursor-pointer hover:scale-105 transition-transform"
-              style={{ backgroundColor: `#${design.mainColor}` }}
-            />
-            <input
-              aria-label="Color picker"
-              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-              type="color"
-              value={`#${design.mainColor}`}
-              onChange={(e) =>
-                onUpdate("mainColor", e.target.value.replace("#", ""))
-              }
-            />
-          </div>
+      {/* ── Theme Colors (based on active mood) ── */}
+      {show("text background color light dark theme foreground muted surface") && <CollapsibleSection defaultOpen={false} key={`theme-colors-${design.mood}`} title={`Theme Colors (${design.mood === "dark" ? "Dark" : "Light"})`}>
+        <div className="flex flex-col gap-3">
+          <p className="text-[10px] text-muted mb-1">
+            {design.mood === "dark" ? "🌙 Dark" : "☀️ Light"} mode colors — switch mood above to edit the other
+          </p>
+          {design.mood === "light" ? (
+            <>
+              <ColorPicker
+                label="Text (Foreground)"
+                value={design.lightForeground || "#1c1c1e"}
+                onChange={(v) => onUpdate("lightForeground", v)}
+              />
+              <ColorPicker
+                label="Background"
+                value={design.lightBackground || "#f7f7f8"}
+                onChange={(v) => onUpdate("lightBackground", v)}
+              />
+              <ColorPicker
+                label="Muted Text"
+                value={design.lightMuted || "#71717a"}
+                onChange={(v) => onUpdate("lightMuted", v)}
+              />
+              <ColorPicker
+                label="Surface"
+                value={design.lightSurface || "#ffffff"}
+                onChange={(v) => onUpdate("lightSurface", v)}
+              />
+              <ColorPicker
+                label="Separator / Border"
+                value={design.lightSeparator || "#e4e4e7"}
+                onChange={(v) => onUpdate("lightSeparator", v)}
+              />
+            </>
+          ) : (
+            <>
+              <ColorPicker
+                label="Text (Foreground)"
+                value={design.darkForeground || "#fafafa"}
+                onChange={(v) => onUpdate("darkForeground", v)}
+              />
+              <ColorPicker
+                label="Background"
+                value={design.darkBackground || "#18181b"}
+                onChange={(v) => onUpdate("darkBackground", v)}
+              />
+              <ColorPicker
+                label="Muted Text"
+                value={design.darkMuted || "#a1a1aa"}
+                onChange={(v) => onUpdate("darkMuted", v)}
+              />
+              <ColorPicker
+                label="Surface"
+                value={design.darkSurface || "#27272a"}
+                onChange={(v) => onUpdate("darkSurface", v)}
+              />
+              <ColorPicker
+                label="Separator / Border"
+                value={design.darkSeparator || "#3f3f46"}
+                onChange={(v) => onUpdate("darkSeparator", v)}
+              />
+            </>
+          )}
         </div>
-        <p className="mt-2 text-[11px] text-muted">
-          Enter hex code or click the swatch to pick a color.
-        </p>
+      </CollapsibleSection>}
+
+      {show("color main brand hex") && <CollapsibleSection title="Main Color">
+        <ColorPicker
+          label="Accent Color"
+          value={`#${design.mainColor}`}
+          onChange={(v) => onUpdate("mainColor", v.replace("#", "").replace(/^rgba?\(.*\)$/, "634CF8"))}
+        />
         {/* Quick color presets */}
-        <div className="flex flex-wrap gap-1.5 m-2">
+        <div className="flex flex-wrap gap-1.5 mt-2">
           {[
             "634CF8",
             "3B82F6",
@@ -677,62 +721,21 @@ function DesignPanel({
 
       {/* ── HeroUI Color Tokens ── */}
       {show("color token accent success warning danger") && <CollapsibleSection defaultOpen={false} title="Color Tokens">
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           <p className="text-[10px] text-muted mb-1">
-            Semantic colors from HeroUI theme
+            Customize semantic colors
           </p>
-          {[
-            {
-              name: "Accent",
-              var: "--accent",
-              light: "oklch(0.62 0.195 253.83)",
-            },
-            {
-              name: "Success",
-              var: "--success",
-              light: "oklch(0.73 0.19 150.81)",
-            },
-            {
-              name: "Warning",
-              var: "--warning",
-              light: "oklch(0.78 0.16 72.33)",
-            },
-            {
-              name: "Danger",
-              var: "--danger",
-              light: "oklch(0.65 0.23 25.74)",
-            },
-            {
-              name: "Default",
-              var: "--default",
-              light: "oklch(0.94 0.001 286.38)",
-            },
-            { name: "Surface", var: "--surface", light: "oklch(1 0 0)" },
-            {
-              name: "Background",
-              var: "--background",
-              light: "oklch(0.97 0 0)",
-            },
-            {
-              name: "Muted",
-              var: "--muted",
-              light: "oklch(0.55 0.014 285.94)",
-            },
-          ].map((c) => (
-            <div className="flex items-center gap-2" key={c.var}>
-              <div
-                className="h-6 w-6 rounded-md border border-separator/40 shrink-0"
-                style={{ background: `var(${c.var}, ${c.light})` }}
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-medium text-foreground">
-                  {c.name}
-                </p>
-                <p className="text-[9px] text-muted font-mono truncate">
-                  {c.var}
-                </p>
-              </div>
-            </div>
+          {([
+            { key: "successColor" as const, name: "Success", fallback: "22C55E" },
+            { key: "warningColor" as const, name: "Warning", fallback: "F59E0B" },
+            { key: "dangerColor" as const, name: "Danger", fallback: "EF4444" },
+          ] as const).map((c) => (
+            <ColorPicker
+              key={c.key}
+              label={c.name}
+              value={`#${design[c.key] || c.fallback}`}
+              onChange={(v) => onUpdate(c.key, v.replace("#", "").replace(/^rgba?\(.*\)$/, c.fallback))}
+            />
           ))}
         </div>
       </CollapsibleSection>}
@@ -742,28 +745,48 @@ function DesignPanel({
         <div className="flex flex-col gap-3">
           <div>
             <p className="text-[11px] font-medium text-muted mb-2">
-              Border Width
+              Default Border Width
             </p>
             <div className="flex gap-2">
               {["0px", "1px", "2px"].map((w) => (
-                <div className="flex flex-col items-center gap-1" key={w}>
+                <button
+                  className={clsx(
+                    "flex-1 flex flex-col items-center gap-1 rounded-lg p-2 border-2 transition-all",
+                    (design.borderWidth || "1px") === w
+                      ? "border-[#634CF8] bg-[#634CF8]/5"
+                      : "border-separator/40 hover:border-muted",
+                  )}
+                  key={w}
+                  onClick={() => onUpdate("borderWidth", w)}
+                >
                   <div
-                    className="h-8 w-full rounded-md bg-[#F8F8FA] dark:bg-[#1a1a2e]"
+                    className="h-6 w-full rounded-sm bg-[#F8F8FA] dark:bg-[#1a1a2e]"
                     style={{ border: `${w} solid var(--border, #e5e5e5)` }}
                   />
                   <span className="text-[9px] text-muted">{w}</span>
-                </div>
+                </button>
               ))}
             </div>
           </div>
           <div>
             <p className="text-[11px] font-medium text-muted mb-2">
-              Separator Styles
+              Border Style
             </p>
-            <div className="flex flex-col gap-2">
-              <hr className="border-separator" />
-              <hr className="border-separator border-dashed" />
-              <hr className="border-separator border-dotted" />
+            <div className="flex gap-2">
+              {(["solid", "dashed", "dotted"] as const).map((s) => (
+                <button
+                  className={clsx(
+                    "flex-1 h-8 rounded-lg border-2 transition-all text-[10px] font-medium capitalize",
+                    (design.borderStyle || "solid") === s
+                      ? "border-[#634CF8] bg-[#634CF8]/5 text-[#634CF8]"
+                      : "border-separator/40 text-muted hover:border-muted",
+                  )}
+                  key={s}
+                  onClick={() => onUpdate("borderStyle", s)}
+                >
+                  {s}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -772,62 +795,69 @@ function DesignPanel({
       {/* ── Shadows ── */}
       {show("shadow elevation") && <CollapsibleSection defaultOpen={false} title="Shadows">
         <div className="grid grid-cols-2 gap-2">
-          {[
-            { name: "None", shadow: "none" },
-            {
-              name: "Surface",
-              shadow: "var(--surface-shadow, 0 2px 4px rgba(0,0,0,0.04))",
-            },
-            {
-              name: "Overlay",
-              shadow: "var(--overlay-shadow, 0 2px 8px rgba(0,0,0,0.06))",
-            },
-            {
-              name: "Field",
-              shadow: "var(--field-shadow, 0 1px 2px rgba(0,0,0,0.06))",
-            },
-          ].map((s) => (
-            <div className="flex flex-col items-center gap-1.5" key={s.name}>
+          {([
+            { name: "None", key: "none", shadow: "none" },
+            { name: "Small", key: "sm", shadow: "0 1px 2px rgba(0,0,0,0.06)" },
+            { name: "Medium", key: "md", shadow: "0 2px 8px rgba(0,0,0,0.08)" },
+            { name: "Large", key: "lg", shadow: "0 4px 16px rgba(0,0,0,0.1)" },
+          ] as const).map((s) => (
+            <button
+              className={clsx(
+                "flex flex-col items-center gap-1.5 rounded-lg p-2 border-2 transition-all",
+                (design.shadow || "none") === s.key
+                  ? "border-[#634CF8] bg-[#634CF8]/5"
+                  : "border-separator/40 hover:border-muted",
+              )}
+              key={s.key}
+              onClick={() => onUpdate("shadow", s.key)}
+            >
               <div
                 className="h-10 w-full rounded-lg bg-white dark:bg-surface"
                 style={{ boxShadow: s.shadow }}
               />
               <span className="text-[10px] text-muted">{s.name}</span>
-            </div>
+            </button>
           ))}
         </div>
       </CollapsibleSection>}
 
       {/* ── Spacing ── */}
       {show("spacing padding margin gap") && <CollapsibleSection defaultOpen={false} title="Spacing Scale">
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           <p className="text-[10px] text-muted mb-1">
-            Base: --spacing = 0.25rem (4px)
+            Base spacing unit (px)
           </p>
-          {[
-            { label: "1", value: "0.25rem" },
-            { label: "2", value: "0.5rem" },
-            { label: "3", value: "0.75rem" },
-            { label: "4", value: "1rem" },
-            { label: "6", value: "1.5rem" },
-            { label: "8", value: "2rem" },
-            { label: "12", value: "3rem" },
-            { label: "16", value: "4rem" },
-            { label: "24", value: "6rem" },
-          ].map((s) => (
-            <div className="flex items-center gap-2" key={s.label}>
-              <span className="text-[10px] text-muted w-5 text-right tabular-nums">
-                {s.label}
-              </span>
-              <div
-                className="h-3 rounded-sm bg-[#634CF8]/20"
-                style={{ width: s.value }}
-              />
-              <span className="text-[9px] text-muted/60 font-mono">
-                {s.value}
-              </span>
-            </div>
-          ))}
+          <div className="flex items-center gap-2">
+            <input
+              className="h-8 w-16 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-2 text-[12px] text-foreground font-mono outline-none focus:border-[#634CF8] text-center"
+              type="number"
+              min={2}
+              max={16}
+              value={design.spacingBase || 4}
+              onChange={(e) => onUpdate("spacingBase", Math.max(2, Math.min(16, parseInt(e.target.value) || 4)))}
+            />
+            <span className="text-[10px] text-muted">px</span>
+          </div>
+          <div className="flex flex-col gap-1 mt-1">
+            {[1, 2, 3, 4, 6, 8, 12, 16].map((mult) => {
+              const base = design.spacingBase || 4;
+              const px = mult * base;
+              return (
+                <div className="flex items-center gap-2" key={mult}>
+                  <span className="text-[10px] text-muted w-5 text-right tabular-nums">
+                    {mult}
+                  </span>
+                  <div
+                    className="h-3 rounded-sm bg-[#634CF8]/20"
+                    style={{ width: `${px}px` }}
+                  />
+                  <span className="text-[9px] text-muted/60 font-mono">
+                    {px}px
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </CollapsibleSection>}
 
