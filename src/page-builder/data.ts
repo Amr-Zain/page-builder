@@ -259,7 +259,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
       wrap: "nowrap",
     },
     zones: [
-      { name: "content", label: "Content" },
+      { name: "item-1", label: "Item 1" },
     ],
   },
   {
@@ -280,7 +280,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
     category: "layout",
     description: "Vertical flex container",
     defaultProps: { gap: "1rem" },
-    zones: [{ name: "content", label: "Content" }],
+    zones: [{ name: "item-1", label: "Item 1" }],
   },
   {
     type: "columns",

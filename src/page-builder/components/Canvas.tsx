@@ -136,7 +136,7 @@ function SortableBlock({
             name: `cell-${i + 1}`,
             label: `Cell ${i + 1}`,
           }));
-        } else if (block.type === "flex-row") {
+        } else if (block.type === "flex-row" || block.type === "flex-col" || block.type === "flex-container") {
           // Show zones that have children + one extra empty slot
           const childZoneNames = Object.keys(block.children ?? {});
           const maxUsedIndex = childZoneNames.reduce((max, name) => {
@@ -219,10 +219,18 @@ function SortableBlock({
                 }
               : {}),
             ...(block.type === "flex-row"
-              ? { gap: (block.props.gap as string) || "1rem" }
+              ? { 
+                  gap: (block.props.gap as string) || "1rem",
+                  justifyContent: (block.props.justify as string) || "flex-start",
+                  alignItems: (block.props.align as string) || "stretch",
+                }
               : {}),
             ...(block.type === "flex-col"
-              ? { gap: (block.props.gap as string) || "1rem" }
+              ? { 
+                  gap: (block.props.gap as string) || "1rem",
+                  justifyContent: (block.props.justify as string) || "flex-start",
+                  alignItems: (block.props.align as string) || "stretch",
+                }
               : {}),
             ...(block.type === "container"
               ? { maxWidth: (block.props.maxWidth as string) || "1200px" }
@@ -233,7 +241,7 @@ function SortableBlock({
             <div
               key={zoneDef.name}
               className={clsx(
-                block.type === "flex-row" && "flex-1 min-w-0",
+                (block.type === "flex-row" || block.type === "flex-col" || block.type === "flex-container") && "min-w-0 flex flex-col"
               )}
             >
               <DropZone

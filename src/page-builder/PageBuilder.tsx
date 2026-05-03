@@ -142,12 +142,78 @@ export default function PageBuilder({ config }: { config?: PageBuilderConfig } =
   // Initialize override manager and plugin context
   const { manager } = useBuilderConfig(config);
 
+  // ── Pages Management (Initialized First) ──
   // Read optional projectId from route params
   const { projectId: routeProjectId } = useParams<{ projectId?: string }>();
 
-  // Resolve the effective project ID
-  const [resolvedProjectId, setResolvedProjectId] = useState<string | null>(null);
+  // Determine initial project ID synchronously to prevent mount races
+  const initialProjectId = routeProjectId || (() => {
+    const projects = ProjectStorage.listProjects();
+    if (projects.length > 0) {
+      const sorted = [...projects].sort(
+        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      );
+      return sorted[0].id;
+    }
+    return null;
+  })();
+
+  const [resolvedProjectId, setResolvedProjectId] = useState<string | null>(initialProjectId);
   const [projectNotFound, setProjectNotFound] = useState(false);
+
+  const [pagesState, setPagesState] = useState<PagesState>(() => {
+    if (initialProjectId) {
+      return ProjectStorage.loadProjectPages(initialProjectId);
+    }
+    return loadPages() || getDefaultPagesState();
+  });
+
+  // Read initial values from URL search params
+  const initialParams = new URLSearchParams(window.location.search);
+  const initialTab = (initialParams.get("tab") || "blocks") as SidebarPanel;
+  const initialDevice = (initialParams.get("device") || "desktop") as "desktop" | "tablet" | "mobile";
+  const initialMood = initialParams.get("mood") as "light" | "dark" | null;
+  const initialMode = initialParams.get("mode");
+
+  // Load persisted state or use defaults
+  const persisted = useRef(loadState());
+  const [state, setState] = useState<BuilderState>(() => {
+    const activePage = pagesState.pages.find((p) => p.id === pagesState.activePageId);
+    return {
+      blocks: activePage?.blocks || persisted.current?.blocks || DEFAULT_BLOCKS,
+      design: {
+        ...(activePage?.design || persisted.current?.design || DEFAULT_DESIGN),
+        ...(initialMood ? { mood: initialMood } : {}),
+      },
+      selectedBlockId: null,
+      sidebarPanel: initialTab,
+      isDrawerOpen: false,
+      previewMode: initialDevice,
+      hoveredBlockId: null,
+      expandedLayerIds: new Set<string>(),
+    };
+  });
+
+  // Preview mode state — must be before URL sync effect
+  const [isPreviewOpen, setIsPreviewOpen] = useState(initialMode === "preview");
+
+  // Sync state to URL search params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("tab", state.sidebarPanel);
+    params.set("device", state.previewMode);
+    params.set("mood", state.design.mood);
+    params.set("mode", isPreviewOpen ? "preview" : "edit");
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState(null, "", newUrl);
+  }, [state.sidebarPanel, state.previewMode, state.design.mood, isPreviewOpen]);
+
+  // ── Dirty tracking (must be before pages section) ──
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const savedStateRef = useRef(
+    JSON.stringify({ blocks: state.blocks, design: state.design }),
+  );
+  const markDirty = useCallback(() => setHasUnsavedChanges(true), []);
 
   useEffect(() => {
     if (routeProjectId) {
@@ -178,58 +244,6 @@ export default function PageBuilder({ config }: { config?: PageBuilderConfig } =
     }
   }, [routeProjectId]);
 
-  // Read initial values from URL search params
-  const initialParams = new URLSearchParams(window.location.search);
-  const initialTab = (initialParams.get("tab") || "blocks") as SidebarPanel;
-  const initialDevice = (initialParams.get("device") || "desktop") as "desktop" | "tablet" | "mobile";
-  const initialMood = initialParams.get("mood") as "light" | "dark" | null;
-  const initialMode = initialParams.get("mode");
-
-  // Load persisted state or use defaults
-  const persisted = useRef(loadState());
-  const [state, setState] = useState<BuilderState>(() => ({
-    blocks: persisted.current?.blocks || DEFAULT_BLOCKS,
-    design: {
-      ...(persisted.current?.design || DEFAULT_DESIGN),
-      ...(initialMood ? { mood: initialMood } : {}),
-    },
-    selectedBlockId: null,
-    sidebarPanel: initialTab,
-    isDrawerOpen: false,
-    previewMode: initialDevice,
-    hoveredBlockId: null,
-    expandedLayerIds: new Set<string>(),
-  }));
-
-  // Preview mode state — must be before URL sync effect
-  const [isPreviewOpen, setIsPreviewOpen] = useState(initialMode === "preview");
-
-  // Sync state to URL search params
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    params.set("tab", state.sidebarPanel);
-    params.set("device", state.previewMode);
-    params.set("mood", state.design.mood);
-    params.set("mode", isPreviewOpen ? "preview" : "edit");
-    const newUrl = `${window.location.pathname}?${params.toString()}`;
-    window.history.replaceState(null, "", newUrl);
-  }, [state.sidebarPanel, state.previewMode, state.design.mood, isPreviewOpen]);
-
-  // ── Dirty tracking (must be before pages section) ──
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const savedStateRef = useRef(
-    JSON.stringify({ blocks: state.blocks, design: state.design }),
-  );
-  const markDirty = useCallback(() => setHasUnsavedChanges(true), []);
-
-  // ── Pages Management ──
-  const [pagesState, setPagesState] = useState<PagesState>(() => {
-    if (resolvedProjectId) {
-      return ProjectStorage.loadProjectPages(resolvedProjectId);
-    }
-    return loadPages() || getDefaultPagesState();
-  });
-
   // Reload pages when resolvedProjectId changes
   useEffect(() => {
     if (resolvedProjectId) {
@@ -254,7 +268,12 @@ export default function PageBuilder({ config }: { config?: PageBuilderConfig } =
   }, [pagesState.activePageId]);
 
   // Save pages state to localStorage
+  const isInitialMount = useRef(true);
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     // Update the active page's blocks/design from builder state
     setPagesState((ps) => ({
       ...ps,

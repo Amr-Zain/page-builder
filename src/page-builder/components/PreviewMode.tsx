@@ -179,7 +179,7 @@ function PreviewBlock({
         name: `cell-${i + 1}`,
         label: `Cell ${i + 1}`,
       }));
-    } else if (block.type === "flex-row") {
+    } else if (block.type === "flex-row" || block.type === "flex-col" || block.type === "flex-container") {
       const childZoneNames = Object.keys(block.children ?? {});
       const maxUsedIndex = childZoneNames.reduce((max, name) => {
         const match = name.match(/^item-(\d+)$/);
@@ -234,6 +234,8 @@ function PreviewBlock({
                     ? "column" as const
                     : (block.props.direction as React.CSSProperties["flexDirection"]) || "row",
                   gap: `${block.props.gap || "16"}px`,
+                  justifyContent: (block.props.justifyContent as string) || "flex-start",
+                  alignItems: (block.props.alignItems as string) || "stretch",
                   flexWrap: (block.props.wrap as React.CSSProperties["flexWrap"]) || "nowrap",
                 }
               : {}),
@@ -242,6 +244,8 @@ function PreviewBlock({
                   display: "flex",
                   flexDirection: previewMode === "mobile" ? "column" as const : "row" as const,
                   gap: (block.props.gap as string) || "1rem",
+                  justifyContent: (block.props.justify as string) || "flex-start",
+                  alignItems: (block.props.align as string) || "stretch",
                 }
               : {}),
             ...(block.type === "flex-col"
@@ -249,6 +253,8 @@ function PreviewBlock({
                   display: "flex",
                   flexDirection: "column" as const,
                   gap: (block.props.gap as string) || "1rem",
+                  justifyContent: (block.props.justify as string) || "flex-start",
+                  alignItems: (block.props.align as string) || "stretch",
                 }
               : {}),
             ...(block.type === "columns"
@@ -270,7 +276,7 @@ function PreviewBlock({
             const zoneBlocks = block.children?.[zoneDef.name] ?? [];
             if (zoneBlocks.length === 0) return null;
             return (
-              <div key={zoneDef.name} style={{ minWidth: 0, flex: block.type === "flex-row" ? 1 : undefined }}>
+              <div key={zoneDef.name} style={{ minWidth: 0 }}>
                 {zoneBlocks.map((child) => (
                   <PreviewBlock
                     key={child.id}
