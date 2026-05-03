@@ -61,6 +61,7 @@ function getInlineStyles(props: Record<string, unknown>): string {
 type BlockHtmlFn = (
   props: Record<string, unknown>,
   design: DesignSettings,
+  childrenHtml?: string,
 ) => string;
 
 const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
@@ -362,30 +363,33 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     </div>`;
   },
 
-  columns: (props) => {
+  columns: (props, _design, childrenHtml) => {
     const count = Number(props.count) || 2;
-    const colsHtml = Array.from({ length: count })
-      .map(
-        () =>
-          `<div style="padding:1rem;border:1px dashed #d1d5db;border-radius:var(--radius);min-height:100px">Column</div>`,
-      )
-      .join("\n      ");
-    return `<div style="display:grid;grid-template-columns:repeat(${count},1fr);gap:1rem;padding:2rem">
-      ${colsHtml}
-    </div>`;
+    return `<div style="display:grid;grid-template-columns:repeat(${count},1fr);gap:1rem;padding:2rem">${childrenHtml || ""}</div>`;
+  },
+  container: (props, _design, childrenHtml) => {
+    return `<div style="max-width:${props.maxWidth || "1200px"};margin:0 auto;padding:2rem">${childrenHtml || ""}</div>`;
   },
 
-  grid: (props) => {
+  grid: (props, _design, childrenHtml) => {
     const cols = Number(props.columns) || 2;
     const gap = props.gap || "16";
     const templateCols = props.templateColumns || `repeat(${cols}, 1fr)`;
-    return `<div style="display:grid;grid-template-columns:${templateCols};gap:${gap}px;${props.justifyItems ? `justify-items:${props.justifyItems};` : ""}${props.alignItems ? `align-items:${props.alignItems};` : ""}padding:1rem"></div>`;
+    return `<div style="display:grid;grid-template-columns:${templateCols};gap:${gap}px;${props.justifyItems ? `justify-items:${props.justifyItems};` : ""}${props.alignItems ? `align-items:${props.alignItems};` : ""}padding:1rem">${childrenHtml || ""}</div>`;
   },
 
-  "flex-container": (props) => {
+  "flex-container": (props, _design, childrenHtml) => {
     const dir = props.direction || "row";
     const gap = props.gap || "16";
-    return `<div style="display:flex;flex-direction:${dir};gap:${gap}px;${props.justifyContent ? `justify-content:${props.justifyContent};` : ""}${props.alignItems ? `align-items:${props.alignItems};` : ""}${props.wrap ? `flex-wrap:${props.wrap};` : ""}padding:1rem"></div>`;
+    return `<div style="display:flex;flex-direction:${dir};gap:${gap}px;${props.justifyContent ? `justify-content:${props.justifyContent};` : ""}${props.alignItems ? `align-items:${props.alignItems};` : ""}${props.wrap ? `flex-wrap:${props.wrap};` : ""}padding:1rem">${childrenHtml || ""}</div>`;
+  },
+  "flex-row": (props, _design, childrenHtml) => {
+    const gap = props.gap || "1rem";
+    return `<div style="display:flex;flex-direction:row;gap:${gap};${props.justify ? `justify-content:${props.justify};` : ""}${props.align ? `align-items:${props.align};` : ""}padding:1rem">${childrenHtml || ""}</div>`;
+  },
+  "flex-col": (props, _design, childrenHtml) => {
+    const gap = props.gap || "1rem";
+    return `<div style="display:flex;flex-direction:column;gap:${gap};${props.justify ? `justify-content:${props.justify};` : ""}${props.align ? `align-items:${props.align};` : ""}padding:1rem">${childrenHtml || ""}</div>`;
   },
 
   spacer: (props) => {
@@ -413,10 +417,27 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
 
 function renderBlock(block: BlockInstance, design: DesignSettings): string {
   const generator = BLOCK_HTML_MAP[block.type];
-  if (!generator) {
-    return `<!-- Unsupported block: ${esc(block.type)} -->`;
+  // Render nested children if present
+  let childrenHtml = "";
+  if (block.children) {
+    for (const [zoneName, zoneBlocks] of Object.entries(block.children)) {
+      if (zoneBlocks.length > 0) {
+        const zoneContent = zoneBlocks.map((child) => renderBlock(child, design)).join("\n");
+        childrenHtml += `\n<div data-zone="${esc(zoneName)}" style="min-width:0">${zoneContent}</div>`;
+      }
+    }
+    if (childrenHtml && block.type !== "grid" && block.type !== "flex-container" && block.type !== "flex-row" && block.type !== "flex-col" && block.type !== "columns" && block.type !== "container") {
+      childrenHtml = `<div style="display:flex;gap:1rem">${childrenHtml}\n</div>`;
+    }
   }
-  const inner = generator(block.props, design);
+
+  let inner = "";
+  if (generator) {
+    inner = generator(block.props, design, childrenHtml);
+  } else {
+    const textContent = esc(String(block.props.text || block.props.title || block.props.headline || block.props.name || block.props.label || block.type));
+    inner = `<div style="padding:1rem;border:1px dashed #ccc;border-radius:4px;margin-bottom:1rem">${textContent}${childrenHtml || ""}</div>`;
+  }
   const inlineStyle = getInlineStyles(block.props);
   const anim = block.props._animation as string;
   const animClass =
@@ -425,21 +446,7 @@ function renderBlock(block: BlockInstance, design: DesignSettings): string {
       : "";
   const section = block.props._section as Record<string, string> | undefined;
 
-  // Render nested children if present
-  let childrenHtml = "";
-  if (block.children) {
-    for (const [zoneName, zoneBlocks] of Object.entries(block.children)) {
-      if (zoneBlocks.length > 0) {
-        const zoneContent = zoneBlocks.map((child) => renderBlock(child, design)).join("\n");
-        childrenHtml += `\n<div data-zone="${esc(zoneName)}" style="flex:1;min-width:0">${zoneContent}</div>`;
-      }
-    }
-    if (childrenHtml) {
-      childrenHtml = `<div style="display:flex;gap:1rem">${childrenHtml}\n</div>`;
-    }
-  }
-
-  let html = `<div data-block-id="${esc(block.id)}" data-block-type="${esc(block.type)}"${inlineStyle}${animClass}>${inner}${childrenHtml}</div>`;
+  let html = `<div data-block-id="${esc(block.id)}" data-block-type="${esc(block.type)}"${inlineStyle}${animClass}>${inner}</div>`;
 
   if (section?.bgImage || section?.bgOverlay) {
     const overlay = section?.bgOverlay
