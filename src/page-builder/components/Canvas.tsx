@@ -333,9 +333,9 @@ function CanvasDropZone({
       className={clsx(
         "transition-all duration-150 mx-4",
         isOver
-          ? "h-1 bg-[#634CF8] my-2 rounded-full shadow-[0_0_8px_rgba(99,76,248,0.4)]"
+          ? "h-2 bg-[#634CF8] my-3 rounded-full shadow-[0_0_10px_rgba(99,76,248,0.5)] scale-y-110"
           : isDragActive
-            ? "h-10 rounded-lg border-2 border-dashed border-[#634CF8]/30 bg-[#634CF8]/[0.03] my-1 flex items-center justify-center"
+            ? "h-14 rounded-xl border-2 border-dashed border-[#634CF8]/40 bg-[#634CF8]/[0.05] my-2 flex items-center justify-center cursor-copy"
             : "h-2 my-0.5",
       )}
     >

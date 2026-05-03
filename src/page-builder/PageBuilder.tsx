@@ -711,7 +711,8 @@ export default function PageBuilder({ config }: { config?: PageBuilderConfig } =
           newBlocks.splice(idx >= 0 ? idx + 1 : newBlocks.length, 0, newBlock);
         } else {
           const idx = newBlocks.findIndex((b) => b.id === overId);
-          newBlocks.splice(idx >= 0 ? idx + 1 : newBlocks.length, 0, newBlock);
+          // Default to 'before' the block if dropped directly on it
+          newBlocks.splice(idx >= 0 ? idx : newBlocks.length, 0, newBlock);
         }
         return { ...s, blocks: newBlocks, selectedBlockId: newBlock.id };
       });
@@ -767,7 +768,8 @@ export default function PageBuilder({ config }: { config?: PageBuilderConfig } =
           targetIndex = idx >= 0 ? idx + 1 : state.blocks.length;
         } else {
           const idx = state.blocks.findIndex((b) => b.id === overId);
-          targetIndex = idx >= 0 ? idx + 1 : state.blocks.length;
+          // Default to 'before' the block if dropped directly on it
+          targetIndex = idx >= 0 ? idx : state.blocks.length;
         }
       }
 
