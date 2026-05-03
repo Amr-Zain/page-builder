@@ -1113,11 +1113,11 @@ export function Sidebar({
 
   return (
     <aside
-      className="flex h-full shrink-0 border-r border-separator/50 bg-white dark:bg-background overflow-hidden"
+      className="flex flex-col-reverse md:flex-row h-full shrink-0 border-r border-separator/50 bg-white dark:bg-background overflow-hidden"
       style={{ width: `${width}px` }}
     >
       {/* Left icon strip — vertical on desktop, horizontal bottom bar on mobile */}
-      <div className="flex w-full md:w-12 md:flex-col shrink-0 border-t md:border-t-0 md:border-r border-separator/50 bg-[#FAFAFA] dark:bg-[#0f0f1a] py-1 md:py-2 overflow-x-auto md:overflow-x-visible order-last md:order-first">
+      <div className="flex justify-center md:justify-start w-full md:w-12 md:flex-col shrink-0 border-t md:border-t-0 md:border-r border-separator/50 bg-[#FAFAFA] dark:bg-[#0f0f1a] py-1 md:py-2 overflow-x-auto md:overflow-x-visible order-last md:order-first">
         {NAV_ITEMS.map((item) => {
           const isActive = activePanel === item.id;
           return (

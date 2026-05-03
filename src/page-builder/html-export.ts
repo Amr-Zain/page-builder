@@ -1,5 +1,5 @@
 import type { BlockInstance, DesignSettings, TypographyType } from "./types";
-import type { PageSettings } from "./pages";
+import type { Page, PageSettings } from "./pages";
 import { RADIUS_TOKENS } from "./tokens";
 
 // ── Public Types ──
@@ -8,7 +8,7 @@ export interface HtmlExportOptions {
   blocks: BlockInstance[];
   design: DesignSettings;
   pageSettings: PageSettings;
-  allPages?: PageSettings[];
+  allPages?: Page[];
 }
 
 // ── Font URL Map ──
@@ -80,12 +80,12 @@ type BlockHtmlFn = (
 ) => string;
 
 const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
-  navbar: (props, design, children, options) => {
+  navbar: (props, design, _children, options) => {
     const logo = esc(String(props.logo ?? "Logo"));
     const rawLinks = Array.isArray(props.links) ? props.links : [];
     const currentLocale = options?.pageSettings.locale || "en";
     
-    // Resolve links using the context if available
+    // Resolve links
     const links = rawLinks.map((link: any) => {
       if (typeof link === "string") return { label: link, url: "#" };
       const l = link as { label: string; url?: string; pageId?: string };
@@ -93,12 +93,11 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
       
       // Resolve pageId to actual URL
       if (l.pageId && options?.allPages) {
-        const targetPage = options.allPages.find(p => String(p.id) === String(l.pageId));
+        const targetPage = options.allPages.find((p: Page) => String(p.id) === String(l.pageId));
         if (targetPage) {
-          const targetLocale = targetPage.locale || "en";
+          const targetLocale = targetPage.settings.locale || "en";
           // Ensure slug doesn't have a leading slash
-          const cleanSlug = (targetPage.slug || "index").replace(/^\//, "");
-          // Calculate relative path
+          const cleanSlug = (targetPage.settings.slug || "index").replace(/^\//, "");
           const prefix = (currentLocale === "ar" && targetLocale !== "ar") ? "../" : 
                          (currentLocale !== "ar" && targetLocale === "ar") ? "ar/" : "";
           url = `${prefix}${cleanSlug}.html`;
@@ -111,24 +110,21 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
       return { label: l.label, url };
     });
 
-    const linkHtml = links
-      .map(
-        (l) =>
-          `<a href="${esc(l.url)}" style="text-decoration:none;color:inherit;font-size:0.875rem;font-weight:500">${esc(l.label)}</a>`,
-      )
-      .join("\n          ");
+    const linkHtml = links.map((l: { label: string; url: string }) => 
+      `<a href="${esc(l.url)}" style="text-decoration:none;font-weight:500;font-size:0.9375rem;color:${design.mood === "dark" ? "#9ca3af" : "#4b5563"}">${esc(l.label)}</a>`
+    ).join("");
 
     // Language switcher
     let switcherHtml = "";
     if (options?.allPages && options.pageSettings.translationGroupId) {
       const otherLang = currentLocale === "en" ? "ar" : "en";
       const translation = options.allPages.find(
-        (p) => p.translationGroupId === options.pageSettings.translationGroupId && p.locale === otherLang
+        (p: Page) => p.settings.translationGroupId === options.pageSettings.translationGroupId && p.settings.locale === otherLang
       );
       
       if (translation) {
         const prefix = currentLocale === "ar" ? "../" : "ar/";
-        const targetUrl = `${prefix}${translation.slug || "index"}.html`;
+        const targetUrl = `${prefix}${translation.settings.slug || "index"}.html`;
         switcherHtml = `
           <div style="width:1px;height:1.5rem;background:#e5e7eb;margin:0 0.5rem"></div>
           <a href="${esc(targetUrl)}" style="text-decoration:none;color:var(--main-color);font-size:0.75rem;font-weight:700;text-transform:uppercase;padding:0.25rem 0.5rem;border:1px solid var(--main-color);border-radius:4px">
@@ -364,7 +360,7 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     return `<div style="padding:0.75rem 2rem;background:var(--main-color);color:#fff;text-align:center;font-size:0.875rem">${text}</div>`;
   },
 
-  footer: (props: any, design: DesignSettings, children: string | undefined, options: HtmlExportOptions | undefined) => {
+  footer: (props: any, _design: DesignSettings, _children: string | undefined, options: HtmlExportOptions | undefined) => {
     const copyright = esc(String(props.copyright ?? ""));
     const rawLinks = Array.isArray(props.links) ? props.links : [];
     const currentLocale = options?.pageSettings.locale || "en";
@@ -375,10 +371,10 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
       const l = link as { label: string; url?: string; pageId?: string };
       let url = l.url || "#";
       if (l.pageId && options?.allPages) {
-        const targetPage = options.allPages.find(p => String(p.id) === String(l.pageId));
+        const targetPage = options.allPages.find((p: Page) => String(p.id) === String(l.pageId));
         if (targetPage) {
-          const targetLocale = targetPage.locale || "en";
-          const cleanSlug = (targetPage.slug || "index").replace(/^\//, "");
+          const targetLocale = targetPage.settings.locale || "en";
+          const cleanSlug = (targetPage.settings.slug || "index").replace(/^\//, "");
           const prefix = (currentLocale === "ar" && targetLocale !== "ar") ? "../" : 
                          (currentLocale !== "ar" && targetLocale === "ar") ? "ar/" : "";
           url = `${prefix}${cleanSlug}.html`;
@@ -392,7 +388,7 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     });
 
     const linkListHtml = links.length > 0 
-      ? links.map(l => `<a href="${esc(l.url)}" style="color:#6b7280;text-decoration:none;font-size:0.875rem">${esc(l.label)}</a>`).join("")
+      ? links.map((l: { label: string; url: string }) => `<a href="${esc(l.url)}" style="color:#6b7280;text-decoration:none;font-size:0.875rem">${esc(l.label)}</a>`).join("")
       : `<a href="#" style="color:#6b7280;text-decoration:none;font-size:0.875rem">Features</a><a href="#" style="color:#6b7280;text-decoration:none;font-size:0.875rem">Pricing</a><a href="#" style="color:#6b7280;text-decoration:none;font-size:0.875rem">About</a>`;
 
     return `<footer style="padding:4rem 2rem;border-top:1px solid #e5e7eb">
@@ -704,11 +700,11 @@ export function generateHtml(options: HtmlExportOptions): string {
   let alternateLinks = "";
   if (options?.allPages && pageSettings.translationGroupId) {
     options.allPages
-      .filter((p) => p.translationGroupId === pageSettings.translationGroupId && p.locale !== locale)
-      .forEach((p) => {
+      .filter((p: Page) => p.settings.translationGroupId === pageSettings.translationGroupId && p.settings.locale !== locale)
+      .forEach((p: Page) => {
         const prefix = locale === "ar" ? "../" : "ar/";
-        const url = `${prefix}${p.slug || "index"}.html`;
-        alternateLinks += `<link rel="alternate" hreflang="${p.locale}" href="${esc(url)}" />\n  `;
+        const url = `${prefix}${p.settings.slug || "index"}.html`;
+        alternateLinks += `<link rel="alternate" hreflang="${p.settings.locale}" href="${esc(url)}" />\n  `;
       });
   }
 
@@ -771,18 +767,15 @@ export function downloadHtml(html: string, filename: string): void {
 
 // ── Multi-page Export ──
 
-import type { Page } from "./pages";
-
 export function exportProject(pages: Page[], design: DesignSettings): Record<string, string> {
   const files: Record<string, string> = {};
-  const allPageSettings = pages.map(p => p.settings);
   
   pages.forEach(page => {
     const html = generateHtml({
       blocks: page.blocks,
       design: design,
       pageSettings: page.settings,
-      allPages: allPageSettings
+      allPages: pages
     });
     
     const localePrefix = (page.settings.locale || "en") === "ar" ? "ar/" : "";
@@ -795,9 +788,9 @@ export function exportProject(pages: Page[], design: DesignSettings): Record<str
 
 export async function downloadAllPages(files: Record<string, string>): Promise<void> {
   try {
-    // Dynamically load JSZip from CDN
+    // @ts-ignore - Importing from URL
     const JSZipModule = await import("https://cdn.skypack.dev/jszip");
-    const JSZip = JSZipModule.default;
+    const JSZip = (JSZipModule as any).default;
     const zip = new JSZip();
 
     // Add files to zip
