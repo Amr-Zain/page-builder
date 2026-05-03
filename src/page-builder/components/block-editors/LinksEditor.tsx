@@ -1,11 +1,17 @@
-/**
- * Link list editor for navigation links with label + URL support.
- * Supports both simple string[] (legacy) and { label, url }[] formats.
- */
+import {
+  Select,
+  Input,
+  Label,
+  ListBox,
+  TextField,
+} from "@heroui/react";
+
+import type { Page } from "../../pages";
 
 export interface LinkItem {
   label: string;
   url: string;
+  pageId?: string;
 }
 
 export function LinksEditor({
@@ -13,12 +19,14 @@ export function LinksEditor({
   label,
   addLabel,
   showUrl = false,
+  pages = [],
   onChange,
 }: {
   items: string[] | LinkItem[];
   label: string;
   addLabel?: string;
   showUrl?: boolean;
+  pages?: Page[];
   onChange: (items: string[] | LinkItem[]) => void;
 }) {
   // Normalize to LinkItem[] internally
@@ -45,8 +53,8 @@ export function LinksEditor({
     emit(normalized.map((item, i) => (i === index ? { ...item, label: value } : item)));
   };
 
-  const updateUrl = (index: number, value: string) => {
-    emit(normalized.map((item, i) => (i === index ? { ...item, url: value } : item)));
+  const updateUrl = (index: number, value: string, pageId?: string) => {
+    emit(normalized.map((item, i) => (i === index ? { ...item, url: value, pageId } : item)));
   };
 
   const moveItem = (index: number, direction: -1 | 1) => {
@@ -68,12 +76,13 @@ export function LinksEditor({
         {normalized.map((item, index) => (
           <div className="flex flex-col gap-1 rounded-lg border border-separator/30 p-1.5" key={index}>
             <div className="flex items-center gap-1">
-              <input
-                className="flex-1 h-7 rounded border border-separator/40 bg-[#FAFAFA] dark:bg-surface px-2 text-[11px] text-foreground outline-none focus:border-[#634CF8]"
-                placeholder={`Label ${index + 1}`}
+              <TextField
+                className="flex-1"
                 value={item.label}
-                onChange={(e) => updateLabel(index, e.target.value)}
-              />
+                onChange={(v) => updateLabel(index, v)}
+              >
+                <Input placeholder={`Label ${index + 1}`} />
+              </TextField>
               <button
                 className="text-[10px] text-muted hover:text-foreground px-0.5 disabled:opacity-30"
                 disabled={index === 0}
@@ -96,12 +105,53 @@ export function LinksEditor({
               </button>
             </div>
             {isObjectMode && (
-              <input
-                className="h-6 rounded border border-separator/30 bg-[#FAFAFA] dark:bg-surface px-2 text-[10px] text-muted font-mono outline-none focus:border-[#634CF8] focus:text-foreground"
-                placeholder="URL (e.g. /features or https://...)"
-                value={item.url}
-                onChange={(e) => updateUrl(index, e.target.value)}
-              />
+              <div className="flex flex-col gap-1.5 px-0.5 pb-1">
+                <div className="flex gap-1">
+                  <Select
+                    className="flex-1"
+                    placeholder="Internal Page..."
+                    value={item.pageId}
+                    onChange={(pageId) => {
+                      const selectedPage = pages.find((p) => String(p.id) === String(pageId));
+                      if (selectedPage) {
+                        const locale = selectedPage.settings.locale || "en";
+                        const url = locale === "ar" 
+                          ? `/ar/${selectedPage.settings.slug}` 
+                          : `/${selectedPage.settings.slug}`;
+                        updateUrl(index, url, String(selectedPage.id));
+                        if (!item.label) updateLabel(index, selectedPage.settings.title);
+                      } else {
+                        updateUrl(index, item.url, "");
+                      }
+                    }}
+                  >
+                    <Select.Trigger>
+                      <Select.Value />
+                      <Select.Indicator />
+                    </Select.Trigger>
+                    <Select.Popover>
+                      <ListBox>
+                        {pages.map((p) => (
+                          <ListBox.Item id={p.id} key={p.id} textValue={p.settings.title}>
+                            <div className="flex items-center justify-between text-[10px]">
+                              <span>{p.settings.title}</span>
+                              <span className="text-[8px] opacity-50 uppercase">{p.settings.locale || "en"}</span>
+                            </div>
+                            <ListBox.ItemIndicator />
+                          </ListBox.Item>
+                        ))}
+                      </ListBox>
+                    </Select.Popover>
+                  </Select>
+                  <TextField
+                    className="flex-[1.5]"
+                    value={item.url}
+                    onChange={(v) => updateUrl(index, v, "")}
+                  >
+                    <Input placeholder="Custom URL..." />
+                  </TextField>
+                </div>
+              </div>
             )}
           </div>
         ))}

@@ -430,12 +430,14 @@ function DynamicFieldRenderer({
   set,
   isFieldVisible,
   fieldErrors,
+  pages = [],
 }: {
   fields: FieldConfig[];
   block: BlockInstance;
   set: (key: string, value: unknown) => void;
   isFieldVisible?: (fieldName: string) => boolean;
   fieldErrors?: Record<string, string[]>;
+  pages?: Page[];
 }) {
   return (
     <>
@@ -522,8 +524,9 @@ function DynamicFieldRenderer({
               <LinksEditor
                 key={field.key}
                 addLabel={field.addLabel || "Add link"}
-                items={(value as string[]) || []}
+                items={(value as any[]) || []}
                 label={field.label}
+                pages={pages}
                 showUrl={field.showUrl}
                 onChange={(links) => set(field.key, links)}
               />
@@ -574,6 +577,7 @@ type PropertyTab = "content" | "style" | "advanced";
 export function RightPanel({
   block,
   blocks,
+  pages,
   width,
   activePage,
   expandedLayerIds,
@@ -606,6 +610,7 @@ export function RightPanel({
     id: string,
     settings: Partial<Page["settings"]>,
   ) => void;
+  pages: Page[];
   fieldConditions?: ConditionalField[];
   fieldDependencies?: FieldDependency[];
 }) {
@@ -775,7 +780,7 @@ export function RightPanel({
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
         {rememberedTab === "content" && (
-          <ContentTabFields block={block} set={set} isFieldVisible={isFieldVisible} fieldErrors={fieldErrors} />
+          <ContentTabFields block={block} pages={pages} set={set} isFieldVisible={isFieldVisible} fieldErrors={fieldErrors} />
         )}
         {rememberedTab === "style" && (
           <StyleTab style={styleOverrides} setStyle={setStyle} />
@@ -802,10 +807,12 @@ function GenericPropertiesEditor({
   block,
   set,
   isFieldVisible,
+  pages,
 }: {
   block: BlockInstance;
   set: (key: string, value: unknown) => void;
   isFieldVisible?: (fieldName: string) => boolean;
+  pages: Page[];
 }) {
   const config = BLOCK_FIELD_CONFIGS[block.type];
 
@@ -826,10 +833,10 @@ function GenericPropertiesEditor({
       );
     }
 
-    return <DynamicFieldRenderer fields={inferredFields} block={block} set={set} isFieldVisible={isFieldVisible} />;
+    return <DynamicFieldRenderer fields={inferredFields} block={block} pages={pages} set={set} isFieldVisible={isFieldVisible} />;
   }
 
-  return <DynamicFieldRenderer fields={config} block={block} set={set} isFieldVisible={isFieldVisible} />;
+  return <DynamicFieldRenderer fields={config} block={block} pages={pages} set={set} isFieldVisible={isFieldVisible} />;
 }
 
 function ContentTabFields({
@@ -837,11 +844,13 @@ function ContentTabFields({
   set,
   isFieldVisible,
   fieldErrors,
+  pages,
 }: {
   block: BlockInstance;
   set: (key: string, value: unknown) => void;
   isFieldVisible?: (fieldName: string) => boolean;
   fieldErrors?: Record<string, string[]>;
+  pages: Page[];
 }) {
   const config = BLOCK_FIELD_CONFIGS[block.type];
 
@@ -857,10 +866,11 @@ function ContentTabFields({
           fieldErrors={fieldErrors}
           fields={config}
           isFieldVisible={isFieldVisible}
+          pages={pages}
           set={set}
         />
       ) : (
-        <GenericPropertiesEditor block={block} isFieldVisible={isFieldVisible} set={set} />
+        <GenericPropertiesEditor block={block} isFieldVisible={isFieldVisible} pages={pages} set={set} />
       )}
 
       {/* ── Global Block (navbar/footer only) ── */}
@@ -1518,6 +1528,31 @@ function PageSettingsPanel({
                 onUpdatePageSettings(activePage.id, { title: v })
               }
             />
+            <div>
+              <label className={COMMON_CLASSES.FIELD_LABEL}>
+                Language
+              </label>
+              <div className="flex gap-2">
+                {(["en", "ar"] as const).map((lang) => (
+                  <button
+                    className={clsx(
+                      "flex-1 h-9 rounded-lg text-[11px] font-semibold transition-all border-2",
+                      activePage.settings.locale === lang
+                        ? `${UI_COLORS.PRIMARY_BORDER} ${UI_COLORS.PRIMARY_SOFT_BG} ${UI_COLORS.PRIMARY_TEXT}`
+                        : "border-separator/40 text-muted hover:border-muted",
+                    )}
+                    key={lang}
+                    onClick={() =>
+                      onUpdatePageSettings(activePage.id, {
+                        locale: lang,
+                      })
+                    }
+                  >
+                    {lang === "en" ? "English (EN)" : "Arabic (AR)"}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div>
               <label className={COMMON_CLASSES.FIELD_LABEL}>
                 Permalink

@@ -8,6 +8,7 @@ export interface HtmlExportOptions {
   blocks: BlockInstance[];
   design: DesignSettings;
   pageSettings: PageSettings;
+  allPages?: PageSettings[];
 }
 
 // ── Font URL Map ──
@@ -56,29 +57,92 @@ function styleAttr(styles: Record<string, string> | undefined): string {
 function getInlineStyles(props: Record<string, unknown>): string {
   return styleAttr(props._styles as Record<string, string> | undefined);
 }
+
+function ensureRelative(url: string): string {
+  if (!url || url.startsWith("http") || url.startsWith("mailto:") || url.startsWith("tel:") || url.startsWith("#")) {
+    return url;
+  }
+  // Remove leading slash and ensure .html extension if it's a page path without one
+  let clean = url.replace(/^\/+/, "");
+  if (clean && !clean.includes(".") && !clean.includes("#")) {
+    clean += ".html";
+  }
+  return clean || "index.html";
+}
+
 // ── Block HTML Generators ──
 
 type BlockHtmlFn = (
-  props: Record<string, unknown>,
+  props: Record<string, any>,
   design: DesignSettings,
   childrenHtml?: string,
+  options?: HtmlExportOptions,
 ) => string;
 
 const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
-  navbar: (props) => {
+  navbar: (props, design, children, options) => {
     const logo = esc(String(props.logo ?? "Logo"));
-    const links = Array.isArray(props.links) ? props.links : [];
+    const rawLinks = Array.isArray(props.links) ? props.links : [];
+    const currentLocale = options?.pageSettings.locale || "en";
+    
+    // Resolve links using the context if available
+    const links = rawLinks.map((link: any) => {
+      if (typeof link === "string") return { label: link, url: "#" };
+      const l = link as { label: string; url?: string; pageId?: string };
+      let url = l.url || "#";
+      
+      // Resolve pageId to actual URL
+      if (l.pageId && options?.allPages) {
+        const targetPage = options.allPages.find(p => String(p.id) === String(l.pageId));
+        if (targetPage) {
+          const targetLocale = targetPage.locale || "en";
+          // Ensure slug doesn't have a leading slash
+          const cleanSlug = (targetPage.slug || "index").replace(/^\//, "");
+          // Calculate relative path
+          const prefix = (currentLocale === "ar" && targetLocale !== "ar") ? "../" : 
+                         (currentLocale !== "ar" && targetLocale === "ar") ? "ar/" : "";
+          url = `${prefix}${cleanSlug}.html`;
+        } else {
+          url = ensureRelative(url);
+        }
+      } else {
+        url = ensureRelative(url);
+      }
+      return { label: l.label, url };
+    });
+
     const linkHtml = links
       .map(
         (l) =>
-          `<a href="#" style="text-decoration:none;color:inherit">${esc(String(l))}</a>`,
+          `<a href="${esc(l.url)}" style="text-decoration:none;color:inherit;font-size:0.875rem;font-weight:500">${esc(l.label)}</a>`,
       )
       .join("\n          ");
+
+    // Language switcher
+    let switcherHtml = "";
+    if (options?.allPages && options.pageSettings.translationGroupId) {
+      const otherLang = currentLocale === "en" ? "ar" : "en";
+      const translation = options.allPages.find(
+        (p) => p.translationGroupId === options.pageSettings.translationGroupId && p.locale === otherLang
+      );
+      
+      if (translation) {
+        const prefix = currentLocale === "ar" ? "../" : "ar/";
+        const targetUrl = `${prefix}${translation.slug || "index"}.html`;
+        switcherHtml = `
+          <div style="width:1px;height:1.5rem;background:#e5e7eb;margin:0 0.5rem"></div>
+          <a href="${esc(targetUrl)}" style="text-decoration:none;color:var(--main-color);font-size:0.75rem;font-weight:700;text-transform:uppercase;padding:0.25rem 0.5rem;border:1px solid var(--main-color);border-radius:4px">
+            ${otherLang}
+          </a>`;
+      }
+    }
+
     return `<nav style="display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid #e5e7eb">
       <div style="font-weight:700;font-size:1.25rem">${logo}</div>
       <div style="display:flex;gap:1.5rem;align-items:center">
         ${linkHtml}
-        <a href="#" style="background:var(--main-color);color:#fff;padding:0.5rem 1rem;border-radius:var(--radius);text-decoration:none;font-weight:500">Get Started</a>
+        ${switcherHtml}
+        <a href="#" style="background:var(--main-color);color:#fff;padding:0.5rem 1.25rem;border-radius:var(--radius);text-decoration:none;font-weight:600;font-size:0.875rem;margin-left:0.5rem">Get Started</a>
       </div>
     </nav>`;
   },
@@ -300,24 +364,62 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     return `<div style="padding:0.75rem 2rem;background:var(--main-color);color:#fff;text-align:center;font-size:0.875rem">${text}</div>`;
   },
 
-  footer: (props) => {
+  footer: (props: any, design: DesignSettings, children: string | undefined, options: HtmlExportOptions | undefined) => {
     const copyright = esc(String(props.copyright ?? ""));
-    return `<footer style="padding:3rem 2rem;border-top:1px solid #e5e7eb">
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:2rem;max-width:1000px;margin:0 auto 2rem">
+    const rawLinks = Array.isArray(props.links) ? props.links : [];
+    const currentLocale = options?.pageSettings.locale || "en";
+    
+    // Group links by "column" if provided, otherwise generic list
+    const links = rawLinks.map((link: any) => {
+      if (typeof link === "string") return { label: link, url: "#" };
+      const l = link as { label: string; url?: string; pageId?: string };
+      let url = l.url || "#";
+      if (l.pageId && options?.allPages) {
+        const targetPage = options.allPages.find(p => String(p.id) === String(l.pageId));
+        if (targetPage) {
+          const targetLocale = targetPage.locale || "en";
+          const cleanSlug = (targetPage.slug || "index").replace(/^\//, "");
+          const prefix = (currentLocale === "ar" && targetLocale !== "ar") ? "../" : 
+                         (currentLocale !== "ar" && targetLocale === "ar") ? "ar/" : "";
+          url = `${prefix}${cleanSlug}.html`;
+        } else {
+          url = ensureRelative(url);
+        }
+      } else {
+        url = ensureRelative(url);
+      }
+      return { label: l.label, url };
+    });
+
+    const linkListHtml = links.length > 0 
+      ? links.map(l => `<a href="${esc(l.url)}" style="color:#6b7280;text-decoration:none;font-size:0.875rem">${esc(l.label)}</a>`).join("")
+      : `<a href="#" style="color:#6b7280;text-decoration:none;font-size:0.875rem">Features</a><a href="#" style="color:#6b7280;text-decoration:none;font-size:0.875rem">Pricing</a><a href="#" style="color:#6b7280;text-decoration:none;font-size:0.875rem">About</a>`;
+
+    return `<footer style="padding:4rem 2rem;border-top:1px solid #e5e7eb">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:3rem;max-width:1100px;margin:0 auto 3rem">
         <div>
-          <h4 style="font-weight:600;margin:0 0 0.75rem">Product</h4>
-          <div style="display:flex;flex-direction:column;gap:0.5rem"><a href="#" style="color:#6b7280;text-decoration:none">Features</a><a href="#" style="color:#6b7280;text-decoration:none">Pricing</a><a href="#" style="color:#6b7280;text-decoration:none">Changelog</a></div>
+          <h4 style="font-weight:700;margin:0 0 1.25rem;font-size:1rem">Links</h4>
+          <div style="display:flex;flex-direction:column;gap:0.75rem">
+            ${linkListHtml}
+          </div>
         </div>
         <div>
-          <h4 style="font-weight:600;margin:0 0 0.75rem">Company</h4>
-          <div style="display:flex;flex-direction:column;gap:0.5rem"><a href="#" style="color:#6b7280;text-decoration:none">About</a><a href="#" style="color:#6b7280;text-decoration:none">Blog</a><a href="#" style="color:#6b7280;text-decoration:none">Careers</a></div>
+          <h4 style="font-weight:700;margin:0 0 1.25rem;font-size:1rem">Company</h4>
+          <div style="display:flex;flex-direction:column;gap:0.75rem">
+            <a href="#" style="color:#6b7280;text-decoration:none;font-size:0.875rem">About Us</a>
+            <a href="#" style="color:#6b7280;text-decoration:none;font-size:0.875rem">Careers</a>
+            <a href="#" style="color:#6b7280;text-decoration:none;font-size:0.875rem">Blog</a>
+          </div>
         </div>
         <div>
-          <h4 style="font-weight:600;margin:0 0 0.75rem">Legal</h4>
-          <div style="display:flex;flex-direction:column;gap:0.5rem"><a href="#" style="color:#6b7280;text-decoration:none">Privacy</a><a href="#" style="color:#6b7280;text-decoration:none">Terms</a></div>
+          <h4 style="font-weight:700;margin:0 0 1.25rem;font-size:1rem">Legal</h4>
+          <div style="display:flex;flex-direction:column;gap:0.75rem">
+            <a href="#" style="color:#6b7280;text-decoration:none;font-size:0.875rem">Privacy Policy</a>
+            <a href="#" style="color:#6b7280;text-decoration:none;font-size:0.875rem">Terms of Service</a>
+          </div>
         </div>
       </div>
-      <p style="text-align:center;color:#6b7280;margin:0;font-size:0.875rem">${copyright}</p>
+      <p style="text-align:center;color:#9ca3af;margin:0;font-size:0.875rem;border-top:1px solid #f3f4f6;padding-top:2rem">${copyright}</p>
     </footer>`;
   },
 
@@ -415,25 +517,39 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
 
 // ── Render a single block ──
 
-function renderBlock(block: BlockInstance, design: DesignSettings): string {
+function renderBlock(
+  block: BlockInstance,
+  design: DesignSettings,
+  options: HtmlExportOptions,
+): string {
   const generator = BLOCK_HTML_MAP[block.type];
   // Render nested children if present
   let childrenHtml = "";
   if (block.children) {
     for (const [zoneName, zoneBlocks] of Object.entries(block.children)) {
       if (zoneBlocks.length > 0) {
-        const zoneContent = zoneBlocks.map((child) => renderBlock(child, design)).join("\n");
+        const zoneContent = zoneBlocks
+          .map((child) => renderBlock(child, design, options))
+          .join("\n");
         childrenHtml += `\n<div data-zone="${esc(zoneName)}" style="min-width:0">${zoneContent}</div>`;
       }
     }
-    if (childrenHtml && block.type !== "grid" && block.type !== "flex-container" && block.type !== "flex-row" && block.type !== "flex-col" && block.type !== "columns" && block.type !== "container") {
+    if (
+      childrenHtml &&
+      block.type !== "grid" &&
+      block.type !== "flex-container" &&
+      block.type !== "flex-row" &&
+      block.type !== "flex-col" &&
+      block.type !== "columns" &&
+      block.type !== "container"
+    ) {
       childrenHtml = `<div style="display:flex;gap:1rem">${childrenHtml}\n</div>`;
     }
   }
 
   let inner = "";
   if (generator) {
-    inner = generator(block.props, design, childrenHtml);
+    inner = (generator as any)(block.props, design, childrenHtml, options);
   } else {
     const textContent = esc(String(block.props.text || block.props.title || block.props.headline || block.props.name || block.props.label || block.type));
     inner = `<div style="padding:1rem;border:1px dashed #ccc;border-radius:4px;margin-bottom:1rem">${textContent}${childrenHtml || ""}</div>`;
@@ -470,7 +586,7 @@ export function generateHtml(options: HtmlExportOptions): string {
   const mainColor = `#${design.mainColor}`;
   const moodClass = design.mood === "dark" ? "dark" : "light";
 
-  const blocksHtml = blocks.map((b) => renderBlock(b, design)).join("\n");
+  const blocksHtml = blocks.map((b) => renderBlock(b, design, options)).join("\n");
 
   // Collect animation presets used (recursively)
   const usedAnimations = new Set<string>();
@@ -581,13 +697,29 @@ export function generateHtml(options: HtmlExportOptions): string {
   </script>`
     : "";
 
+  const locale = pageSettings.locale || "en";
+  const dir = locale === "ar" ? "rtl" : "ltr";
+
+  // Alternate links for SEO
+  let alternateLinks = "";
+  if (options?.allPages && pageSettings.translationGroupId) {
+    options.allPages
+      .filter((p) => p.translationGroupId === pageSettings.translationGroupId && p.locale !== locale)
+      .forEach((p) => {
+        const prefix = locale === "ar" ? "../" : "ar/";
+        const url = `${prefix}${p.slug || "index"}.html`;
+        alternateLinks += `<link rel="alternate" hreflang="${p.locale}" href="${esc(url)}" />\n  `;
+      });
+  }
+
   return `<!DOCTYPE html>
-${!pageSettings.published ? "<!-- DRAFT - Not Published -->\n" : ""}<html lang="en" class="${moodClass}">
+${!pageSettings.published ? "<!-- DRAFT - Not Published -->\n" : ""}<html lang="${locale}" dir="${dir}" class="${moodClass}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${esc(pageSettings.title)}</title>
   <meta name="description" content="${esc(pageSettings.description)}" />
+  ${alternateLinks}
   ${pageSettings.ogImage ? `<meta property="og:image" content="${esc(pageSettings.ogImage)}" />` : ""}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -635,4 +767,64 @@ export function downloadHtml(html: string, filename: string): void {
   anchor.click();
   document.body.removeChild(anchor);
   URL.revokeObjectURL(url);
+}
+
+// ── Multi-page Export ──
+
+import type { Page } from "./pages";
+
+export function exportProject(pages: Page[], design: DesignSettings): Record<string, string> {
+  const files: Record<string, string> = {};
+  const allPageSettings = pages.map(p => p.settings);
+  
+  pages.forEach(page => {
+    const html = generateHtml({
+      blocks: page.blocks,
+      design: design,
+      pageSettings: page.settings,
+      allPages: allPageSettings
+    });
+    
+    const localePrefix = (page.settings.locale || "en") === "ar" ? "ar/" : "";
+    const filename = `${localePrefix}${page.settings.slug || "index"}.html`;
+    files[filename] = html;
+  });
+  
+  return files;
+}
+
+export async function downloadAllPages(files: Record<string, string>): Promise<void> {
+  try {
+    // Dynamically load JSZip from CDN
+    const JSZipModule = await import("https://cdn.skypack.dev/jszip");
+    const JSZip = JSZipModule.default;
+    const zip = new JSZip();
+
+    // Add files to zip
+    Object.entries(files).forEach(([filename, html]) => {
+      zip.file(filename, html);
+    });
+
+    // Generate zip blob
+    const content = await zip.generateAsync({ type: "blob" });
+    
+    // Download the zip
+    const url = URL.createObjectURL(content);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "project-export.zip";
+    anchor.style.display = "none";
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Failed to generate ZIP, falling back to individual downloads", error);
+    // Fallback to individual downloads if ZIP fails
+    Object.entries(files).forEach(([filename, html], index) => {
+      setTimeout(() => {
+        downloadHtml(html, filename.replace("/", "-"));
+      }, index * 200);
+    });
+  }
 }

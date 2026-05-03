@@ -20,6 +20,7 @@ export function Toolbar({
   onPreview,
   onExportHtml,
   onExportReact,
+  onExportProject,
   isPublished,
   pageTitle,
   pageSlug,
@@ -43,6 +44,7 @@ export function Toolbar({
   onPreview: () => void;
   onExportHtml: () => void;
   onExportReact: () => void;
+  onExportProject: () => void;
   isPublished?: boolean;
   pageTitle?: string;
   pageSlug?: string;
@@ -230,6 +232,9 @@ export function Toolbar({
         </Button>
         <Button className="hidden lg:inline-flex" size="sm" variant="secondary" onPress={onExportHtml}>
           HTML
+        </Button>
+        <Button className="hidden lg:inline-flex" size="sm" variant="secondary" onPress={onExportProject}>
+          Full Site
         </Button>
         <Button className="hidden lg:inline-flex" size="sm" variant="secondary" onPress={onExportReact}>
           React

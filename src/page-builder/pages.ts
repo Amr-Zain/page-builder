@@ -8,11 +8,13 @@ export interface PageSettings {
   description: string;
   ogImage: string;
   published: boolean;
+  locale: "en" | "ar";
   createdAt: string;
   updatedAt: string;
   customCSS: string;
   headCode: string;
   bodyCode: string;
+  translationGroupId?: string;
 }
 
 export interface Page {
@@ -33,6 +35,7 @@ const PAGES_STORAGE_KEY = "page-builder-pages";
 export function createPage(
   name: string,
   template?: { blocks: BlockInstance[]; design: DesignSettings },
+  locale: "en" | "ar" = "en",
 ): Page {
   const id = `page-${Date.now()}`;
   const slug = name
@@ -45,6 +48,7 @@ export function createPage(
     settings: {
       title: name,
       slug: slug || "untitled",
+      locale,
       description: "",
       ogImage: "",
       published: false,

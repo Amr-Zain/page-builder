@@ -1,10 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Chip } from "@heroui/react";
 import clsx from "clsx";
-import { Search, Clock, X } from "lucide-react";
+import { Search, Clock, X, GripVertical } from "lucide-react";
+import { useDraggable } from "@dnd-kit/core";
 
 import type { SearchableItem, SearchResult, SearchMatch } from "../search-engine";
 import { SearchEngine } from "../search-engine";
+import { BLOCK_DEFINITIONS, COMPONENT_DEFINITIONS } from "../data";
+import { renderIcon } from "../icon-map";
 
 // ── Props ──
 
@@ -39,6 +42,79 @@ function HighlightedText({ text, indices }: { text: string; indices: [number, nu
   }
 
   return <>{parts}</>;
+}
+
+// ── Draggable Search Result Item ──
+
+function DraggableSearchResultItem({
+  result,
+  selectedIndex,
+  idx,
+  onSelect,
+  onMouseEnter,
+  getLabelMatch,
+}: {
+  result: SearchResult;
+  selectedIndex: number;
+  idx: number;
+  onSelect: (result: SearchResult) => void;
+  onMouseEnter: (idx: number) => void;
+  getLabelMatch: (result: SearchResult) => SearchMatch | undefined;
+}) {
+  const blockType = result.item.metadata?.blockType as string;
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `search-result-${result.item.id}`,
+    data: {
+      type: "sidebar-block",
+      blockType: blockType,
+    },
+  });
+
+  const labelMatch = getLabelMatch(result);
+  const def = BLOCK_DEFINITIONS.find((b) => b.type === blockType) ||
+              COMPONENT_DEFINITIONS.find((c) => c.type === blockType);
+  const icon = def?.icon || "Box";
+
+  return (
+    <div
+      ref={setNodeRef}
+      data-index={idx}
+      className={clsx(
+        "flex items-center gap-2.5 rounded-lg border px-3 py-2 cursor-grab active:cursor-grabbing select-none transition-all outline-none",
+        isDragging
+          ? "opacity-50 border-[#634CF8] shadow-lg scale-95 z-50 bg-white dark:bg-surface"
+          : idx === selectedIndex
+            ? "border-[#634CF8]/50 bg-[#634CF8]/5"
+            : "border-separator/30 bg-white dark:bg-surface hover:border-[#634CF8]/30"
+      )}
+      onClick={() => onSelect(result)}
+      onMouseEnter={() => onMouseEnter(idx)}
+      {...attributes}
+      {...listeners}
+    >
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#F8F8FA] dark:bg-[#1a1a2e]">
+        <span className="opacity-50">{renderIcon(icon)}</span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[11px] font-medium text-foreground truncate">
+          {labelMatch ? (
+            <HighlightedText text={labelMatch.text} indices={labelMatch.indices} />
+          ) : (
+            result.item.label
+          )}
+        </p>
+        {result.item.description && (
+          <p className="text-[9px] text-muted truncate">
+            {result.item.description}
+          </p>
+        )}
+      </div>
+      <Chip size="sm" variant="soft" className="shrink-0 h-5 text-[9px]">
+        {result.item.category}
+      </Chip>
+      <GripVertical size={14} className="text-muted/30 shrink-0" />
+    </div>
+  );
 }
 
 // ── EnhancedSearch Component ──
@@ -271,41 +347,17 @@ export function EnhancedSearch({ searchEngine, onSelect, placeholder }: Enhanced
           <p className="text-[9px] text-muted/60 px-1 mb-1">
             {results.length} result{results.length !== 1 ? "s" : ""}
           </p>
-          {results.map((result, idx) => {
-            const labelMatch = getLabelMatch(result);
-            return (
-              <div
-                key={result.item.id}
-                data-index={idx}
-                className={clsx(
-                  "flex items-center gap-2.5 rounded-lg border px-3 py-2 cursor-pointer select-none transition-all",
-                  idx === selectedIndex
-                    ? "border-[#634CF8]/50 bg-[#634CF8]/5"
-                    : "border-separator/30 bg-white dark:bg-surface hover:border-[#634CF8]/30"
-                )}
-                onClick={() => handleSelectResult(result)}
-                onMouseEnter={() => setSelectedIndex(idx)}
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-medium text-foreground">
-                    {labelMatch ? (
-                      <HighlightedText text={labelMatch.text} indices={labelMatch.indices} />
-                    ) : (
-                      result.item.label
-                    )}
-                  </p>
-                  {result.item.description && (
-                    <p className="text-[9px] text-muted truncate">
-                      {result.item.description}
-                    </p>
-                  )}
-                </div>
-                <Chip size="sm" variant="soft">
-                  {result.item.category}
-                </Chip>
-              </div>
-            );
-          })}
+          {results.map((result, idx) => (
+            <DraggableSearchResultItem
+              key={result.item.id}
+              getLabelMatch={getLabelMatch}
+              idx={idx}
+              result={result}
+              selectedIndex={selectedIndex}
+              onMouseEnter={setSelectedIndex}
+              onSelect={handleSelectResult}
+            />
+          ))}
         </div>
       )}
 

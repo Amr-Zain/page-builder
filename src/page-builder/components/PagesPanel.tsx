@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Drawer } from "@heroui/react";
+import { Button, Drawer, TextField, Label, Input } from "@heroui/react";
 import clsx from "clsx";
 import { FileText } from "lucide-react";
 
@@ -17,7 +17,7 @@ export function PagesPanel({
   pages: Page[];
   activePageId: string;
   onSelectPage: (id: string) => void;
-  onCreatePage: (name: string) => void;
+  onCreatePage: (name: string, locale: "en" | "ar") => void;
   onDeletePage: (id: string) => void;
   onDuplicatePage: (id: string) => void;
   onUpdatePageSettings: (
@@ -27,14 +27,16 @@ export function PagesPanel({
 }) {
   const [isCreating, setIsCreating] = useState(false);
   const [newPageName, setNewPageName] = useState("");
+  const [newPageLocale, setNewPageLocale] = useState<"en" | "ar">("en");
   const [cssDrawerPageId, setCssDrawerPageId] = useState<string | null>(null);
 
   const cssDrawerPage = pages.find((p) => p.id === cssDrawerPageId);
 
   const handleCreate = () => {
     if (!newPageName.trim()) return;
-    onCreatePage(newPageName.trim());
+    onCreatePage(newPageName.trim(), newPageLocale);
     setNewPageName("");
+    setNewPageLocale("en");
     setIsCreating(false);
   };
 
@@ -49,8 +51,8 @@ export function PagesPanel({
           </p>
         </div>
         <Button
+          variant="primary"
           size="sm"
-          style={{ backgroundColor: "#634CF8", color: "#fff" }}
           onPress={() => setIsCreating(true)}
         >
           + New
@@ -63,27 +65,52 @@ export function PagesPanel({
           <p className="text-[11px] font-semibold text-foreground">
             Create new page
           </p>
-          <input
+          <TextField
             autoFocus
-            className="h-10 rounded-lg border border-separator/50 bg-white dark:bg-surface px-3 text-[13px] text-foreground outline-none focus:border-[#634CF8]"
-            placeholder="Page name..."
+            className="w-full"
             value={newPageName}
-            onChange={(e) => setNewPageName(e.target.value)}
+            onChange={setNewPageName}
             onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-          />
+          >
+            <Input placeholder="Page name..." />
+          </TextField>
+
+          <div className="flex flex-col gap-1.5 mt-1">
+            <p className="text-[10px] text-muted font-medium uppercase tracking-wider">Language</p>
+            <div className="flex gap-1.5 p-1 bg-surface rounded-lg border border-separator/40">
+              <button
+                className={clsx(
+                  "flex-1 py-1 text-[11px] font-semibold rounded-md transition-all",
+                  newPageLocale === "en" ? "bg-white shadow-sm text-foreground" : "text-muted hover:text-foreground"
+                )}
+                onClick={() => setNewPageLocale("en")}
+              >
+                English
+              </button>
+              <button
+                className={clsx(
+                  "flex-1 py-1 text-[11px] font-semibold rounded-md transition-all",
+                  newPageLocale === "ar" ? "bg-white shadow-sm text-foreground" : "text-muted hover:text-foreground"
+                )}
+                onClick={() => setNewPageLocale("ar")}
+              >
+                Arabic
+              </button>
+            </div>
+          </div>
           <div className="flex gap-2">
             <Button
               className="flex-1"
+              variant="primary"
               size="sm"
-              style={{ backgroundColor: "#634CF8", color: "#fff" }}
               onPress={handleCreate}
             >
               Create Page
             </Button>
             <Button
               className="flex-1"
-              size="sm"
               variant="secondary"
+              size="sm"
               onPress={() => {
                 setIsCreating(false);
                 setNewPageName("");
@@ -125,9 +152,19 @@ export function PagesPanel({
                       <FileText size={18} className={clsx(isActive ? "text-[#634CF8]" : "text-muted")} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[13px] font-semibold text-foreground truncate">
-                        {page.settings.title}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-[13px] font-semibold text-foreground truncate">
+                          {page.settings.title}
+                        </p>
+                        <span className={clsx(
+                          "text-[9px] font-bold px-1.5 py-0.5 rounded-md border uppercase tracking-wider",
+                          page.settings.locale === "ar" 
+                            ? "bg-amber-50 text-amber-700 border-amber-200" 
+                            : "bg-blue-50 text-blue-700 border-blue-200"
+                        )}>
+                          {page.settings.locale || "en"}
+                        </span>
+                      </div>
                       <p className="text-[11px] text-muted font-mono">
                         /{page.settings.slug}
                       </p>
@@ -222,9 +259,9 @@ export function PagesPanel({
                 </div>
 
                 <div>
-                  <label className="text-[12px] font-semibold text-foreground block mb-2">
+                  <Label className="text-[12px] font-semibold text-foreground block mb-2">
                     Custom CSS
-                  </label>
+                  </Label>
                   <p className="text-[11px] text-muted mb-2">
                     Add custom CSS styles to this page only.
                   </p>
@@ -242,9 +279,9 @@ export function PagesPanel({
                 </div>
 
                 <div>
-                  <label className="text-[12px] font-semibold text-foreground block mb-2">
+                  <Label className="text-[12px] font-semibold text-foreground block mb-2">
                     Inside &lt;head&gt;
-                  </label>
+                  </Label>
                   <p className="text-[11px] text-muted mb-2">
                     Add custom code inside the head section of this page.
                   </p>
@@ -262,9 +299,9 @@ export function PagesPanel({
                 </div>
 
                 <div>
-                  <label className="text-[12px] font-semibold text-foreground block mb-2">
+                  <Label className="text-[12px] font-semibold text-foreground block mb-2">
                     Before &lt;/body&gt;
-                  </label>
+                  </Label>
                   <p className="text-[11px] text-muted mb-2">
                     Add custom code before the closing body tag.
                   </p>
@@ -283,12 +320,12 @@ export function PagesPanel({
               </div>
             </Drawer.Body>
             <Drawer.Footer>
-              <Button slot="close" variant="secondary">
+              <Button variant="secondary" onPress={() => setCssDrawerPageId(null)}>
                 Cancel
               </Button>
               <Button
-                slot="close"
-                style={{ backgroundColor: "#634CF8", color: "#fff" }}
+                variant="primary"
+                onPress={() => setCssDrawerPageId(null)}
               >
                 Save Changes
               </Button>

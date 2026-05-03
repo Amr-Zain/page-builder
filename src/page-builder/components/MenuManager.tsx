@@ -1,22 +1,34 @@
-import { useState } from "react";
-import { Button } from "@heroui/react";
+import {
+  Button,
+  Select,
+  Input,
+  Switch,
+  Label,
+  ListBox,
+  Description,
+  TextField,
+} from "@heroui/react";
 import clsx from "clsx";
 import { ChevronUp, ChevronDown, X } from "lucide-react";
 
 import type { Menu, MenuItem, MenuItemType, MenuLocation } from "../menus";
 import { renderIcon } from "../icon-map";
+import type { Page } from "../pages";
 import {
   createMenu,
   createMenuItem,
   MENU_LOCATIONS,
   MENU_ITEM_TYPES,
 } from "../menus";
+import { useState } from "react";
 
 export function MenuManager({
   menus,
+  pages,
   onUpdate,
 }: {
   menus: Menu[];
+  pages: Page[];
   onUpdate: (menus: Menu[]) => void;
 }) {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(
@@ -141,13 +153,15 @@ export function MenuManager({
       {/* Create menu form */}
       {isCreatingMenu && (
         <div className="p-4 rounded-xl border border-[#634CF8]/30 bg-[#634CF8]/5 flex flex-col gap-3">
-          <input
+          <TextField
             autoFocus
-            className="h-9 rounded-lg border border-separator/50 bg-white dark:bg-surface px-3 text-[12px] outline-none focus:border-[#634CF8]"
-            placeholder="Menu name..."
+            className="w-full"
             value={newMenuName}
-            onChange={(e) => setNewMenuName(e.target.value)}
-          />
+            onChange={setNewMenuName}
+          >
+            <Label className="text-[10px] text-muted mb-1">Menu Name</Label>
+            <Input placeholder="Menu name..." />
+          </TextField>
           <div>
             <label className="text-[10px] text-muted block mb-1">
               Location
@@ -174,7 +188,7 @@ export function MenuManager({
             <Button
               className="flex-1"
               size="sm"
-              style={{ backgroundColor: "#634CF8", color: "#fff" }}
+              variant="primary"
               onPress={handleCreateMenu}
             >
               Create
@@ -264,6 +278,7 @@ export function MenuManager({
                 onUpdate={(id, updates) =>
                   updateItem(activeMenu.id, id, updates)
                 }
+                pages={pages}
               />
             ))}
           </div>
@@ -306,6 +321,7 @@ function MenuItemCard({
   onMove,
   onIndent,
   onOutdent,
+  pages,
 }: {
   item: MenuItem;
   level: number;
@@ -319,6 +335,7 @@ function MenuItemCard({
   onMove: (id: string, direction: -1 | 1) => void;
   onIndent: (id: string) => void;
   onOutdent: (parentId: string, id: string) => void;
+  pages: Page[];
 }) {
   const isEditing = editingItemId === item.id;
   const typeInfo = MENU_ITEM_TYPES[item.type];
@@ -388,86 +405,126 @@ function MenuItemCard({
         {/* Expanded editor */}
         {isEditing && (
           <div className="px-3 pb-3 pt-1 border-t border-separator/30 flex flex-col gap-2">
-            <div>
-              <label className="text-[9px] text-muted block mb-0.5">
-                Label
-              </label>
-              <input
-                className="w-full h-8 rounded border border-separator/40 bg-[#FAFAFA] dark:bg-background px-2 text-[11px] outline-none focus:border-[#634CF8]"
-                value={item.label}
-                onChange={(e) => onUpdate(item.id, { label: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="text-[9px] text-muted block mb-0.5">Type</label>
-              <select
-                className="w-full h-8 rounded border border-separator/40 bg-[#FAFAFA] dark:bg-background px-2 text-[11px] outline-none"
-                value={item.type}
-                onChange={(e) =>
-                  onUpdate(item.id, { type: e.target.value as MenuItemType })
-                }
-              >
-                {(Object.keys(MENU_ITEM_TYPES) as MenuItemType[]).map((t) => (
-                  <option key={t} value={t}>
-                    {MENU_ITEM_TYPES[t].label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {item.type !== "dropdown" && (
+            <TextField
+              className="w-full"
+              value={item.label}
+              onChange={(v) => onUpdate(item.id, { label: v })}
+            >
+              <Label className="text-[9px] text-muted block mb-0.5">Label</Label>
+              <Input placeholder="Item label..." />
+            </TextField>
+            <Select
+              className="w-full"
+              value={item.type}
+              onChange={(v) => onUpdate(item.id, { type: v as MenuItemType })}
+            >
+              <Label className="text-[9px] text-muted mb-0.5">Type</Label>
+              <Select.Trigger>
+                <Select.Value />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox>
+                  {(Object.keys(MENU_ITEM_TYPES) as MenuItemType[]).map((t) => (
+                    <ListBox.Item id={t} key={t} textValue={MENU_ITEM_TYPES[t].label}>
+                      <div className="flex items-center gap-2 text-[11px]">
+                        {renderIcon(MENU_ITEM_TYPES[t].icon)}
+                        {MENU_ITEM_TYPES[t].label}
+                      </div>
+                      <ListBox.ItemIndicator />
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
+            {item.type === "page" && (
               <div>
-                <label className="text-[9px] text-muted block mb-0.5">
-                  URL
-                </label>
-                <input
-                  className="w-full h-8 rounded border border-separator/40 bg-[#FAFAFA] dark:bg-background px-2 text-[11px] font-mono outline-none focus:border-[#634CF8]"
-                  placeholder={
-                    item.type === "section" ? "#section-id" : "https://..."
-                  }
-                  value={item.url}
-                  onChange={(e) => onUpdate(item.id, { url: e.target.value })}
-                />
+                <Select
+                  className="w-full"
+                  placeholder="Select a page..."
+                  value={item.pageId}
+                  onChange={(pageId) => {
+                    const selectedPage = pages.find(p => String(p.id) === String(pageId));
+                    onUpdate(item.id, { 
+                      pageId: String(pageId),
+                      url: selectedPage ? ((selectedPage.settings.locale || "en") === "ar" ? `/ar/${selectedPage.settings.slug}` : `/${selectedPage.settings.slug}`) : item.url,
+                      label: item.label === "New Item" || !item.label ? (selectedPage?.settings.title || item.label) : item.label
+                    });
+                  }}
+                >
+                  <Label className="text-[9px] text-muted mb-0.5">Select Page</Label>
+                  <Select.Trigger>
+                    <Select.Value />
+                    <Select.Indicator />
+                  </Select.Trigger>
+                  <Select.Popover>
+                    <ListBox>
+                      {pages.map((p) => (
+                        <ListBox.Item id={p.id} key={p.id} textValue={p.settings.title}>
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span>{p.settings.title}</span>
+                            <span className="text-[9px] opacity-50 uppercase">{p.settings.locale || "en"}</span>
+                          </div>
+                          <ListBox.ItemIndicator />
+                        </ListBox.Item>
+                      ))}
+                    </ListBox>
+                  </Select.Popover>
+                </Select>
               </div>
             )}
-            <div className="flex items-center gap-3">
-              <label className="flex items-center gap-1.5 text-[10px] text-muted cursor-pointer">
-                <input
-                  checked={item.target === "_blank"}
-                  className="rounded"
-                  type="checkbox"
-                  onChange={(e) =>
-                    onUpdate(item.id, {
-                      target: e.target.checked ? "_blank" : "_self",
-                    })
-                  }
-                />
-                Open in new tab
-              </label>
-              <label className="flex items-center gap-1.5 text-[10px] text-muted cursor-pointer">
-                <input
-                  checked={item.highlighted || false}
-                  className="rounded"
-                  type="checkbox"
-                  onChange={(e) =>
-                    onUpdate(item.id, { highlighted: e.target.checked })
-                  }
-                />
-                CTA style
-              </label>
-            </div>
-            <div>
-              <label className="text-[9px] text-muted block mb-0.5">
-                CSS Class (optional)
-              </label>
-              <input
-                className="w-full h-8 rounded border border-separator/40 bg-[#FAFAFA] dark:bg-background px-2 text-[11px] font-mono outline-none focus:border-[#634CF8]"
-                placeholder="custom-class"
-                value={item.cssClass || ""}
-                onChange={(e) =>
-                  onUpdate(item.id, { cssClass: e.target.value })
+            {item.type !== "dropdown" && item.type !== "page" && (
+              <TextField
+                className="w-full"
+                value={item.url}
+                onChange={(v) => onUpdate(item.id, { url: v })}
+              >
+                <Label className="text-[9px] text-muted block mb-0.5">URL</Label>
+                <Input placeholder={item.type === "section" ? "#section-id" : "https://..."} />
+              </TextField>
+            )}
+            {item.type === "page" && item.pageId && (
+              <div className="px-1">
+                <p className="text-[9px] text-muted mb-1">Generated URL</p>
+                <code className="text-[10px] text-[#634CF8] bg-[#634CF8]/5 px-1.5 py-0.5 rounded">{item.url}</code>
+              </div>
+            )}
+            <div className="flex flex-col gap-2 mt-1">
+              <Switch
+                isSelected={item.target === "_blank"}
+                onChange={(v) =>
+                  onUpdate(item.id, { target: v ? "_blank" : "_self" })
                 }
-              />
+              >
+                <Switch.Control>
+                  <Switch.Thumb />
+                </Switch.Control>
+                <Switch.Content>
+                  <Label className="text-[11px] text-muted">Open in new tab</Label>
+                </Switch.Content>
+              </Switch>
+              <Switch
+                isSelected={item.highlighted || false}
+                onChange={(v) =>
+                  onUpdate(item.id, { highlighted: v })
+                }
+              >
+                <Switch.Control>
+                  <Switch.Thumb />
+                </Switch.Control>
+                <Switch.Content>
+                  <Label className="text-[11px] text-muted">CTA style (Button)</Label>
+                </Switch.Content>
+              </Switch>
             </div>
+            <TextField
+              className="w-full"
+              value={item.cssClass || ""}
+              onChange={(v) => onUpdate(item.id, { cssClass: v })}
+            >
+              <Label className="text-[9px] text-muted block mb-0.5">Custom CSS Class</Label>
+              <Input placeholder="e.g. custom-nav-item" />
+            </TextField>
             {/* Nesting controls */}
             <div className="flex gap-2 pt-1">
               {level === 0 && index > 0 && (
@@ -499,6 +556,7 @@ function MenuItemCard({
           onOutdent={onOutdent}
           onRemove={onRemove}
           onUpdate={onUpdate}
+          pages={pages}
         />
       ))}
     </div>

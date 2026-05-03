@@ -51,7 +51,7 @@ import { FloatingBar } from "./components/FloatingBar";
 import { PreviewMode } from "./components/PreviewMode";
 import { PagesPanel } from "./components/PagesPanel";
 import { MenuManager } from "./components/MenuManager";
-import { generateHtml, downloadHtml } from "./html-export";
+import { generateHtml, downloadHtml, exportProject, downloadAllPages } from "./html-export";
 import { generateReactComponent, downloadReactFile } from "./react-export";
 import { useClipboard } from "./hooks/useClipboard";
 import {
@@ -331,8 +331,8 @@ export default function PageBuilder({ config }: { config?: PageBuilderConfig } =
     setPagesState((ps) => ({ ...ps, activePageId: id }));
   }, []);
 
-  const handleCreatePage = useCallback((name: string) => {
-    const page = createPage(name);
+  const handleCreatePage = useCallback((name: string, locale: "en" | "ar") => {
+    const page = createPage(name, undefined, locale);
     setPagesState((ps) => ({
       ...ps,
       pages: [...ps.pages, page],
@@ -959,6 +959,11 @@ export default function PageBuilder({ config }: { config?: PageBuilderConfig } =
     downloadReactFile(content, `${name}.tsx`);
   }, [state.blocks, state.design, pagesState]);
 
+  const handleExportProject = useCallback(() => {
+    const files = exportProject(pagesState.pages, state.design);
+    downloadAllPages(files);
+  }, [pagesState.pages, state.design]);
+
   // ── Preview Mode ──
   if (projectNotFound) {
     return (
@@ -1036,6 +1041,7 @@ export default function PageBuilder({ config }: { config?: PageBuilderConfig } =
             onPreview: () => setIsPreviewOpen(true),
             onExportHtml: handleExportHtml,
             onExportReact: handleExportReact,
+            onExportProject: handleExportProject,
             onPreviewModeChange: (mode: "desktop" | "tablet" | "mobile") =>
               setState((s) => ({ ...s, previewMode: mode })),
             onRedo: redo,
@@ -1112,6 +1118,7 @@ export default function PageBuilder({ config }: { config?: PageBuilderConfig } =
                   menusPanel: (
                     <MenuManager
                       menus={menusState.menus}
+                      pages={pagesState.pages}
                       onUpdate={handleUpdateMenus}
                     />
                   ),
@@ -1206,6 +1213,7 @@ export default function PageBuilder({ config }: { config?: PageBuilderConfig } =
                   ),
                   block: selectedBlock,
                   blocks: state.blocks,
+                  pages: pagesState.pages,
                   width: rightWidth,
                   expandedLayerIds: state.expandedLayerIds,
                   onToggleExpand: toggleExpandLayer,
