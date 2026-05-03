@@ -660,62 +660,83 @@ export default function PageBuilder({ config }: { config?: PageBuilderConfig } =
         props: def && "defaultProps" in def ? { ...def.defaultProps } : {},
       };
 
-      // Check if dropping into a nested zone (compound ID: parentId:zoneName)
-      if (overId.includes(":") && !overId.startsWith("drop-before-") && !overId.startsWith("drop-after-")) {
+      // 1. Resolve Target Location
+      let targetParentId: string | null = null;
+      let targetZone: string | null = null;
+      let targetIndex = 0;
+
+      if (overId === "canvas-drop-empty") {
+        targetParentId = null;
+        targetIndex = 0;
+      } else if (overId.includes(":") && !overId.startsWith("drop-before-") && !overId.startsWith("drop-after-")) {
+        // Nested zone ID: parentId:zoneName[:posHint]
         const parts = overId.split(":");
-        const parentId = parts[0];
-        const zoneName = parts[1];
-        // Parse optional position hint: parentId:zone:before-blockId or parentId:zone:after-blockId
-        let targetIndex = 0;
+        targetParentId = parts[0];
+        targetZone = parts[1];
+        const parent = findBlock(state.blocks, targetParentId);
+        const zoneBlocks = parent?.children?.[targetZone] ?? [];
+
         if (parts.length >= 3) {
           const posHint = parts.slice(2).join(":");
           if (posHint.startsWith("before-")) {
             const refId = posHint.replace("before-", "");
-            const parent = findBlock(state.blocks, parentId);
-            const zoneBlocks = parent?.children?.[zoneName] ?? [];
             const idx = zoneBlocks.findIndex((b) => b.id === refId);
             targetIndex = idx >= 0 ? idx : 0;
           } else if (posHint.startsWith("after-")) {
             const refId = posHint.replace("after-", "");
-            const parent = findBlock(state.blocks, parentId);
-            const zoneBlocks = parent?.children?.[zoneName] ?? [];
             const idx = zoneBlocks.findIndex((b) => b.id === refId);
             targetIndex = idx >= 0 ? idx + 1 : zoneBlocks.length;
           }
         } else {
-          // Drop at end of zone
-          const parent = findBlock(state.blocks, parentId);
-          targetIndex = parent?.children?.[zoneName]?.length ?? 0;
+          targetIndex = zoneBlocks.length;
         }
-        setState((s) => ({
-          ...s,
-          blocks: treeInsertBlock(s.blocks, newBlock, parentId, zoneName, targetIndex),
-          selectedBlockId: newBlock.id,
-        }));
-        return;
+      } else if (overId.startsWith("drop-before-")) {
+        const refId = overId.replace("drop-before-", "");
+        const parentInfo = getParentBlock(state.blocks, refId);
+        if (parentInfo) {
+          targetParentId = parentInfo.parent.id;
+          targetZone = parentInfo.zone;
+          const zoneBlocks = parentInfo.parent.children?.[targetZone] ?? [];
+          const idx = zoneBlocks.findIndex((b) => b.id === refId);
+          targetIndex = idx >= 0 ? idx : 0;
+        } else {
+          const idx = state.blocks.findIndex((b) => b.id === refId);
+          targetIndex = idx >= 0 ? idx : 0;
+        }
+      } else if (overId.startsWith("drop-after-")) {
+        const refId = overId.replace("drop-after-", "");
+        const parentInfo = getParentBlock(state.blocks, refId);
+        if (parentInfo) {
+          targetParentId = parentInfo.parent.id;
+          targetZone = parentInfo.zone;
+          const zoneBlocks = parentInfo.parent.children?.[targetZone] ?? [];
+          const idx = zoneBlocks.findIndex((b) => b.id === refId);
+          targetIndex = idx >= 0 ? idx + 1 : zoneBlocks.length;
+        } else {
+          const idx = state.blocks.findIndex((b) => b.id === refId);
+          targetIndex = idx >= 0 ? idx + 1 : state.blocks.length;
+        }
+      } else {
+        // Dropped directly on a block ID
+        const parentInfo = getParentBlock(state.blocks, overId);
+        if (parentInfo) {
+          targetParentId = parentInfo.parent.id;
+          targetZone = parentInfo.zone;
+          const zoneBlocks = parentInfo.parent.children?.[targetZone] ?? [];
+          const idx = zoneBlocks.findIndex((b) => b.id === overId);
+          targetIndex = idx >= 0 ? idx : zoneBlocks.length;
+        } else {
+          const idx = state.blocks.findIndex((b) => b.id === overId);
+          targetIndex = idx >= 0 ? idx : state.blocks.length;
+        }
       }
 
-      // Root-level drops
-      setState((s) => {
-        let newBlocks = [...s.blocks];
-        if (overId === "canvas-drop-empty") newBlocks = [newBlock];
-        else if (overId.startsWith("drop-before-")) {
-          const idx = newBlocks.findIndex(
-            (b) => b.id === overId.replace("drop-before-", ""),
-          );
-          newBlocks.splice(idx >= 0 ? idx : 0, 0, newBlock);
-        } else if (overId.startsWith("drop-after-")) {
-          const idx = newBlocks.findIndex(
-            (b) => b.id === overId.replace("drop-after-", ""),
-          );
-          newBlocks.splice(idx >= 0 ? idx + 1 : newBlocks.length, 0, newBlock);
-        } else {
-          const idx = newBlocks.findIndex((b) => b.id === overId);
-          // Default to 'before' the block if dropped directly on it
-          newBlocks.splice(idx >= 0 ? idx : newBlocks.length, 0, newBlock);
-        }
-        return { ...s, blocks: newBlocks, selectedBlockId: newBlock.id };
-      });
+      // 2. Insert Block
+      setState((s) => ({
+        ...s,
+        blocks: treeInsertBlock(s.blocks, newBlock, targetParentId, targetZone, targetIndex),
+        selectedBlockId: newBlock.id,
+      }));
       return;
     }
 

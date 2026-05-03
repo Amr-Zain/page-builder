@@ -61,7 +61,17 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
     icon: "message-square",
     category: "sections",
     description: "Customer quotes and reviews",
-    defaultProps: { title: "What people say" },
+    defaultProps: {
+      title: "What people say",
+      testimonials: [
+        {
+          name: "Sarah Johnson",
+          role: "CEO at TechFlow",
+          content: "This platform has completely transformed how our team works. The speed and reliability are unmatched.",
+          avatar: "",
+        },
+      ],
+    },
   },
   {
     type: "pricing",
@@ -69,7 +79,13 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
     icon: "dollar-sign",
     category: "sections",
     description: "Pricing plans comparison",
-    defaultProps: { title: "Pricing" },
+    defaultProps: {
+      title: "Simple Pricing",
+      tiers: [
+        { name: "Starter", price: "$0", features: ["Up to 3 projects", "Basic analytics"] },
+        { name: "Pro", price: "$29", features: ["Unlimited projects", "Advanced analytics", "Priority support"] },
+      ],
+    },
   },
   {
     type: "stats",
@@ -92,7 +108,13 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
     icon: "users",
     category: "sections",
     description: "Team member profiles",
-    defaultProps: { title: "Our Team" },
+    defaultProps: {
+      title: "Meet the team",
+      members: [
+        { name: "Alex Rivera", role: "Founder & CEO", image: "" },
+        { name: "Jordan Smith", role: "CTO", image: "" },
+      ],
+    },
   },
   {
     type: "faq",
@@ -101,13 +123,9 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
     category: "sections",
     description: "Frequently asked questions accordion",
     defaultProps: {
-      title: "FAQ",
-      items: [
-        { q: "How does it work?", a: "It's simple — just drag and drop." },
-        {
-          q: "Is there a free plan?",
-          a: "Yes, we offer a generous free tier.",
-        },
+      title: "Frequently Asked Questions",
+      questions: [
+        { question: "How does it work?", answer: "It's simple! Just drag and drop components to build your page." },
       ],
     },
   },
@@ -163,7 +181,13 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
     icon: "image",
     category: "sections",
     description: "Image gallery grid",
-    defaultProps: { columns: 3 },
+    defaultProps: {
+      columns: 3,
+      items: [
+        { url: "", caption: "Project One" },
+        { url: "", caption: "Project Two" },
+      ],
+    },
   },
   {
     type: "footer",
