@@ -554,7 +554,17 @@ export const DEFAULT_BLOCKS: BlockInstance[] = [
   {
     id: "d-4",
     type: "logos",
-    props: { title: "Trusted by industry-leading companies" },
+    props: {
+      title: "Trusted by industry-leading companies",
+      items: [
+        { name: "Vercel", logo: "" },
+        { name: "Stripe", logo: "" },
+        { name: "Linear", logo: "" },
+        { name: "Notion", logo: "" },
+        { name: "Figma", logo: "" },
+        { name: "GitHub", logo: "" },
+      ],
+    },
   },
   {
     id: "d-5",

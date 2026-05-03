@@ -951,33 +951,38 @@ function ContactBlock({ props, design, previewMode }: RendererProps) {
 // Logos
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function LogosBlock({ props, design }: RendererProps) {
-  const title = (props.title as string) || "Trusted by teams worldwide";
-  const items = (props.items as Array<{ name: string; logo?: string }>) || [];
+function LogosBlock({ props }: RendererProps) {
+  const title = (props.title as string) || "Trusted by industry-leading companies";
+  const rawItems = (props.items as Array<{ name: string; logo?: string }>) || [];
+  
+  const items = rawItems.length > 0 ? rawItems : [
+    { name: "Vercel" },
+    { name: "Stripe" },
+    { name: "Linear" },
+    { name: "Notion" },
+    { name: "Figma" },
+    { name: "GitHub" },
+  ];
 
   return (
-    <div className="px-4 sm:px-8 py-12 sm:py-16 bg-background">
-      <div className="max-w-7xl mx-auto text-center">
-        <p className="text-sm font-semibold uppercase tracking-widest text-muted mb-8 sm:mb-12">
-          {title}
-        </p>
-        <div className="flex flex-wrap justify-center items-center gap-x-8 sm:gap-x-12 gap-y-8 sm:gap-y-10 opacity-60">
-          {items.map((item, i) => (
-            <div key={i} className="flex items-center">
-              {item.logo ? (
-                <img
-                  src={item.logo}
-                  alt={item.name}
-                  className="h-6 sm:h-8 w-auto grayscale"
-                />
-              ) : (
-                <span className="text-xl sm:text-2xl font-bold text-foreground grayscale">
-                  {item.name}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
+    <div className="px-4 sm:px-8 py-12 sm:py-16">
+      <p className="text-center text-xs uppercase tracking-widest text-muted font-medium mb-8 sm:mb-10">
+        {title}
+      </p>
+      <div className="flex items-center justify-center gap-6 sm:gap-12 flex-wrap max-w-4xl mx-auto">
+        {items.map((item, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-2 text-muted/40 hover:text-muted/70 transition-colors"
+          >
+            {item.logo ? (
+              <img src={item.logo} alt={item.name} className="h-6 w-auto grayscale opacity-80" />
+            ) : (
+              <div className="w-6 h-6 rounded bg-muted/15" />
+            )}
+            <span className="text-sm font-semibold tracking-tight">{item.name}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
