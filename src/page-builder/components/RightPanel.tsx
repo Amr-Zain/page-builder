@@ -19,6 +19,555 @@ import { SEOAnalyzer } from "./SEOAnalyzer";
 import { ColorPicker } from "./ColorPicker";
 import { useConditionalFields } from "../hooks/useConditionalFields";
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// Constants & Theme
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const UI_COLORS = {
+  PRIMARY: "#634CF8",
+  PRIMARY_LIGHT_BG: "bg-[#634CF8]/10",
+  PRIMARY_SOFT_BG: "bg-[#634CF8]/5",
+  PRIMARY_TEXT: "text-[#634CF8]",
+  PRIMARY_BORDER: "border-[#634CF8]",
+  BG_LIGHT: "bg-[#FAFAFA]",
+  BG_PANEL: "bg-[#F8F8FA]",
+  DANGER: "text-danger",
+  DANGER_BG: "hover:bg-danger/10",
+} as const;
+
+const TAB_TYPES = {
+  BLOCK: ["content", "style", "advanced"] as const,
+  PAGE: ["page", "seo", "layers"] as const,
+} as const;
+
+const TAB_LABELS: Record<string, string> = {
+  content: "Content",
+  style: "Style",
+  advanced: "Advanced",
+  page: "General",
+  seo: "SEO",
+  layers: "Layers",
+};
+
+const COMMON_CLASSES = {
+  PANEL_BASE: "shrink-0 border-l border-separator/50 bg-white dark:bg-background flex flex-col overflow-hidden h-full max-md:w-full",
+  HEADER: "flex items-center gap-3 px-4 py-3 border-b border-separator/40 bg-[#FAFAFA] dark:bg-surface/50",
+  FIELD_LABEL: "text-[11px] font-semibold text-muted block mb-1.5",
+  INPUT_BASE: "w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] text-foreground outline-none transition-all",
+  INPUT_FOCUS: "focus:border-[#634CF8] focus:bg-white dark:focus:bg-background",
+  SELECT_BASE: "w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] outline-none focus:border-[#634CF8]",
+  TAB_BUTTON: "flex-1 py-2 text-[11px] font-semibold transition-colors border-b-2",
+} as const;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Field Configurations
+// ═══════════════════════════════════════════════════════════════════════════════
+
+type FieldConfig = {
+  type: "text" | "textarea" | "number" | "select" | "image" | "links" | "items" | "richtext" | "boolean";
+  key: string;
+  label: string;
+  placeholder?: string;
+  multiline?: boolean;
+  min?: number;
+  max?: number;
+  options?: { value: string; label: string }[];
+  addLabel?: string;
+  showUrl?: boolean;
+  fields?: any[];
+  renderPreview?: (item: any) => React.ReactNode;
+};
+
+const BLOCK_FIELD_CONFIGS: Record<string, FieldConfig[]> = {
+  navbar: [
+    { type: "text", key: "logo", label: "Logo" },
+    { type: "links", key: "links", label: "Navigation Links", addLabel: "Add nav link", showUrl: true },
+  ],
+  hero: [
+    { type: "text", key: "headline", label: "Headline" },
+    { type: "textarea", key: "subtitle", label: "Subtitle" },
+    { type: "text", key: "ctaText", label: "Button Text" },
+    { type: "image", key: "heroImage", label: "Hero Image" },
+  ],
+  features: [
+    { type: "text", key: "title", label: "Section Title" },
+    { type: "textarea", key: "subtitle", label: "Subtitle" },
+    {
+      type: "items",
+      key: "items",
+      label: "Feature Items",
+      addLabel: "Add feature",
+      fields: [
+        { key: "icon", label: "Icon (emoji)", placeholder: "⚡" },
+        { key: "title", label: "Title", placeholder: "Feature name" },
+        { key: "description", label: "Description", type: "textarea", placeholder: "Describe this feature..." },
+      ],
+      renderPreview: (item) => <span>{item.icon} {item.title}</span>,
+    },
+  ],
+  testimonials: [
+    { type: "text", key: "title", label: "Section Title" },
+    {
+      type: "items",
+      key: "testimonials",
+      label: "Testimonials",
+      addLabel: "Add testimonial",
+      fields: [
+        { key: "quote", label: "Quote", type: "textarea", placeholder: "What they said..." },
+        { key: "name", label: "Name", placeholder: "Jane Doe" },
+        { key: "role", label: "Role", placeholder: "CEO at Company" },
+        { key: "avatar", label: "Avatar URL", type: "url", placeholder: "https://..." },
+      ],
+      renderPreview: (item) => <span>{item.name || "Unnamed"}</span>,
+    },
+  ],
+  pricing: [
+    { type: "text", key: "title", label: "Title" },
+    { type: "text", key: "subtitle", label: "Subtitle" },
+  ],
+  stats: [
+    {
+      type: "items",
+      key: "items",
+      label: "Statistics",
+      addLabel: "Add stat",
+      fields: [
+        { key: "value", label: "Value", placeholder: "10K+" },
+        { key: "label", label: "Label", placeholder: "Active users" },
+      ],
+      renderPreview: (item) => <span>{item.value} — {item.label}</span>,
+    },
+  ],
+  team: [
+    { type: "text", key: "title", label: "Title" },
+    { type: "textarea", key: "subtitle", label: "Subtitle" },
+    {
+      type: "items",
+      key: "members",
+      label: "Team Members",
+      addLabel: "Add member",
+      fields: [
+        { key: "name", label: "Name", placeholder: "Alex Rivera" },
+        { key: "role", label: "Role", placeholder: "CEO" },
+        { key: "avatar", label: "Photo URL", type: "url", placeholder: "https://..." },
+      ],
+      renderPreview: (item) => <span>{item.name || "Unnamed"}</span>,
+    },
+  ],
+  faq: [
+    { type: "text", key: "title", label: "Title" },
+    { type: "textarea", key: "subtitle", label: "Subtitle" },
+    {
+      type: "items",
+      key: "items",
+      label: "Questions",
+      addLabel: "Add question",
+      fields: [
+        { key: "q", label: "Question", placeholder: "How does it work?" },
+        { key: "a", label: "Answer", type: "textarea", placeholder: "It's simple..." },
+      ],
+      renderPreview: (item) => <span>{item.q || "Untitled"}</span>,
+    },
+  ],
+  cta: [
+    { type: "text", key: "headline", label: "Headline" },
+    { type: "textarea", key: "subtitle", label: "Subtitle" },
+    { type: "text", key: "ctaText", label: "Button Text" },
+  ],
+  contact: [
+    { type: "text", key: "title", label: "Title" },
+    { type: "textarea", key: "subtitle", label: "Subtitle" },
+  ],
+  logos: [
+    { type: "text", key: "title", label: "Title" },
+    { type: "links", key: "companies", label: "Company Names", addLabel: "Add company" },
+  ],
+  banner: [{ type: "text", key: "text", label: "Banner Text" }],
+  gallery: [
+    { type: "text", key: "title", label: "Title" },
+    { type: "number", key: "columns", label: "Columns", min: 1, max: 6 },
+  ],
+  footer: [
+    { type: "text", key: "logo", label: "Logo Text" },
+    { type: "textarea", key: "tagline", label: "Tagline" },
+    { type: "text", key: "copyright", label: "Copyright" },
+    {
+      type: "items",
+      key: "columns",
+      label: "Footer Columns",
+      addLabel: "Add column",
+      fields: [
+        { key: "title", label: "Column Title", placeholder: "Product" },
+        { key: "linksText", label: "Links (one per line)", type: "textarea", placeholder: "Features\nPricing\nDocs" },
+      ],
+      renderPreview: (item) => <span>{item.title || "Untitled"}</span>,
+    },
+    { type: "links", key: "socials", label: "Social Links", addLabel: "Add social" },
+  ],
+  content: [
+    { type: "text", key: "heading", label: "Heading" },
+    { type: "richtext", key: "body", label: "Body", placeholder: "Write your content here..." },
+  ],
+  text: [{ type: "richtext", key: "content", label: "Content", placeholder: "Start writing..." }],
+  image: [
+    { type: "image", key: "src", label: "Image" },
+    { type: "text", key: "alt", label: "Alt Text" },
+    { type: "text", key: "caption", label: "Caption" },
+  ],
+  video: [
+    { type: "text", key: "url", label: "Video URL" },
+    { type: "text", key: "duration", label: "Duration", placeholder: "3:45" },
+  ],
+  code: [
+    { type: "text", key: "filename", label: "Filename", placeholder: "app.ts" },
+    { type: "text", key: "language", label: "Language", placeholder: "typescript" },
+    { type: "textarea", key: "code", label: "Code" },
+  ],
+  html: [{ type: "textarea", key: "html", label: "HTML Code" }],
+  columns: [{ type: "number", key: "count", label: "Number of Columns", min: 1, max: 6 }],
+  grid: [
+    { type: "number", key: "columns", label: "Columns", min: 1, max: 12 },
+    { type: "text", key: "gap", label: "Gap (px)", placeholder: "16" },
+    { type: "text", key: "rowGap", label: "Row Gap (optional override)" },
+    { type: "text", key: "columnGap", label: "Column Gap (optional override)" },
+    {
+      type: "select",
+      key: "justifyItems",
+      label: "Justify Items",
+      options: [
+        { value: "start", label: "start" },
+        { value: "center", label: "center" },
+        { value: "end", label: "end" },
+        { value: "stretch", label: "stretch" },
+      ],
+    },
+    {
+      type: "select",
+      key: "alignItems",
+      label: "Align Items",
+      options: [
+        { value: "start", label: "start" },
+        { value: "center", label: "center" },
+        { value: "end", label: "end" },
+        { value: "stretch", label: "stretch" },
+      ],
+    },
+    { type: "text", key: "templateColumns", label: "Template Columns (custom CSS)", placeholder: "e.g. 1fr 2fr 1fr" },
+    { type: "text", key: "templateRows", label: "Template Rows (custom CSS)" },
+    {
+      type: "select",
+      key: "autoFlow",
+      label: "Auto Flow",
+      options: [
+        { value: "row", label: "row" },
+        { value: "column", label: "column" },
+        { value: "dense", label: "dense" },
+      ],
+    },
+  ],
+  "flex-container": [
+    {
+      type: "select",
+      key: "direction",
+      label: "Direction",
+      options: [
+        { value: "row", label: "row" },
+        { value: "row-reverse", label: "row-reverse" },
+        { value: "column", label: "column" },
+        { value: "column-reverse", label: "column-reverse" },
+      ],
+    },
+    { type: "text", key: "gap", label: "Gap (px)", placeholder: "16" },
+    {
+      type: "select",
+      key: "justifyContent",
+      label: "Justify Content",
+      options: [
+        { value: "flex-start", label: "flex-start" },
+        { value: "center", label: "center" },
+        { value: "flex-end", label: "flex-end" },
+        { value: "space-between", label: "space-between" },
+        { value: "space-around", label: "space-around" },
+        { value: "space-evenly", label: "space-evenly" },
+      ],
+    },
+    {
+      type: "select",
+      key: "alignItems",
+      label: "Align Items",
+      options: [
+        { value: "flex-start", label: "flex-start" },
+        { value: "center", label: "center" },
+        { value: "flex-end", label: "flex-end" },
+        { value: "stretch", label: "stretch" },
+        { value: "baseline", label: "baseline" },
+      ],
+    },
+    {
+      type: "select",
+      key: "wrap",
+      label: "Wrap",
+      options: [
+        { value: "nowrap", label: "nowrap" },
+        { value: "wrap", label: "wrap" },
+        { value: "wrap-reverse", label: "wrap-reverse" },
+      ],
+    },
+  ],
+  "flex-row": [
+    { type: "text", key: "gap", label: "Gap", placeholder: "1rem" },
+    {
+      type: "select",
+      key: "justify",
+      label: "Justify Content",
+      options: [
+        { value: "flex-start", label: "flex-start" },
+        { value: "center", label: "center" },
+        { value: "flex-end", label: "flex-end" },
+        { value: "space-between", label: "space-between" },
+        { value: "space-around", label: "space-around" },
+        { value: "space-evenly", label: "space-evenly" },
+      ],
+    },
+    {
+      type: "select",
+      key: "align",
+      label: "Align Items",
+      options: [
+        { value: "flex-start", label: "flex-start" },
+        { value: "center", label: "center" },
+        { value: "flex-end", label: "flex-end" },
+        { value: "stretch", label: "stretch" },
+        { value: "baseline", label: "baseline" },
+      ],
+    },
+  ],
+  "flex-col": [
+    { type: "text", key: "gap", label: "Gap", placeholder: "1rem" },
+    {
+      type: "select",
+      key: "justify",
+      label: "Justify Content",
+      options: [
+        { value: "flex-start", label: "flex-start" },
+        { value: "center", label: "center" },
+        { value: "flex-end", label: "flex-end" },
+        { value: "space-between", label: "space-between" },
+        { value: "space-around", label: "space-around" },
+        { value: "space-evenly", label: "space-evenly" },
+      ],
+    },
+    {
+      type: "select",
+      key: "align",
+      label: "Align Items",
+      options: [
+        { value: "flex-start", label: "flex-start" },
+        { value: "center", label: "center" },
+        { value: "flex-end", label: "flex-end" },
+        { value: "stretch", label: "stretch" },
+        { value: "baseline", label: "baseline" },
+      ],
+    },
+  ],
+  container: [{ type: "text", key: "maxWidth", label: "Max Width", placeholder: "1200px" }],
+  spacer: [{ type: "number", key: "height", label: "Height (px)", min: 8, max: 400 }],
+  "button-group": [
+    { type: "text", key: "primaryText", label: "Primary Text" },
+    { type: "text", key: "secondaryText", label: "Secondary Text" },
+  ],
+  divider: [{ type: "text", key: "label", label: "Label (optional)", placeholder: "Section divider text" }],
+  Card: [
+    { type: "text", key: "title", label: "Title" },
+    { type: "textarea", key: "description", label: "Description" },
+  ],
+  Button: [
+    { type: "text", key: "text", label: "Button Text" },
+    {
+      type: "select",
+      key: "variant",
+      label: "Variant",
+      options: [
+        { value: "primary", label: "Primary" },
+        { value: "secondary", label: "Secondary" },
+        { value: "outline", label: "Outline" },
+        { value: "ghost", label: "Ghost" },
+      ],
+    },
+  ],
+  Avatar: [{ type: "text", key: "name", label: "Name" }],
+  Badge: [{ type: "text", key: "text", label: "Text" }],
+  Chip: [{ type: "text", key: "text", label: "Text" }],
+  Accordion: [
+    { type: "text", key: "title", label: "Title" },
+    { type: "textarea", key: "content", label: "Content" },
+  ],
+  Table: [
+    { type: "text", key: "headers", label: "Headers (comma separated)" },
+    { type: "textarea", key: "rows", label: "Rows" },
+  ],
+  Input: [
+    { type: "text", key: "placeholder", label: "Placeholder" },
+    { type: "text", key: "label", label: "Label" },
+  ],
+  TextField: [
+    { type: "text", key: "placeholder", label: "Placeholder" },
+    { type: "text", key: "label", label: "Label" },
+  ],
+  TextArea: [
+    { type: "text", key: "placeholder", label: "Placeholder" },
+    { type: "text", key: "label", label: "Label" },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Dynamic Field Renderer
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function DynamicFieldRenderer({
+  fields,
+  block,
+  set,
+  isFieldVisible,
+  fieldErrors,
+}: {
+  fields: FieldConfig[];
+  block: BlockInstance;
+  set: (key: string, value: unknown) => void;
+  isFieldVisible?: (fieldName: string) => boolean;
+  fieldErrors?: Record<string, string[]>;
+}) {
+  return (
+    <>
+      {fields.map((field) => {
+        if (isFieldVisible && !isFieldVisible(field.key)) return null;
+
+        const value = block.props[field.key];
+        const errors = fieldErrors?.[field.key];
+
+        switch (field.type) {
+          case "text":
+          case "textarea":
+            return (
+              <Field
+                key={field.key}
+                errors={errors}
+                label={field.label}
+                multiline={field.type === "textarea"}
+                placeholder={field.placeholder}
+                value={(value as string) || ""}
+                onChange={(v) => set(field.key, v)}
+              />
+            );
+          case "number":
+            return (
+              <NumberField
+                key={field.key}
+                label={field.label}
+                max={field.max ?? 100}
+                min={field.min ?? 0}
+                value={(value as number) || 0}
+                onChange={(v) => set(field.key, v)}
+              />
+            );
+          case "select":
+            return (
+              <div key={field.key} className="mb-4">
+                <label className={COMMON_CLASSES.FIELD_LABEL}>{field.label}</label>
+                <select
+                  className={COMMON_CLASSES.SELECT_BASE}
+                  value={(value as string) || (field.options?.[0]?.value ?? "")}
+                  onChange={(e) => set(field.key, e.target.value)}
+                >
+                  {field.options?.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            );
+          case "boolean":
+            return (
+              <div key={field.key} className="flex items-center justify-between py-2">
+                <label className={COMMON_CLASSES.FIELD_LABEL}>{field.label}</label>
+                <Switch
+                  size="sm"
+                  isSelected={!!value}
+                  onChange={(e: any) => set(field.key, e.target ? e.target.checked : e)}
+                />
+              </div>
+            );
+          case "image":
+            return (
+              <ImagePicker
+                key={field.key}
+                label={field.label}
+                value={(value as string) || ""}
+                onChange={(v) => set(field.key, v)}
+              />
+            );
+          case "richtext":
+            return (
+              <RichTextEditor
+                key={field.key}
+                label={field.label}
+                placeholder={field.placeholder}
+                value={(value as string) || ""}
+                onChange={(v) => set(field.key, v)}
+              />
+            );
+          case "links":
+            return (
+              <LinksEditor
+                key={field.key}
+                addLabel={field.addLabel || "Add link"}
+                items={(value as string[]) || []}
+                label={field.label}
+                showUrl={field.showUrl}
+                onChange={(links) => set(field.key, links)}
+              />
+            );
+          case "items":
+            let itemsValue = value;
+            if (field.key === "columns" && block.type === "footer") {
+              itemsValue = ((value as any[]) || []).map((col) => ({
+                title: col.title,
+                linksText: col.links.join("\n"),
+              }));
+            }
+
+            return (
+              <ItemListEditor
+                key={field.key}
+                addLabel={field.addLabel || "Add item"}
+                fields={field.fields || []}
+                items={(itemsValue as any[]) || []}
+                label={field.label}
+                renderPreview={field.renderPreview || ((item) => <span>{JSON.stringify(item)}</span>)}
+                onChange={(items) => {
+                  if (field.key === "columns" && block.type === "footer") {
+                    set(
+                      "columns",
+                      items.map((item) => ({
+                        title: item.title,
+                        links: (item.linksText as string).split("\n").filter((l: string) => l.trim()),
+                      }))
+                    );
+                  } else {
+                    set(field.key, items);
+                  }
+                }}
+              />
+            );
+          default:
+            return null;
+        }
+      })}
+    </>
+  );
+}
+
 /** Remember last active tab per block type */
 type PropertyTab = "content" | "style" | "advanced";
 
@@ -101,10 +650,10 @@ export function RightPanel({
 
     return (
       <aside
-        className="shrink-0 border-l border-separator/50 bg-white dark:bg-background flex flex-col items-center justify-center p-6 text-center h-full max-md:w-full"
+        className={clsx(COMMON_CLASSES.PANEL_BASE, "items-center justify-center p-6 text-center")}
         style={{ width: `${width}px` }}
       >
-        <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#F8F8FA] dark:bg-surface mb-4">
+        <div className={clsx("flex h-14 w-14 items-center justify-center rounded-lg mb-4", UI_COLORS.BG_PANEL)}>
           <span className="text-2xl"><MousePointerClick size={24} className="text-muted" /></span>
         </div>
         <p className="text-[13px] font-semibold text-foreground">
@@ -155,12 +704,12 @@ export function RightPanel({
 
   return (
     <aside
-      className="shrink-0 border-l border-separator/50 bg-white dark:bg-background flex flex-col overflow-hidden h-full max-md:w-full"
+      className={COMMON_CLASSES.PANEL_BASE}
       style={{ width: `${width}px` }}
     >
       {/* Header with block info and close button */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-separator/40 bg-[#FAFAFA] dark:bg-surface/50">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#634CF8]/10 text-sm">
+      <div className={COMMON_CLASSES.HEADER}>
+        <div className={clsx("flex h-8 w-8 items-center justify-center rounded-lg text-sm", UI_COLORS.PRIMARY_LIGHT_BG, UI_COLORS.PRIMARY_TEXT)}>
           {renderIcon(definition?.icon || "")}
         </div>
         <div className="flex-1 min-w-0">
@@ -208,18 +757,18 @@ export function RightPanel({
 
       {/* Tabbed property panel */}
       <div className="flex border-b border-separator/40">
-        {(["content", "style", "advanced"] as const).map((tab) => (
+        {TAB_TYPES.BLOCK.map((tab) => (
           <button
             className={clsx(
-              "flex-1 py-2 text-[11px] font-semibold transition-colors border-b-2",
+              COMMON_CLASSES.TAB_BUTTON,
               rememberedTab === tab
-                ? "text-[#634CF8] border-[#634CF8]"
+                ? `${UI_COLORS.PRIMARY_TEXT} ${UI_COLORS.PRIMARY_BORDER}`
                 : "text-muted border-transparent hover:text-foreground",
             )}
             key={tab}
             onClick={() => handleTabChange(tab)}
           >
-            {tab === "content" ? "Content" : tab === "style" ? "Style" : "Advanced"}
+            {TAB_LABELS[tab]}
           </button>
         ))}
       </div>
@@ -258,101 +807,29 @@ function GenericPropertiesEditor({
   set: (key: string, value: unknown) => void;
   isFieldVisible?: (fieldName: string) => boolean;
 }) {
-  let inferredFields: { key: string; label: string; type: string; options?: {value: string, label: string}[] }[] = [];
+  const config = BLOCK_FIELD_CONFIGS[block.type];
 
-  if (block.type === "Card") {
-    inferredFields = [
-      { key: "title", label: "Title", type: "text" },
-      { key: "description", label: "Description", type: "textarea" },
-    ];
-  } else if (block.type === "Button") {
-    inferredFields = [
-      { key: "text", label: "Button Text", type: "text" },
-      { key: "variant", label: "Variant", type: "select", options: [
-        { value: "primary", label: "Primary" },
-        { value: "secondary", label: "Secondary" },
-        { value: "outline", label: "Outline" },
-        { value: "ghost", label: "Ghost" },
-      ] },
-    ];
-  } else if (block.type === "Avatar") {
-    inferredFields = [
-      { key: "name", label: "Name", type: "text" },
-    ];
-  } else if (block.type === "Badge" || block.type === "Chip") {
-    inferredFields = [
-      { key: "text", label: "Text", type: "text" },
-    ];
-  } else if (block.type === "Accordion") {
-    inferredFields = [
-      { key: "title", label: "Title", type: "text" },
-      { key: "content", label: "Content", type: "textarea" },
-    ];
-  } else if (block.type === "Table") {
-    inferredFields = [
-      { key: "headers", label: "Headers (comma separated)", type: "text" },
-      { key: "rows", label: "Rows", type: "textarea" },
-    ];
-  } else if (block.type === "Input" || block.type === "TextField" || block.type === "TextArea") {
-    inferredFields = [
-      { key: "placeholder", label: "Placeholder", type: "text" },
-      { key: "label", label: "Label", type: "text" },
-    ];
-  } else {
-    // Collect all string/number/boolean props, excluding internal keys like _style
+  if (!config) {
+    // Fallback: Collect all string/number/boolean props
     const propsKeys = Object.keys(block.props).filter(k => !k.startsWith("_") && k !== "children");
-    inferredFields = propsKeys.map(k => ({
+    const inferredFields: FieldConfig[] = propsKeys.map(k => ({
       key: k,
       label: k.charAt(0).toUpperCase() + k.slice(1).replace(/([A-Z])/g, ' $1'),
       type: typeof block.props[k] === "number" ? "number" : typeof block.props[k] === "boolean" ? "boolean" : "text"
     }));
+
+    if (inferredFields.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <p className="text-[11px] text-muted">No configurable content properties for {block.type}.</p>
+        </div>
+      );
+    }
+
+    return <DynamicFieldRenderer fields={inferredFields} block={block} set={set} isFieldVisible={isFieldVisible} />;
   }
 
-  if (inferredFields.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-[11px] text-muted">No configurable content properties for {block.type}.</p>
-      </div>
-    );
-  }
-
-  return (
-    <>
-      {inferredFields.map(field => {
-         if (isFieldVisible && !isFieldVisible(field.key)) return null;
-         
-         if (field.type === "number") {
-           return <NumberField key={field.key} label={field.label} min={0} max={9999} value={(block.props[field.key] as number) || 0} onChange={v => set(field.key, v)} />
-         } else if (field.type === "boolean") {
-           return (
-             <div key={field.key} className="flex items-center justify-between py-2">
-               <label className="text-[11px] font-semibold text-muted block">{field.label}</label>
-               <Switch size="sm" isSelected={!!block.props[field.key]} onChange={(e: any) => set(field.key, e.target ? e.target.checked : e)} />
-             </div>
-           )
-         } else if (field.type === "select" && field.options) {
-           return (
-             <div key={field.key} className="mb-4">
-               <label className="text-[11px] font-semibold text-muted block mb-1.5">{field.label}</label>
-               <select
-                 className="w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] outline-none focus:border-[#634CF8]"
-                 value={(block.props[field.key] as string) || field.options[0].value}
-                 onChange={e => set(field.key, e.target.value)}
-               >
-                 {field.options.map(opt => (
-                   <option key={opt.value} value={opt.value}>{opt.label}</option>
-                 ))}
-               </select>
-             </div>
-           )
-         } else if (field.type === "textarea") {
-           return <Field key={field.key} label={field.label} multiline value={(block.props[field.key] as string) || ""} onChange={v => set(field.key, v)} />
-         } else {
-           return <Field key={field.key} label={field.label} value={(block.props[field.key] as string) || ""} onChange={v => set(field.key, v)} />
-         }
-      })}
-    </>
-  )
+  return <DynamicFieldRenderer fields={config} block={block} set={set} isFieldVisible={isFieldVisible} />;
 }
 
 function ContentTabFields({
@@ -366,13 +843,7 @@ function ContentTabFields({
   isFieldVisible?: (fieldName: string) => boolean;
   fieldErrors?: Record<string, string[]>;
 }) {
-  // Helper to check if a field should be rendered
-  const shouldShow = (fieldName: string) =>
-    !isFieldVisible || isFieldVisible(fieldName);
-
-  // Helper to get errors for a field
-  const getErrors = (fieldName: string) =>
-    fieldErrors?.[fieldName] ?? undefined;
+  const config = BLOCK_FIELD_CONFIGS[block.type];
 
   return (
     <div className="flex flex-col gap-4">
@@ -380,768 +851,16 @@ function ContentTabFields({
         Properties
       </p>
 
-      {/* ── Navbar ── */}
-      {block.type === "navbar" && (
-        <>
-          {shouldShow("logo") && (
-            <Field
-              label="Logo"
-              value={(block.props.logo as string) || ""}
-              errors={getErrors("logo")}
-              onChange={(v) => set("logo", v)}
-            />
-          )}
-          <LinksEditor
-            addLabel="Add nav link"
-            items={(block.props.links as string[]) || []}
-            label="Navigation Links"
-            showUrl
-            onChange={(links) => set("links", links)}
-          />
-        </>
-      )}
-
-      {/* ── Hero ── */}
-      {block.type === "hero" && (
-        <>
-          {shouldShow("headline") && (
-            <Field
-              label="Headline"
-              value={(block.props.headline as string) || ""}
-              errors={getErrors("headline")}
-              onChange={(v) => set("headline", v)}
-            />
-          )}
-          {shouldShow("subtitle") && (
-            <Field
-              label="Subtitle"
-              multiline
-              value={(block.props.subtitle as string) || ""}
-              errors={getErrors("subtitle")}
-              onChange={(v) => set("subtitle", v)}
-            />
-          )}
-          {shouldShow("ctaText") && (
-            <Field
-              label="Button Text"
-              value={(block.props.ctaText as string) || ""}
-              errors={getErrors("ctaText")}
-              onChange={(v) => set("ctaText", v)}
-            />
-          )}
-          <ImagePicker
-            label="Hero Image"
-            value={(block.props.heroImage as string) || ""}
-            onChange={(v) => set("heroImage", v)}
-          />
-        </>
-      )}
-
-      {/* ── Features ── */}
-      {block.type === "features" && (
-        <>
-          <Field
-            label="Section Title"
-            value={(block.props.title as string) || ""}
-            onChange={(v) => set("title", v)}
-          />
-          <Field
-            label="Subtitle"
-            multiline
-            value={(block.props.subtitle as string) || ""}
-            onChange={(v) => set("subtitle", v)}
-          />
-          <ItemListEditor
-            addLabel="Add feature"
-            fields={[
-              { key: "icon", label: "Icon (emoji)", placeholder: "⚡" },
-              { key: "title", label: "Title", placeholder: "Feature name" },
-              {
-                key: "description",
-                label: "Description",
-                type: "textarea",
-                placeholder: "Describe this feature...",
-              },
-            ]}
-            items={
-              (block.props.items as Array<{
-                icon: string;
-                title: string;
-                description: string;
-              }>) || []
-            }
-            label="Feature Items"
-            renderPreview={(item) => (
-              <span>
-                {item.icon} {item.title}
-              </span>
-            )}
-            onChange={(items) => set("items", items)}
-          />
-        </>
-      )}
-
-      {/* ── Testimonials ── */}
-      {block.type === "testimonials" && (
-        <>
-          <Field
-            label="Section Title"
-            value={(block.props.title as string) || ""}
-            onChange={(v) => set("title", v)}
-          />
-          <ItemListEditor
-            addLabel="Add testimonial"
-            fields={[
-              {
-                key: "quote",
-                label: "Quote",
-                type: "textarea",
-                placeholder: "What they said...",
-              },
-              { key: "name", label: "Name", placeholder: "Jane Doe" },
-              { key: "role", label: "Role", placeholder: "CEO at Company" },
-              {
-                key: "avatar",
-                label: "Avatar URL",
-                type: "url",
-                placeholder: "https://...",
-              },
-            ]}
-            items={
-              (block.props.testimonials as Array<{
-                quote: string;
-                name: string;
-                role: string;
-                avatar: string;
-              }>) || []
-            }
-            label="Testimonials"
-            renderPreview={(item) => <span>{item.name || "Unnamed"}</span>}
-            onChange={(items) => set("testimonials", items)}
-          />
-        </>
-      )}
-
-      {/* ── Pricing ── */}
-      {block.type === "pricing" && (
-        <>
-          <Field
-            label="Title"
-            value={(block.props.title as string) || ""}
-            onChange={(v) => set("title", v)}
-          />
-          <Field
-            label="Subtitle"
-            value={(block.props.subtitle as string) || ""}
-            onChange={(v) => set("subtitle", v)}
-          />
-        </>
-      )}
-
-      {/* ── Stats ── */}
-      {block.type === "stats" && (
-        <ItemListEditor
-          addLabel="Add stat"
-          fields={[
-            { key: "value", label: "Value", placeholder: "10K+" },
-            { key: "label", label: "Label", placeholder: "Active users" },
-          ]}
-          items={
-            (block.props.items as Array<{
-              value: string;
-              label: string;
-            }>) || []
-          }
-          label="Statistics"
-          renderPreview={(item) => (
-            <span>
-              {item.value} — {item.label}
-            </span>
-          )}
-          onChange={(items) => set("items", items)}
+      {config ? (
+        <DynamicFieldRenderer
+          block={block}
+          fieldErrors={fieldErrors}
+          fields={config}
+          isFieldVisible={isFieldVisible}
+          set={set}
         />
-      )}
-
-      {/* ── Team ── */}
-      {block.type === "team" && (
-        <>
-          <Field
-            label="Title"
-            value={(block.props.title as string) || ""}
-            onChange={(v) => set("title", v)}
-          />
-          <Field
-            label="Subtitle"
-            multiline
-            value={(block.props.subtitle as string) || ""}
-            onChange={(v) => set("subtitle", v)}
-          />
-          <ItemListEditor
-            addLabel="Add member"
-            fields={[
-              { key: "name", label: "Name", placeholder: "Alex Rivera" },
-              { key: "role", label: "Role", placeholder: "CEO" },
-              {
-                key: "avatar",
-                label: "Photo URL",
-                type: "url",
-                placeholder: "https://...",
-              },
-            ]}
-            items={
-              (block.props.members as Array<{
-                name: string;
-                role: string;
-                avatar: string;
-              }>) || []
-            }
-            label="Team Members"
-            renderPreview={(item) => <span>{item.name || "Unnamed"}</span>}
-            onChange={(items) => set("members", items)}
-          />
-        </>
-      )}
-
-      {/* ── FAQ ── */}
-      {block.type === "faq" && (
-        <>
-          <Field
-            label="Title"
-            value={(block.props.title as string) || ""}
-            onChange={(v) => set("title", v)}
-          />
-          <Field
-            label="Subtitle"
-            multiline
-            value={(block.props.subtitle as string) || ""}
-            onChange={(v) => set("subtitle", v)}
-          />
-          <ItemListEditor
-            addLabel="Add question"
-            fields={[
-              {
-                key: "q",
-                label: "Question",
-                placeholder: "How does it work?",
-              },
-              {
-                key: "a",
-                label: "Answer",
-                type: "textarea",
-                placeholder: "It's simple...",
-              },
-            ]}
-            items={
-              (block.props.items as Array<{ q: string; a: string }>) || []
-            }
-            label="Questions"
-            renderPreview={(item) => <span>{item.q || "Untitled"}</span>}
-            onChange={(items) => set("items", items)}
-          />
-        </>
-      )}
-
-      {/* ── CTA ── */}
-      {block.type === "cta" && (
-        <>
-          <Field
-            label="Headline"
-            value={(block.props.headline as string) || ""}
-            onChange={(v) => set("headline", v)}
-          />
-          <Field
-            label="Subtitle"
-            multiline
-            value={(block.props.subtitle as string) || ""}
-            onChange={(v) => set("subtitle", v)}
-          />
-          <Field
-            label="Button Text"
-            value={(block.props.ctaText as string) || ""}
-            onChange={(v) => set("ctaText", v)}
-          />
-        </>
-      )}
-
-      {/* ── Contact ── */}
-      {block.type === "contact" && (
-        <>
-          <Field
-            label="Title"
-            value={(block.props.title as string) || ""}
-            onChange={(v) => set("title", v)}
-          />
-          <Field
-            label="Subtitle"
-            multiline
-            value={(block.props.subtitle as string) || ""}
-            onChange={(v) => set("subtitle", v)}
-          />
-        </>
-      )}
-
-      {/* ── Logos ── */}
-      {block.type === "logos" && (
-        <>
-          <Field
-            label="Title"
-            value={(block.props.title as string) || ""}
-            onChange={(v) => set("title", v)}
-          />
-          <LinksEditor
-            addLabel="Add company"
-            items={(block.props.companies as string[]) || []}
-            label="Company Names"
-            onChange={(companies) => set("companies", companies)}
-          />
-        </>
-      )}
-
-      {/* ── Banner ── */}
-      {block.type === "banner" && (
-        <Field
-          label="Banner Text"
-          value={(block.props.text as string) || ""}
-          onChange={(v) => set("text", v)}
-        />
-      )}
-
-      {/* ── Gallery ── */}
-      {block.type === "gallery" && (
-        <>
-          <Field
-            label="Title"
-            value={(block.props.title as string) || ""}
-            onChange={(v) => set("title", v)}
-          />
-          <NumberField
-            label="Columns"
-            max={6}
-            min={1}
-            value={(block.props.columns as number) || 3}
-            onChange={(v) => set("columns", v)}
-          />
-        </>
-      )}
-
-      {/* ── Footer ── */}
-      {block.type === "footer" && (
-        <>
-          <Field
-            label="Logo Text"
-            value={(block.props.logo as string) || ""}
-            onChange={(v) => set("logo", v)}
-          />
-          <Field
-            label="Tagline"
-            multiline
-            value={(block.props.tagline as string) || ""}
-            onChange={(v) => set("tagline", v)}
-          />
-          <Field
-            label="Copyright"
-            value={(block.props.copyright as string) || ""}
-            onChange={(v) => set("copyright", v)}
-          />
-          <ItemListEditor
-            addLabel="Add column"
-            fields={[
-              { key: "title", label: "Column Title", placeholder: "Product" },
-              { key: "linksText", label: "Links (one per line)", type: "textarea", placeholder: "Features\nPricing\nDocs" },
-            ]}
-            items={
-              ((block.props.columns as Array<{ title: string; links: string[] }>) || []).map((col) => ({
-                title: col.title,
-                linksText: col.links.join("\n"),
-              }))
-            }
-            label="Footer Columns"
-            renderPreview={(item) => <span>{item.title || "Untitled"}</span>}
-            onChange={(items) =>
-              set(
-                "columns",
-                items.map((item) => ({
-                  title: item.title,
-                  links: (item.linksText as string).split("\n").filter((l: string) => l.trim()),
-                })),
-              )
-            }
-          />
-          <LinksEditor
-            addLabel="Add social"
-            items={(block.props.socials as string[]) || []}
-            label="Social Links"
-            onChange={(socials) => set("socials", socials)}
-          />
-        </>
-      )}
-
-      {/* ── Content ── */}
-      {block.type === "content" && (
-        <>
-          <Field
-            label="Heading"
-            value={(block.props.heading as string) || ""}
-            onChange={(v) => set("heading", v)}
-          />
-          <RichTextEditor
-            label="Body"
-            placeholder="Write your content here..."
-            value={(block.props.body as string) || ""}
-            onChange={(v) => set("body", v)}
-          />
-        </>
-      )}
-
-      {/* ── Text ── */}
-      {block.type === "text" && (
-        <RichTextEditor
-          label="Content"
-          placeholder="Start writing..."
-          value={(block.props.content as string) || ""}
-          onChange={(v) => set("content", v)}
-        />
-      )}
-
-      {/* ── Image ── */}
-      {block.type === "image" && (
-        <>
-          <ImagePicker
-            label="Image"
-            value={(block.props.src as string) || ""}
-            onChange={(v) => set("src", v)}
-          />
-          <Field
-            label="Alt Text"
-            value={(block.props.alt as string) || ""}
-            onChange={(v) => set("alt", v)}
-          />
-          <Field
-            label="Caption"
-            value={(block.props.caption as string) || ""}
-            onChange={(v) => set("caption", v)}
-          />
-        </>
-      )}
-
-      {/* ── Video ── */}
-      {block.type === "video" && (
-        <>
-          <Field
-            label="Video URL"
-            value={(block.props.url as string) || ""}
-            onChange={(v) => set("url", v)}
-          />
-          <Field
-            label="Duration"
-            value={(block.props.duration as string) || ""}
-            placeholder="3:45"
-            onChange={(v) => set("duration", v)}
-          />
-        </>
-      )}
-
-      {/* ── Code ── */}
-      {block.type === "code" && (
-        <>
-          <Field
-            label="Filename"
-            value={(block.props.filename as string) || ""}
-            placeholder="app.ts"
-            onChange={(v) => set("filename", v)}
-          />
-          <Field
-            label="Language"
-            value={(block.props.language as string) || ""}
-            placeholder="typescript"
-            onChange={(v) => set("language", v)}
-          />
-          <Field
-            label="Code"
-            multiline
-            value={(block.props.code as string) || ""}
-            onChange={(v) => set("code", v)}
-          />
-        </>
-      )}
-
-      {/* ── HTML ── */}
-      {block.type === "html" && (
-        <Field
-          label="HTML Code"
-          multiline
-          value={(block.props.html as string) || ""}
-          onChange={(v) => set("html", v)}
-        />
-      )}
-
-      {/* ── Columns ── */}
-      {block.type === "columns" && (
-        <NumberField
-          label="Number of Columns"
-          max={6}
-          min={1}
-          value={(block.props.count as number) || 2}
-          onChange={(v) => set("count", v)}
-        />
-      )}
-
-      {/* ── Grid ── */}
-      {block.type === "grid" && (
-        <>
-          <NumberField
-            label="Columns"
-            max={12}
-            min={1}
-            value={(block.props.columns as number) || 2}
-            onChange={(v) => set("columns", v)}
-          />
-          <Field
-            label="Gap (px)"
-            value={(block.props.gap as string) || "16"}
-            placeholder="16"
-            onChange={(v) => set("gap", v)}
-          />
-          <Field
-            label="Row Gap (optional override)"
-            value={(block.props.rowGap as string) || ""}
-            placeholder=""
-            onChange={(v) => set("rowGap", v)}
-          />
-          <Field
-            label="Column Gap (optional override)"
-            value={(block.props.columnGap as string) || ""}
-            placeholder=""
-            onChange={(v) => set("columnGap", v)}
-          />
-          <div>
-            <label className="text-[11px] font-semibold text-muted block mb-1.5">
-              Justify Items
-            </label>
-            <select
-              className="w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] outline-none focus:border-[#634CF8]"
-              value={(block.props.justifyItems as string) || "stretch"}
-              onChange={(e) => set("justifyItems", e.target.value)}
-            >
-              <option value="start">start</option>
-              <option value="center">center</option>
-              <option value="end">end</option>
-              <option value="stretch">stretch</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-[11px] font-semibold text-muted block mb-1.5">
-              Align Items
-            </label>
-            <select
-              className="w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] outline-none focus:border-[#634CF8]"
-              value={(block.props.alignItems as string) || "stretch"}
-              onChange={(e) => set("alignItems", e.target.value)}
-            >
-              <option value="start">start</option>
-              <option value="center">center</option>
-              <option value="end">end</option>
-              <option value="stretch">stretch</option>
-            </select>
-          </div>
-          <Field
-            label="Template Columns (custom CSS)"
-            value={(block.props.templateColumns as string) || ""}
-            placeholder="e.g. 1fr 2fr 1fr"
-            onChange={(v) => set("templateColumns", v)}
-          />
-          <Field
-            label="Template Rows (custom CSS)"
-            value={(block.props.templateRows as string) || ""}
-            placeholder=""
-            onChange={(v) => set("templateRows", v)}
-          />
-          <div>
-            <label className="text-[11px] font-semibold text-muted block mb-1.5">
-              Auto Flow
-            </label>
-            <select
-              className="w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] outline-none focus:border-[#634CF8]"
-              value={(block.props.autoFlow as string) || "row"}
-              onChange={(e) => set("autoFlow", e.target.value)}
-            >
-              <option value="row">row</option>
-              <option value="column">column</option>
-              <option value="dense">dense</option>
-            </select>
-          </div>
-        </>
-      )}
-
-      {/* ── Flex Container ── */}
-      {block.type === "flex-container" && (
-        <>
-          <div>
-            <label className="text-[11px] font-semibold text-muted block mb-1.5">
-              Direction
-            </label>
-            <select
-              className="w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] outline-none focus:border-[#634CF8]"
-              value={(block.props.direction as string) || "row"}
-              onChange={(e) => set("direction", e.target.value)}
-            >
-              <option value="row">row</option>
-              <option value="row-reverse">row-reverse</option>
-              <option value="column">column</option>
-              <option value="column-reverse">column-reverse</option>
-            </select>
-          </div>
-          <Field
-            label="Gap (px)"
-            value={(block.props.gap as string) || "16"}
-            placeholder="16"
-            onChange={(v) => set("gap", v)}
-          />
-          <div>
-            <label className="text-[11px] font-semibold text-muted block mb-1.5">
-              Justify Content
-            </label>
-            <select
-              className="w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] outline-none focus:border-[#634CF8]"
-              value={(block.props.justifyContent as string) || "flex-start"}
-              onChange={(e) => set("justifyContent", e.target.value)}
-            >
-              <option value="flex-start">flex-start</option>
-              <option value="center">center</option>
-              <option value="flex-end">flex-end</option>
-              <option value="space-between">space-between</option>
-              <option value="space-around">space-around</option>
-              <option value="space-evenly">space-evenly</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-[11px] font-semibold text-muted block mb-1.5">
-              Align Items
-            </label>
-            <select
-              className="w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] outline-none focus:border-[#634CF8]"
-              value={(block.props.alignItems as string) || "stretch"}
-              onChange={(e) => set("alignItems", e.target.value)}
-            >
-              <option value="flex-start">flex-start</option>
-              <option value="center">center</option>
-              <option value="flex-end">flex-end</option>
-              <option value="stretch">stretch</option>
-              <option value="baseline">baseline</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-[11px] font-semibold text-muted block mb-1.5">
-              Wrap
-            </label>
-            <select
-              className="w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] outline-none focus:border-[#634CF8]"
-              value={(block.props.wrap as string) || "nowrap"}
-              onChange={(e) => set("wrap", e.target.value)}
-            >
-              <option value="nowrap">nowrap</option>
-              <option value="wrap">wrap</option>
-              <option value="wrap-reverse">wrap-reverse</option>
-            </select>
-          </div>
-        </>
-      )}
-
-      {/* ── Flex Row / Col ── */}
-      {(block.type === "flex-row" || block.type === "flex-col") && (
-        <>
-          <Field
-            label="Gap"
-            value={(block.props.gap as string) || "1rem"}
-            placeholder="1rem"
-            onChange={(v) => set("gap", v)}
-          />
-          <div>
-            <label className="text-[11px] font-semibold text-muted block mb-1.5">
-              Justify Content
-            </label>
-            <select
-              className="w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] outline-none focus:border-[#634CF8]"
-              value={(block.props.justify as string) || "flex-start"}
-              onChange={(e) => set("justify", e.target.value)}
-            >
-              <option value="flex-start">flex-start</option>
-              <option value="center">center</option>
-              <option value="flex-end">flex-end</option>
-              <option value="space-between">space-between</option>
-              <option value="space-around">space-around</option>
-              <option value="space-evenly">space-evenly</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-[11px] font-semibold text-muted block mb-1.5">
-              Align Items
-            </label>
-            <select
-              className="w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] outline-none focus:border-[#634CF8]"
-              value={(block.props.align as string) || "stretch"}
-              onChange={(e) => set("align", e.target.value)}
-            >
-              <option value="flex-start">flex-start</option>
-              <option value="center">center</option>
-              <option value="flex-end">flex-end</option>
-              <option value="stretch">stretch</option>
-              <option value="baseline">baseline</option>
-            </select>
-          </div>
-        </>
-      )}
-
-      {/* ── Container ── */}
-      {block.type === "container" && (
-        <Field
-          label="Max Width"
-          value={(block.props.maxWidth as string) || "1200px"}
-          placeholder="1200px"
-          onChange={(v) => set("maxWidth", v)}
-        />
-      )}
-
-      {/* ── Spacer ── */}
-      {block.type === "spacer" && (
-        <NumberField
-          label="Height (px)"
-          max={400}
-          min={8}
-          value={(block.props.height as number) || 64}
-          onChange={(v) => set("height", v)}
-        />
-      )}
-
-      {/* ── Button Group ── */}
-      {block.type === "button-group" && (
-        <>
-          <Field
-            label="Primary Text"
-            value={(block.props.primaryText as string) || ""}
-            onChange={(v) => set("primaryText", v)}
-          />
-          <Field
-            label="Secondary Text"
-            value={(block.props.secondaryText as string) || ""}
-            onChange={(v) => set("secondaryText", v)}
-          />
-        </>
-      )}
-
-      {/* ── Divider ── */}
-      {block.type === "divider" && (
-        <Field
-          label="Label (optional)"
-          value={(block.props.label as string) || ""}
-          placeholder="Section divider text"
-          onChange={(v) => set("label", v)}
-        />
-      )}
-
-      {/* ── Generic UI Components Fallback ── */}
-      {!["navbar", "hero", "features", "testimonials", "pricing", "stats", "team", "faq", "cta", "contact", "logos", "banner", "gallery", "footer", "content", "text", "image", "video", "code", "html", "columns", "grid", "flex-container", "flex-row", "flex-col", "container", "spacer", "button-group", "divider"].includes(block.type) && (
-        <GenericPropertiesEditor block={block} set={set} isFieldVisible={isFieldVisible} />
+      ) : (
+        <GenericPropertiesEditor block={block} isFieldVisible={isFieldVisible} set={set} />
       )}
 
       {/* ── Global Block (navbar/footer only) ── */}
@@ -1180,7 +899,7 @@ function ContentTabFields({
           </p>
           <div className="flex flex-col gap-3">
             <select
-              className="w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] outline-none focus:border-[#634CF8]"
+              className={COMMON_CLASSES.SELECT_BASE}
               value={
                 ((block.props._formAction as Record<string, unknown>)?.method as string) ||
                 "localStorage"
@@ -1312,7 +1031,7 @@ function StyleTab({
                 className={clsx(
                   "h-7 px-2.5 rounded-md text-[10px] font-medium border transition-all",
                   style.fontSize === preset.value
-                    ? "border-[#634CF8] bg-[#634CF8]/5 text-[#634CF8]"
+                    ? `${UI_COLORS.PRIMARY_BORDER} ${UI_COLORS.PRIMARY_SOFT_BG} ${UI_COLORS.PRIMARY_TEXT}`
                     : "border-separator/40 text-muted hover:border-muted",
                 )}
                 onClick={() => setStyle("fontSize", preset.value)}
@@ -1322,7 +1041,7 @@ function StyleTab({
             ))}
           </div>
           <input
-            className="w-full h-8 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-2 text-[11px] font-mono outline-none focus:border-[#634CF8]"
+            className={clsx(COMMON_CLASSES.INPUT_BASE, COMMON_CLASSES.INPUT_FOCUS, "h-8 font-mono")}
             placeholder="Custom (e.g. 18px, 1.5rem)"
             value={
               FONT_SIZE_PRESETS.some((p) => p.value === style.fontSize)
@@ -1339,7 +1058,7 @@ function StyleTab({
             Font Weight
           </label>
           <select
-            className="w-full h-8 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-2 text-[11px] outline-none focus:border-[#634CF8]"
+            className={clsx(COMMON_CLASSES.SELECT_BASE, "h-8")}
             value={style.fontWeight || ""}
             onChange={(e) => setStyle("fontWeight", e.target.value || undefined)}
           >
@@ -1364,7 +1083,7 @@ function StyleTab({
                 className={clsx(
                   "flex-1 h-8 rounded-md text-[12px] font-medium border transition-all flex items-center justify-center",
                   style.textAlign === opt.value
-                    ? "border-[#634CF8] bg-[#634CF8]/5 text-[#634CF8]"
+                    ? `${UI_COLORS.PRIMARY_BORDER} ${UI_COLORS.PRIMARY_SOFT_BG} ${UI_COLORS.PRIMARY_TEXT}`
                     : "border-separator/40 text-muted hover:border-muted",
                 )}
                 title={opt.title}
@@ -1405,7 +1124,7 @@ function StyleTab({
                 className={clsx(
                   "flex-1 h-7 rounded-md text-[9px] font-medium border transition-all",
                   style.lineHeight === preset.value
-                    ? "border-[#634CF8] bg-[#634CF8]/5 text-[#634CF8]"
+                    ? `${UI_COLORS.PRIMARY_BORDER} ${UI_COLORS.PRIMARY_SOFT_BG} ${UI_COLORS.PRIMARY_TEXT}`
                     : "border-separator/40 text-muted hover:border-muted",
                 )}
                 onClick={() =>
@@ -1440,7 +1159,7 @@ function StyleTab({
                 className={clsx(
                   "flex-1 h-7 rounded-md text-[10px] font-medium border transition-all",
                   style.borderWidth === w
-                    ? "border-[#634CF8] bg-[#634CF8]/5 text-[#634CF8]"
+                    ? `${UI_COLORS.PRIMARY_BORDER} ${UI_COLORS.PRIMARY_SOFT_BG} ${UI_COLORS.PRIMARY_TEXT}`
                     : "border-separator/40 text-muted hover:border-muted",
                 )}
                 onClick={() =>
@@ -1474,7 +1193,7 @@ function StyleTab({
                 className={clsx(
                   "flex-1 h-7 rounded-md text-[9px] font-medium border transition-all capitalize",
                   style.borderStyle === s
-                    ? "border-[#634CF8] bg-[#634CF8]/5 text-[#634CF8]"
+                    ? `${UI_COLORS.PRIMARY_BORDER} ${UI_COLORS.PRIMARY_SOFT_BG} ${UI_COLORS.PRIMARY_TEXT}`
                     : "border-separator/40 text-muted hover:border-muted",
                 )}
                 onClick={() =>
@@ -1508,7 +1227,7 @@ function StyleTab({
                   className={clsx(
                     "h-7 px-2 rounded-md text-[9px] font-medium border transition-all",
                     style.borderRadius === preset.value
-                      ? "border-[#634CF8] bg-[#634CF8]/5 text-[#634CF8]"
+                      ? `${UI_COLORS.PRIMARY_BORDER} ${UI_COLORS.PRIMARY_SOFT_BG} ${UI_COLORS.PRIMARY_TEXT}`
                       : "border-separator/40 text-muted hover:border-muted",
                   )}
                   onClick={() =>
@@ -1539,7 +1258,7 @@ function StyleTab({
                     {label}
                   </label>
                   <input
-                    className="w-full h-7 rounded border border-separator/40 bg-[#FAFAFA] dark:bg-surface px-2 text-[10px] font-mono outline-none focus:border-[#634CF8]"
+                    className={clsx(COMMON_CLASSES.INPUT_BASE, "h-7 font-mono px-2 text-[10px]", COMMON_CLASSES.INPUT_FOCUS)}
                     placeholder="0px"
                     value={(style[key] as string) || ""}
                     onChange={(e) =>
@@ -1593,7 +1312,7 @@ function AdvancedTab({
         </p>
         <div className="flex flex-col gap-2">
           <select
-            className="w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] outline-none focus:border-[#634CF8]"
+            className={COMMON_CLASSES.SELECT_BASE}
             value={style.animation || "none"}
             onChange={(e) =>
               setStyle("animation", e.target.value === "none" ? undefined : e.target.value)
@@ -1617,7 +1336,7 @@ function AdvancedTab({
                 Delay (ms)
               </label>
               <input
-                className="w-full h-7 rounded border border-separator/40 bg-[#FAFAFA] dark:bg-surface px-2 text-[10px] outline-none"
+                className={clsx(COMMON_CLASSES.INPUT_BASE, "h-7 px-2 text-[10px]", COMMON_CLASSES.INPUT_FOCUS)}
                 max={2000}
                 min={0}
                 step={100}
@@ -1638,7 +1357,7 @@ function AdvancedTab({
           CSS Class
         </p>
         <input
-          className="w-full h-8 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-2 text-[11px] font-mono outline-none focus:border-[#634CF8]"
+          className={clsx(COMMON_CLASSES.INPUT_BASE, "h-8 font-mono px-2 text-[11px]", COMMON_CLASSES.INPUT_FOCUS)}
           placeholder="custom-class another-class"
           value={style.cssClass || ""}
           onChange={(e) => setStyle("cssClass", e.target.value || undefined)}
@@ -1703,7 +1422,7 @@ function AdvancedTab({
                 "flex-1 h-8 rounded-lg text-[10px] font-semibold border-2 transition-all",
                 ((block.props._section as Record<string, unknown>)?.layout ||
                   "contained") === mode
-                  ? "border-[#634CF8] bg-[#634CF8]/5 text-[#634CF8]"
+                  ? `${UI_COLORS.PRIMARY_BORDER} ${UI_COLORS.PRIMARY_SOFT_BG} ${UI_COLORS.PRIMARY_TEXT}`
                   : "border-separator/40 text-muted",
               )}
               onClick={() =>
@@ -1760,10 +1479,10 @@ function PageSettingsPanel({
 }) {
   return (
     <aside
-      className="shrink-0 border-l border-separator/50 bg-white dark:bg-background flex flex-col overflow-hidden h-full max-md:w-full"
+      className={COMMON_CLASSES.PANEL_BASE}
       style={{ width: `${width}px` }}
     >
-      <div className="px-4 py-3 border-b border-separator/40 bg-[#FAFAFA] dark:bg-surface/50">
+      <div className={COMMON_CLASSES.HEADER}>
         <p className="text-[13px] font-semibold text-foreground">
           <FileText size={14} className="inline" /> Page Settings
         </p>
@@ -1772,20 +1491,19 @@ function PageSettingsPanel({
         </p>
       </div>
 
-      {/* Tab switcher */}
       <div className="flex border-b border-separator/40">
-        {(["page", "seo", "layers"] as const).map((tab) => (
+        {TAB_TYPES.PAGE.map((tab) => (
           <button
             className={clsx(
-              "flex-1 py-2 text-[11px] font-semibold transition-colors border-b-2",
+              COMMON_CLASSES.TAB_BUTTON,
               settingsTab === tab
-                ? "text-[#634CF8] border-[#634CF8]"
+                ? `${UI_COLORS.PRIMARY_TEXT} ${UI_COLORS.PRIMARY_BORDER}`
                 : "text-muted border-transparent hover:text-foreground",
             )}
             key={tab}
             onClick={() => onSettingsTabChange(tab)}
           >
-            {tab === "page" ? "General" : tab === "seo" ? "SEO" : "Layers"}
+            {TAB_LABELS[tab]}
           </button>
         ))}
       </div>
@@ -1801,13 +1519,13 @@ function PageSettingsPanel({
               }
             />
             <div>
-              <label className="text-[11px] font-semibold text-muted block mb-1.5">
+              <label className={COMMON_CLASSES.FIELD_LABEL}>
                 Permalink
               </label>
               <div className="flex items-center gap-1">
                 <span className="text-[11px] text-muted">/</span>
                 <input
-                  className="flex-1 h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] text-foreground font-mono outline-none focus:border-[#634CF8]"
+                  className={clsx(COMMON_CLASSES.INPUT_BASE, COMMON_CLASSES.INPUT_FOCUS, "flex-1 font-mono")}
                   value={activePage.settings.slug}
                   onChange={(e) =>
                     onUpdatePageSettings(activePage.id, {
@@ -1820,7 +1538,7 @@ function PageSettingsPanel({
               </div>
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-muted block mb-1.5">
+              <label className={COMMON_CLASSES.FIELD_LABEL}>
                 Visibility
               </label>
               <div className="flex gap-2">
@@ -1833,7 +1551,7 @@ function PageSettingsPanel({
                           ? activePage.settings.published
                           : !activePage.settings.published
                       )
-                        ? "border-[#634CF8] bg-[#634CF8]/5 text-[#634CF8]"
+                        ? `${UI_COLORS.PRIMARY_BORDER} ${UI_COLORS.PRIMARY_SOFT_BG} ${UI_COLORS.PRIMARY_TEXT}`
                         : "border-separator/40 text-muted hover:border-muted",
                     )}
                     key={v}
@@ -1848,7 +1566,7 @@ function PageSettingsPanel({
                 ))}
               </div>
             </div>
-            <div className="rounded-lg bg-[#F8F8FA] dark:bg-surface p-3 flex flex-col gap-1">
+            <div className={clsx("rounded-lg p-3 flex flex-col gap-1", UI_COLORS.BG_PANEL)}>
               <div className="flex justify-between text-[10px]">
                 <span className="text-muted">Created</span>
                 <span className="text-foreground font-mono">
@@ -1924,14 +1642,15 @@ function Field({
   const hasError = errors && errors.length > 0;
   return (
     <div>
-      <label className="text-[11px] font-semibold text-muted block mb-1.5">
+      <label className={COMMON_CLASSES.FIELD_LABEL}>
         {label}
       </label>
       {multiline ? (
         <textarea
           className={clsx(
-            "w-full rounded-lg border bg-[#FAFAFA] dark:bg-surface px-3 py-2 text-[12px] text-foreground outline-none focus:bg-white dark:focus:bg-background transition-all resize-none h-24 leading-relaxed",
-            hasError ? "border-red-500 focus:border-red-500" : "border-separator/50 focus:border-[#634CF8]"
+            COMMON_CLASSES.INPUT_BASE,
+            "py-2 resize-none h-24 leading-relaxed",
+            hasError ? "border-red-500 focus:border-red-500" : COMMON_CLASSES.INPUT_FOCUS
           )}
           placeholder={placeholder}
           value={value}
@@ -1940,8 +1659,8 @@ function Field({
       ) : (
         <input
           className={clsx(
-            "w-full h-9 rounded-lg border bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] text-foreground outline-none focus:bg-white dark:focus:bg-background transition-all",
-            hasError ? "border-red-500 focus:border-red-500" : "border-separator/50 focus:border-[#634CF8]"
+            COMMON_CLASSES.INPUT_BASE,
+            hasError ? "border-red-500 focus:border-red-500" : COMMON_CLASSES.INPUT_FOCUS
           )}
           placeholder={placeholder}
           value={value}
@@ -1974,12 +1693,12 @@ function NumberField({
 }) {
   return (
     <div>
-      <label className="text-[11px] font-semibold text-muted block mb-1.5">
+      <label className={COMMON_CLASSES.FIELD_LABEL}>
         {label}
       </label>
       <div className="flex items-center gap-2">
         <input
-          className="flex-1 h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] text-foreground outline-none focus:border-[#634CF8] transition-all"
+          className={clsx(COMMON_CLASSES.INPUT_BASE, COMMON_CLASSES.INPUT_FOCUS, "flex-1")}
           max={max}
           min={min}
           type="number"
@@ -2017,7 +1736,7 @@ function ActionBtn({
         "flex h-7 items-center gap-1 rounded-lg px-2.5 text-[11px] font-medium transition-colors",
         disabled && "opacity-25 cursor-not-allowed",
         danger
-          ? "text-danger hover:bg-danger/10"
+          ? UI_COLORS.DANGER_BG + " " + UI_COLORS.DANGER
           : "text-muted hover:text-foreground hover:bg-[#F5F5F5] dark:hover:bg-surface",
       )}
       disabled={disabled}
@@ -2043,11 +1762,11 @@ function SettingField({
 }) {
   return (
     <div>
-      <label className="text-[11px] font-semibold text-muted block mb-1.5">
+      <label className={COMMON_CLASSES.FIELD_LABEL}>
         {label}
       </label>
       <input
-        className="w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] text-foreground outline-none focus:border-[#634CF8] transition-all"
+        className={clsx(COMMON_CLASSES.INPUT_BASE, COMMON_CLASSES.INPUT_FOCUS)}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
