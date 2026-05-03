@@ -721,53 +721,77 @@ export default function PageBuilder({ config }: { config?: PageBuilderConfig } =
     // ── Reorder existing block ──
     if (active.id !== over.id) {
       const activeId = active.id as string;
+      const activeParentInfo = getParentBlock(state.blocks, activeId);
+      
+      let targetParentId: string | null = null;
+      let targetZone: string | null = null;
+      let targetIndex = 0;
 
-      // Check for cycle prevention when dropping into a container zone
       if (overId.includes(":") && !overId.startsWith("drop-before-") && !overId.startsWith("drop-after-")) {
-        const parentId = overId.split(":")[0];
-        if (wouldCreateCycle(state.blocks, activeId, parentId)) return;
-
-        const zoneName = overId.split(":")[1];
+        // Drop into nested zone
         const parts = overId.split(":");
-        let targetIndex = 0;
+        targetParentId = parts[0];
+        targetZone = parts[1];
+
+        if (wouldCreateCycle(state.blocks, activeId, targetParentId)) return;
+
+        const parent = findBlock(state.blocks, targetParentId);
+        const zoneBlocks = parent?.children?.[targetZone] ?? [];
+
         if (parts.length >= 3) {
           const posHint = parts.slice(2).join(":");
           if (posHint.startsWith("before-")) {
             const refId = posHint.replace("before-", "");
-            const parent = findBlock(state.blocks, parentId);
-            const zoneBlocks = parent?.children?.[zoneName] ?? [];
             const idx = zoneBlocks.findIndex((b) => b.id === refId);
             targetIndex = idx >= 0 ? idx : 0;
           } else if (posHint.startsWith("after-")) {
             const refId = posHint.replace("after-", "");
-            const parent = findBlock(state.blocks, parentId);
-            const zoneBlocks = parent?.children?.[zoneName] ?? [];
             const idx = zoneBlocks.findIndex((b) => b.id === refId);
             targetIndex = idx >= 0 ? idx + 1 : zoneBlocks.length;
           }
         } else {
-          const parent = findBlock(state.blocks, parentId);
-          targetIndex = parent?.children?.[zoneName]?.length ?? 0;
+          targetIndex = zoneBlocks.length;
         }
-
-        pushHistory();
-        setState((s) => ({
-          ...s,
-          blocks: treeMoveBlock(s.blocks, activeId, parentId, zoneName, targetIndex),
-        }));
-        return;
+      } else {
+        // Root-level reorder or dropping into root drop zones
+        targetParentId = null;
+        targetZone = null;
+        
+        if (overId.startsWith("drop-before-")) {
+          const refId = overId.replace("drop-before-", "");
+          const idx = state.blocks.findIndex((b) => b.id === refId);
+          targetIndex = idx >= 0 ? idx : 0;
+        } else if (overId.startsWith("drop-after-")) {
+          const refId = overId.replace("drop-after-", "");
+          const idx = state.blocks.findIndex((b) => b.id === refId);
+          targetIndex = idx >= 0 ? idx + 1 : state.blocks.length;
+        } else {
+          const idx = state.blocks.findIndex((b) => b.id === overId);
+          targetIndex = idx >= 0 ? idx + 1 : state.blocks.length;
+        }
       }
 
-      // Root-level reorder
-      const activeIdx = state.blocks.findIndex((b) => b.id === activeId);
-      const overIdx = state.blocks.findIndex((b) => b.id === overId);
-      if (activeIdx >= 0 && overIdx >= 0) {
-        pushHistory();
-        setState((s) => ({
-          ...s,
-          blocks: arrayMove(s.blocks, activeIdx, overIdx),
-        }));
+      // Adjustment for moving within the same zone:
+      // If we move a block to a later position in the same zone, 
+      // the index will shift once the block is removed.
+      const isSameZone = (activeParentInfo?.parent.id ?? null) === targetParentId && 
+                         (activeParentInfo?.zone ?? null) === targetZone;
+      
+      if (isSameZone) {
+        const zoneBlocks = targetParentId 
+          ? findBlock(state.blocks, targetParentId)?.children?.[targetZone!] ?? []
+          : state.blocks;
+        const activeIdx = zoneBlocks.findIndex(b => b.id === activeId);
+        if (activeIdx >= 0 && activeIdx < targetIndex) {
+          targetIndex--;
+        }
       }
+
+      pushHistory();
+      setState((s) => ({
+        ...s,
+        blocks: treeMoveBlock(s.blocks, activeId, targetParentId, targetZone, targetIndex),
+      }));
     }
   }
 
