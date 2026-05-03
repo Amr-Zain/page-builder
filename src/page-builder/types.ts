@@ -29,7 +29,32 @@ export type BlockType =
   | "spacer"
   | "divider"
   | "code"
-  | "html";
+  | "html"
+  // UI Components
+  | "Button"
+  | "Link"
+  | "Tooltip"
+  | "Popover"
+  | "Card"
+  | "Avatar"
+  | "Badge"
+  | "Chip"
+  | "Accordion"
+  | "Table"
+  | "Separator"
+  | "Input"
+  | "TextField"
+  | "TextArea"
+  | "Select"
+  | "Checkbox"
+  | "Switch"
+  | "RadioGroup"
+  | "Slider"
+  | "Tabs"
+  | "Breadcrumbs"
+  | "Pagination"
+  | "Stepper"
+  | "Progress";
 
 export type BlockCategory = "sections" | "content" | "layout" | "media";
 

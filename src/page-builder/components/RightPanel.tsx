@@ -249,6 +249,112 @@ export function RightPanel({
 // Content Tab — Block-specific property fields
 // ═══════════════════════════════════════════════════════════════════════════════
 
+function GenericPropertiesEditor({
+  block,
+  set,
+  isFieldVisible,
+}: {
+  block: BlockInstance;
+  set: (key: string, value: unknown) => void;
+  isFieldVisible?: (fieldName: string) => boolean;
+}) {
+  let inferredFields: { key: string; label: string; type: string; options?: {value: string, label: string}[] }[] = [];
+
+  if (block.type === "Card") {
+    inferredFields = [
+      { key: "title", label: "Title", type: "text" },
+      { key: "description", label: "Description", type: "textarea" },
+    ];
+  } else if (block.type === "Button") {
+    inferredFields = [
+      { key: "text", label: "Button Text", type: "text" },
+      { key: "variant", label: "Variant", type: "select", options: [
+        { value: "primary", label: "Primary" },
+        { value: "secondary", label: "Secondary" },
+        { value: "outline", label: "Outline" },
+        { value: "ghost", label: "Ghost" },
+      ] },
+    ];
+  } else if (block.type === "Avatar") {
+    inferredFields = [
+      { key: "name", label: "Name", type: "text" },
+    ];
+  } else if (block.type === "Badge" || block.type === "Chip") {
+    inferredFields = [
+      { key: "text", label: "Text", type: "text" },
+    ];
+  } else if (block.type === "Accordion") {
+    inferredFields = [
+      { key: "title", label: "Title", type: "text" },
+      { key: "content", label: "Content", type: "textarea" },
+    ];
+  } else if (block.type === "Table") {
+    inferredFields = [
+      { key: "headers", label: "Headers (comma separated)", type: "text" },
+      { key: "rows", label: "Rows", type: "textarea" },
+    ];
+  } else if (block.type === "Input" || block.type === "TextField" || block.type === "TextArea") {
+    inferredFields = [
+      { key: "placeholder", label: "Placeholder", type: "text" },
+      { key: "label", label: "Label", type: "text" },
+    ];
+  } else {
+    // Collect all string/number/boolean props, excluding internal keys like _style
+    const propsKeys = Object.keys(block.props).filter(k => !k.startsWith("_") && k !== "children");
+    inferredFields = propsKeys.map(k => ({
+      key: k,
+      label: k.charAt(0).toUpperCase() + k.slice(1).replace(/([A-Z])/g, ' $1'),
+      type: typeof block.props[k] === "number" ? "number" : typeof block.props[k] === "boolean" ? "boolean" : "text"
+    }));
+  }
+
+  if (inferredFields.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-[11px] text-muted">No configurable content properties for {block.type}.</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {inferredFields.map(field => {
+         if (isFieldVisible && !isFieldVisible(field.key)) return null;
+         
+         if (field.type === "number") {
+           return <NumberField key={field.key} label={field.label} min={0} max={9999} value={(block.props[field.key] as number) || 0} onChange={v => set(field.key, v)} />
+         } else if (field.type === "boolean") {
+           return (
+             <div key={field.key} className="flex items-center justify-between py-2">
+               <label className="text-[11px] font-semibold text-muted block">{field.label}</label>
+               <Switch size="sm" isSelected={!!block.props[field.key]} onChange={(e: any) => set(field.key, e.target ? e.target.checked : e)} />
+             </div>
+           )
+         } else if (field.type === "select" && field.options) {
+           return (
+             <div key={field.key} className="mb-4">
+               <label className="text-[11px] font-semibold text-muted block mb-1.5">{field.label}</label>
+               <select
+                 className="w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] outline-none focus:border-[#634CF8]"
+                 value={(block.props[field.key] as string) || field.options[0].value}
+                 onChange={e => set(field.key, e.target.value)}
+               >
+                 {field.options.map(opt => (
+                   <option key={opt.value} value={opt.value}>{opt.label}</option>
+                 ))}
+               </select>
+             </div>
+           )
+         } else if (field.type === "textarea") {
+           return <Field key={field.key} label={field.label} multiline value={(block.props[field.key] as string) || ""} onChange={v => set(field.key, v)} />
+         } else {
+           return <Field key={field.key} label={field.label} value={(block.props[field.key] as string) || ""} onChange={v => set(field.key, v)} />
+         }
+      })}
+    </>
+  )
+}
+
 function ContentTabFields({
   block,
   set,
@@ -941,6 +1047,61 @@ function ContentTabFields({
         </>
       )}
 
+      {/* ── Flex Row / Col ── */}
+      {(block.type === "flex-row" || block.type === "flex-col") && (
+        <>
+          <Field
+            label="Gap"
+            value={(block.props.gap as string) || "1rem"}
+            placeholder="1rem"
+            onChange={(v) => set("gap", v)}
+          />
+          <div>
+            <label className="text-[11px] font-semibold text-muted block mb-1.5">
+              Justify Content
+            </label>
+            <select
+              className="w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] outline-none focus:border-[#634CF8]"
+              value={(block.props.justify as string) || "flex-start"}
+              onChange={(e) => set("justify", e.target.value)}
+            >
+              <option value="flex-start">flex-start</option>
+              <option value="center">center</option>
+              <option value="flex-end">flex-end</option>
+              <option value="space-between">space-between</option>
+              <option value="space-around">space-around</option>
+              <option value="space-evenly">space-evenly</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-[11px] font-semibold text-muted block mb-1.5">
+              Align Items
+            </label>
+            <select
+              className="w-full h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 text-[12px] outline-none focus:border-[#634CF8]"
+              value={(block.props.align as string) || "stretch"}
+              onChange={(e) => set("align", e.target.value)}
+            >
+              <option value="flex-start">flex-start</option>
+              <option value="center">center</option>
+              <option value="flex-end">flex-end</option>
+              <option value="stretch">stretch</option>
+              <option value="baseline">baseline</option>
+            </select>
+          </div>
+        </>
+      )}
+
+      {/* ── Container ── */}
+      {block.type === "container" && (
+        <Field
+          label="Max Width"
+          value={(block.props.maxWidth as string) || "1200px"}
+          placeholder="1200px"
+          onChange={(v) => set("maxWidth", v)}
+        />
+      )}
+
       {/* ── Spacer ── */}
       {block.type === "spacer" && (
         <NumberField
@@ -976,6 +1137,11 @@ function ContentTabFields({
           placeholder="Section divider text"
           onChange={(v) => set("label", v)}
         />
+      )}
+
+      {/* ── Generic UI Components Fallback ── */}
+      {!["navbar", "hero", "features", "testimonials", "pricing", "stats", "team", "faq", "cta", "contact", "logos", "banner", "gallery", "footer", "content", "text", "image", "video", "code", "html", "columns", "grid", "flex-container", "flex-row", "flex-col", "container", "spacer", "button-group", "divider"].includes(block.type) && (
+        <GenericPropertiesEditor block={block} set={set} isFieldVisible={isFieldVisible} />
       )}
 
       {/* ── Global Block (navbar/footer only) ── */}
