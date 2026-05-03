@@ -180,7 +180,17 @@ const BLOCK_FIELD_CONFIGS: Record<string, FieldConfig[]> = {
   ],
   logos: [
     { type: "text", key: "title", label: "Title" },
-    { type: "links", key: "companies", label: "Company Names", addLabel: "Add company" },
+    {
+      type: "items",
+      key: "items",
+      label: "Logos",
+      addLabel: "Add Logo",
+      fields: [
+        { key: "name", label: "Company Name", placeholder: "Acme Inc." },
+        { key: "logo", label: "Logo Image", type: "image" },
+      ],
+      renderPreview: (item) => <span>{item.name || "Unnamed"}</span>,
+    },
   ],
   banner: [{ type: "text", key: "text", label: "Banner Text" }],
   gallery: [

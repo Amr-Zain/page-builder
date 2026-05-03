@@ -1,3 +1,5 @@
+import { ImagePicker } from "./ImagePicker";
+
 /**
  * Generic list editor for items with configurable fields.
  * Used for: features, FAQ, stats, testimonials, team members, pricing tiers, etc.
@@ -15,7 +17,7 @@ export function ItemListEditor<T extends Record<string, unknown>>({
   fields: {
     key: keyof T;
     label: string;
-    type?: "text" | "textarea" | "url";
+    type?: "text" | "textarea" | "url" | "image";
     placeholder?: string;
   }[];
   label: string;
@@ -115,7 +117,13 @@ export function ItemListEditor<T extends Record<string, unknown>>({
                   <label className="text-[9px] text-muted/70 block mb-0.5">
                     {field.label}
                   </label>
-                  {field.type === "textarea" ? (
+                  {field.type === "image" ? (
+                    <ImagePicker
+                      label=""
+                      value={(item[field.key] as string) || ""}
+                      onChange={(v) => updateItem(index, field.key, v)}
+                    />
+                  ) : field.type === "textarea" ? (
                     <textarea
                       className="w-full rounded border border-separator/40 bg-white dark:bg-background px-2 py-1 text-[11px] text-foreground outline-none focus:border-[#634CF8] resize-none h-14"
                       placeholder={field.placeholder}

@@ -137,7 +137,17 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
     icon: "building",
     category: "sections",
     description: "Trusted-by logo strip",
-    defaultProps: { title: "Trusted by" },
+    defaultProps: {
+      title: "Trusted by",
+      items: [
+        { name: "Vercel", logo: "" },
+        { name: "Stripe", logo: "" },
+        { name: "Linear", logo: "" },
+        { name: "Notion", logo: "" },
+        { name: "Figma", logo: "" },
+        { name: "GitHub", logo: "" },
+      ],
+    },
   },
   {
     type: "banner",

@@ -60,6 +60,7 @@ export function CreateProjectModal({
                 placeholder="My Website"
                 onKeyDown={handleKeyDown}
                 autoFocus
+                className={'m-2'}
               />
               {error && <FieldError>{error}</FieldError>}
             </TextField>
