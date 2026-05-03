@@ -1,6 +1,7 @@
 import { Button, Tooltip } from "@heroui/react";
 import clsx from "clsx";
 import { Monitor, Tablet, Smartphone, Undo2, Redo2, PanelLeft, PanelRight, Moon, Sun, Globe, GlobeLock } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function Toolbar({
   previewMode,
@@ -73,10 +74,12 @@ export function Toolbar({
     <nav className="sticky top-0 z-40 flex h-12 items-center justify-between border-b border-separator/50 bg-white/90 dark:bg-background/90 backdrop-blur-xl px-2 md:px-3 gap-2 overflow-x-auto">
       {/* ── Left: Logo + Sidebar Toggle ── */}
       <div className="flex items-center gap-2">
-        <span className="text-sm font-bold text-[#634CF8]">⬡</span>
-        <span className="hidden md:inline text-[13px] font-semibold text-foreground">
-          Page Builder
-        </span>
+        <Link to="/projects" className="flex items-center gap-2">
+          <span className="text-sm font-bold text-[#634CF8]">⬡</span>
+          <span className="hidden md:inline text-[13px] font-semibold text-foreground">
+            Page Builder
+          </span>
+        </Link>
 
         <div className="w-px h-5 bg-separator/50 mx-1" />
 
