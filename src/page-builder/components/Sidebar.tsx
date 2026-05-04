@@ -88,16 +88,18 @@ function DraggableBlockCard({ block }: { block: BlockDefinition }) {
     <div
       ref={setNodeRef}
       className={clsx(
-        "flex flex-col items-center gap-2 rounded-lg border-2 border-separator/40 bg-white dark:bg-surface p-3 transition-all cursor-grab active:cursor-grabbing select-none outline-none",
+        "flex flex-col items-center gap-2.5 rounded-sm border border-separator/40 bg-white dark:bg-surface p-3 transition-all cursor-grab active:cursor-grabbing select-none outline-none group",
         isDragging
-          ? "opacity-50 border-[#634CF8] shadow-lg scale-95"
-          : "hover:border-[#634CF8]/30 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[#634CF8]/40 focus-visible:border-[#634CF8]/30 focus-visible:shadow-sm",
+          ? "opacity-50 ring-2 ring-[#634CF8] scale-95 z-50"
+          : "hover:border-[#634CF8]/40 hover:shadow-md",
       )}
       {...listeners}
       {...attributes}
     >
-      <BlockPreview block={block} />
-      <span className="text-[11px] font-medium text-foreground text-center leading-tight">
+      <div className="w-full transition-transform duration-200 group-hover:scale-[1.02]">
+        <BlockPreview block={block} />
+      </div>
+      <span className="text-[11px] font-bold tracking-tight text-foreground/80 group-hover:text-[#634CF8] transition-colors">
         {block.label}
       </span>
     </div>
@@ -115,24 +117,26 @@ function DraggableBlockCardList({ block }: { block: BlockDefinition }) {
     <div
       ref={setNodeRef}
       className={clsx(
-        "flex items-center gap-2.5 rounded-lg border border-separator/40 bg-white dark:bg-surface px-3 py-2.5 transition-all cursor-grab active:cursor-grabbing select-none outline-none",
+        "flex items-center gap-3 rounded-sm border border-separator/40 bg-white dark:bg-surface px-3 py-2.5 transition-all cursor-grab active:cursor-grabbing select-none outline-none group",
         isDragging
-          ? "opacity-50 border-[#634CF8] shadow-lg scale-95"
-          : "hover:border-[#634CF8]/30 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[#634CF8]/40 focus-visible:border-[#634CF8]/30 focus-visible:shadow-sm",
+          ? "opacity-50 ring-2 ring-[#634CF8] shadow-xl scale-95 z-50"
+          : "hover:border-[#634CF8]/40 hover:shadow-md",
       )}
       {...listeners}
       {...attributes}
     >
-      <div className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-md bg-[#F8F8FA] dark:bg-[#1a1a2e]">
-        <span className="opacity-50">{renderIcon(block.icon)}</span>
+      <div className="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-sm bg-[#F3F4F6] dark:bg-[#151525] group-hover:bg-[#634CF8]/10 transition-colors">
+        <span className="text-muted group-hover:text-[#634CF8] transition-colors scale-110">
+          {renderIcon(block.icon)}
+        </span>
       </div>
       <div className="flex-1 min-w-0">
-        <span className="text-[11px] font-medium text-foreground block truncate">
+        <span className="text-[12px] font-bold tracking-tight text-foreground/90 block truncate group-hover:text-[#634CF8] transition-colors">
           {block.label}
         </span>
-        <span className="text-[9px] text-muted/60">{block.description}</span>
+        <span className="text-[10px] text-muted/70 font-medium">{block.description}</span>
       </div>
-      <GripVertical size={14} className="text-muted/30 shrink-0" />
+      <GripVertical size={14} className="text-muted/20 group-hover:text-[#634CF8]/40 transition-colors shrink-0" />
     </div>
   );
 }
@@ -251,7 +255,7 @@ function BlockPreview({ block }: { block: BlockDefinition }) {
     }
     // Generic section fallback
     return (
-      <div className="flex h-[44px] w-full items-center justify-center rounded-lg bg-[#F8F8FA] dark:bg-[#1a1a2e]">
+      <div className="flex h-[44px] w-full items-center justify-center rounded-sm bg-[#F8F8FA] dark:bg-[#1a1a2e]">
         <span className="opacity-50">{renderIcon(block.icon)}</span>
       </div>
     );
@@ -259,7 +263,7 @@ function BlockPreview({ block }: { block: BlockDefinition }) {
 
   // Content / Layout / Media
   return (
-    <div className="flex h-[44px] w-full items-center justify-center rounded-lg bg-[#F8F8FA] dark:bg-[#1a1a2e]">
+    <div className="flex h-[44px] w-full items-center justify-center rounded-sm bg-[#F8F8FA] dark:bg-[#1a1a2e]">
       <span className="opacity-50">{renderIcon(block.icon)}</span>
     </div>
   );
@@ -280,7 +284,7 @@ function DraggableComponentCard({
     <div
       ref={setNodeRef}
       className={clsx(
-        "flex items-center gap-2.5 rounded-lg border border-separator/40 bg-white dark:bg-surface px-3 py-2.5 transition-all cursor-grab active:cursor-grabbing select-none outline-none",
+        "flex items-center gap-2.5 rounded-sm border border-separator/40 bg-white dark:bg-surface px-3 py-2.5 transition-all cursor-grab active:cursor-grabbing select-none outline-none",
         isDragging
           ? "opacity-50 border-[#634CF8] shadow-lg scale-95"
           : "hover:border-[#634CF8]/30 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[#634CF8]/40 focus-visible:border-[#634CF8]/30 focus-visible:shadow-sm",
@@ -320,7 +324,7 @@ function SelectionCard({
   return (
     <button
       className={clsx(
-        "flex flex-col items-center gap-1.5 rounded-lg border-2 p-2 transition-all cursor-pointer",
+        "flex flex-col items-center gap-1.5 rounded-sm border-2 p-2 transition-all cursor-pointer",
         selected
           ? "border-[#634CF8] bg-[#634CF8]/[0.03]"
           : "border-separator/40 bg-white dark:bg-surface hover:border-muted/80",
@@ -484,7 +488,7 @@ function DesignPanel({
             selected={design.mood === "light"}
             onClick={() => onUpdate("mood", "light")}
           >
-            <div className="flex h-[40px] w-[40px] items-center justify-center rounded-lg bg-white border border-separator/50">
+            <div className="flex h-[40px] w-[40px] items-center justify-center rounded-sm bg-white border border-separator/50">
               <Sun className="h-5 w-5 text-gray-300" />
             </div>
           </SelectionCard>
@@ -493,7 +497,7 @@ function DesignPanel({
             selected={design.mood === "dark"}
             onClick={() => onUpdate("mood", "dark")}
           >
-            <div className="flex h-[40px] w-[40px] items-center justify-center rounded-lg bg-[#1A1A2E]">
+            <div className="flex h-[40px] w-[40px] items-center justify-center rounded-sm bg-[#1A1A2E]">
               <Moon className="h-5 w-5 text-white" />
             </div>
           </SelectionCard>
@@ -1113,40 +1117,45 @@ export function Sidebar({
 
   return (
     <aside
-      className="flex flex-col-reverse md:flex-row h-full shrink-0 border-r border-separator/50 bg-white dark:bg-background overflow-hidden"
+      className="flex flex-col-reverse md:flex-row h-full shrink-0 border-r border-separator/30 bg-white dark:bg-[#0C0C14] overflow-hidden shadow-[1px_0_0_rgba(0,0,0,0.02)]"
       style={{ width: `${width}px` }}
     >
       {/* Left icon strip — vertical on desktop, horizontal bottom bar on mobile */}
-      <div className="flex justify-center md:justify-start w-full md:w-12 md:flex-col shrink-0 border-t md:border-t-0 md:border-r border-separator/50 bg-[#FAFAFA] dark:bg-[#0f0f1a] py-1 md:py-2 overflow-x-auto md:overflow-x-visible order-last md:order-first">
+      <div className="flex justify-center md:justify-start w-full md:w-14 md:flex-col shrink-0 border-t md:border-t-0 md:border-r border-separator/30 bg-[#F8F9FB] dark:bg-[#09090F] py-2 md:py-4 overflow-x-auto md:overflow-x-visible order-last md:order-first gap-1">
         {NAV_ITEMS.map((item) => {
           const isActive = activePanel === item.id;
           return (
             <button
               key={item.id}
               className={clsx(
-                "relative flex flex-col items-center justify-center gap-0.5 py-1.5 md:py-2 px-3 md:px-0 md:w-10 md:mx-auto rounded-lg transition-colors outline-none",
+                "relative flex flex-col items-center justify-center gap-1 py-2 px-3 md:px-0 md:w-11 md:mx-auto rounded-sm transition-all duration-200 outline-none group",
                 isActive
-                  ? "text-[#634CF8] bg-[#634CF8]/8"
-                  : "text-muted hover:text-foreground hover:bg-surface/80",
+                  ? "text-[#634CF8] bg-white dark:bg-background shadow-sm ring-1 ring-separator/10"
+                  : "text-muted hover:text-foreground hover:bg-white/50 dark:hover:bg-white/5",
               )}
               title={item.label}
               onClick={() => handlePanelChange(item.id)}
             >
               {/* Active left border indicator (desktop only) */}
               {isActive && (
-                <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-[#634CF8]" />
+                <div className="hidden md:block absolute -left-1.5 top-1/2 -translate-y-1/2 w-[4px] h-6 rounded-r-full bg-[#634CF8] shadow-[0_0_8px_rgba(99,76,248,0.4)]" />
               )}
-              <span className="text-base leading-none flex items-center justify-center">{item.icon}</span>
-              <span className="text-[9px] font-medium leading-tight">{item.label}</span>
+              <span className={clsx(
+                "text-base leading-none flex items-center justify-center transition-transform duration-200",
+                isActive ? "scale-110" : "group-hover:scale-105"
+              )}>
+                {item.icon}
+              </span>
+              <span className="text-[10px] font-bold tracking-tight leading-tight">{item.label}</span>
             </button>
           );
         })}
       </div>
 
       {/* Right content area */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 min-w-0">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 min-w-0 custom-scrollbar">
         {/* Sticky search above all panels */}
-        <div className="sticky top-0 z-10 bg-white dark:bg-background pt-3 pb-2">
+        <div className="sticky top-0 z-10 bg-white/95 dark:bg-[#0C0C14]/95 backdrop-blur-md pt-4 pb-3">
           {(activePanel === "blocks" || activePanel === "components") ? (
             <EnhancedSearch
               searchEngine={searchEngine}
@@ -1167,16 +1176,18 @@ export function Sidebar({
             />
           )}
         </div>
-        {activePanel === "blocks" && <BlocksPanel query={searchQuery} />}
-        {activePanel === "components" && <ComponentsPanel query={searchQuery} />}
-        {activePanel === "design" && (
-          <DesignPanel design={design} onUpdate={onDesignUpdate} query={searchQuery} />
-        )}
-        {activePanel === "templates" && (
-          <TemplatesPanel onSelect={onTemplateSelect} query={searchQuery} />
-        )}
-        {activePanel === "pages" && pagesPanel}
-        {activePanel === "menus" && menusPanel}
+        <div className="pb-8">
+          {activePanel === "blocks" && <BlocksPanel query={searchQuery} />}
+          {activePanel === "components" && <ComponentsPanel query={searchQuery} />}
+          {activePanel === "design" && (
+            <DesignPanel design={design} onUpdate={onDesignUpdate} query={searchQuery} />
+          )}
+          {activePanel === "templates" && (
+            <TemplatesPanel onSelect={onTemplateSelect} query={searchQuery} />
+          )}
+          {activePanel === "pages" && pagesPanel}
+          {activePanel === "menus" && menusPanel}
+        </div>
       </div>
     </aside>
   );

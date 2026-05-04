@@ -380,12 +380,6 @@ export function Canvas({
     id: "canvas-drop-empty",
   });
 
-  const canvasWidth = {
-    desktop: "100%",
-    tablet: "768px",
-    mobile: "375px",
-  }[previewMode];
-
   // Typography font family mapping
   const fontFamily =
     {
@@ -414,19 +408,21 @@ export function Canvas({
 
   return (
     <div
-      className="flex-1 overflow-y-auto p-4"
-      onClick={() => onBlockSelect(null)}
+      className={clsx(
+        "flex-1 overflow-auto bg-[#F3F4F6] dark:bg-[#09090F] p-4 md:p-8 transition-all duration-300 relative custom-scrollbar",
+        isDragActive && "bg-[#E5E7EB] dark:bg-[#121220]",
+      )}
       style={{
-        backgroundImage:
-          "radial-gradient(circle, var(--separator) 0.5px, transparent 0.5px)",
+        backgroundImage: "radial-gradient(circle, var(--separator) 1px, transparent 1px)",
         backgroundSize: "24px 24px",
       }}
+      onClick={() => onBlockSelect(null)}
     >
       {/* Canvas width indicator */}
       {previewMode !== "desktop" && (
-        <div className="text-center mb-2">
-          <span className="text-[10px] font-mono text-muted bg-white dark:bg-surface rounded-full px-3 py-1 shadow-sm border border-separator/30">
-            {previewMode === "tablet" ? "768px" : "375px"}
+        <div className="text-center mb-4">
+          <span className="text-[10px] font-bold tracking-widest uppercase text-muted bg-white/80 dark:bg-surface/80 backdrop-blur-sm rounded-full px-4 py-1.5 shadow-sm border border-separator/20">
+            {previewMode === "tablet" ? "Tablet (768px)" : "Mobile (375px)"}
           </span>
         </div>
       )}
@@ -434,19 +430,14 @@ export function Canvas({
       <div
         ref={setCanvasRef}
         className={clsx(
-          "mx-auto min-h-full overflow-hidden transition-all duration-300 bg-background text-foreground",
-          pageMoodClass,
-          previewMode === "desktop"
-            ? "rounded-none shadow-none border-x border-separator/20"
-            : "rounded-xl shadow-xl border border-separator/30",
+          "mx-auto min-h-full transition-all duration-500 ease-out shadow-[0_0_30px_rgba(0,0,0,0.03)] dark:shadow-[0_0_30px_rgba(0,0,0,0.15)] bg-background rounded-sm border border-separator/20 overflow-hidden",
+          previewMode === "desktop" ? "w-full" : previewMode === "tablet" ? "w-[768px]" : "w-[375px]",
         )}
         data-theme={design.mood}
         style={{
-          maxWidth: canvasWidth,
           fontFamily,
           ...bgStyles,
-          // Only override CSS variables when user has set custom values
-          ...(design.mood === "dark" ? {
+          ...(pageMoodClass === "dark" ? {
             ...(design.darkForeground ? { "--foreground": design.darkForeground } as React.CSSProperties : {}),
             ...(design.darkBackground ? { "--background": design.darkBackground } as React.CSSProperties : {}),
             ...(design.darkMuted ? { "--muted": design.darkMuted } as React.CSSProperties : {}),
@@ -475,7 +466,7 @@ export function Canvas({
             items={blocks.map((b) => b.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="px-4 py-2 flex flex-col">
+            <div className="flex flex-col">
               {blocks.map((block, index) => (
                 <div key={block.id}>
                   {index === 0 && (

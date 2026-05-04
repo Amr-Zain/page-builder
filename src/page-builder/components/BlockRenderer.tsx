@@ -80,7 +80,7 @@ function NavbarBlock({ props, design, previewMode }: RendererProps) {
         <div className="flex items-center gap-3">
           {!mobile && (
             <div className="flex items-center gap-1.5 mr-1">
-              <button className="p-2 rounded-lg border border-separator/50 text-muted hover:text-foreground hover:bg-surface transition-colors">
+              <button className="p-2 rounded-sm border border-separator/50 text-muted hover:text-foreground hover:bg-surface transition-colors">
                 {design.mood === "dark" ? <Sun size={16} /> : <Moon size={16} />}
               </button>
             </div>
@@ -129,7 +129,7 @@ function NavbarBlock({ props, design, previewMode }: RendererProps) {
           </div>
           <div className="pt-4 border-t border-separator/30 flex items-center justify-between">
             <span className="text-sm font-medium text-muted">Theme</span>
-            <button className="p-2 rounded-lg border border-separator/50 text-muted hover:text-foreground">
+            <button className="p-2 rounded-sm border border-separator/50 text-muted hover:text-foreground">
               {design.mood === "dark" ? <Sun size={16} /> : <Moon size={16} />}
             </button>
           </div>
@@ -873,7 +873,7 @@ function ContactBlock({ props, design, previewMode }: RendererProps) {
           <div className="mt-8 space-y-4">
             <div className="flex items-center gap-3">
               <div
-                className="w-10 h-10 flex items-center justify-center text-sm rounded-lg"
+                className="w-10 h-10 flex items-center justify-center text-sm rounded-sm"
                 style={{
                   backgroundColor: `#${design.mainColor}12`,
                   borderRadius: radiusValue(design.radius),
@@ -890,7 +890,7 @@ function ContactBlock({ props, design, previewMode }: RendererProps) {
             </div>
             <div className="flex items-center gap-3">
               <div
-                className="w-10 h-10 flex items-center justify-center text-sm rounded-lg"
+                className="w-10 h-10 flex items-center justify-center text-sm rounded-sm"
                 style={{
                   backgroundColor: `#${design.mainColor}12`,
                   borderRadius: radiusValue(design.radius),
@@ -1419,7 +1419,7 @@ function ButtonComponent({ props, design }: RendererProps) {
   return (
     <div className="px-4 py-4 flex items-center justify-center">
       <button
-        className="px-6 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm"
+        className="px-6 py-2.5 rounded-sm text-sm font-semibold transition-all shadow-sm"
         style={
           variant === "primary"
             ? { backgroundColor: accent, color: "#fff" }
@@ -1498,7 +1498,7 @@ function InputComponent({ props }: RendererProps) {
   return (
     <div className="px-4 py-4">
       <label className="text-xs font-semibold text-muted block mb-1.5">{label}</label>
-      <div className="h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 flex items-center">
+      <div className="h-9 rounded-sm border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 flex items-center">
         <span className="text-xs text-muted/50">{placeholder}</span>
       </div>
     </div>
@@ -1511,7 +1511,7 @@ function TextFieldComponent({ props }: RendererProps) {
   return (
     <div className="px-4 py-4">
       <label className="text-xs font-semibold text-foreground block mb-1.5">{label}</label>
-      <div className="h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 flex items-center">
+      <div className="h-9 rounded-sm border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 flex items-center">
         <span className="text-xs text-muted/50">{placeholder}</span>
       </div>
       <p className="text-[10px] text-muted/50 mt-1">Helper text</p>
@@ -1525,7 +1525,7 @@ function TextAreaComponent({ props }: RendererProps) {
   return (
     <div className="px-4 py-4">
       <label className="text-xs font-semibold text-muted block mb-1.5">{label}</label>
-      <div className="h-24 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 py-2">
+      <div className="h-24 rounded-sm border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 py-2">
         <span className="text-xs text-muted/50">{placeholder}</span>
       </div>
     </div>
@@ -1538,7 +1538,7 @@ function SelectComponent({ props }: RendererProps) {
   return (
     <div className="px-4 py-4">
       <label className="text-xs font-semibold text-muted block mb-1.5">{label}</label>
-      <div className="h-9 rounded-lg border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 flex items-center justify-between">
+      <div className="h-9 rounded-sm border border-separator/50 bg-[#FAFAFA] dark:bg-surface px-3 flex items-center justify-between">
         <span className="text-xs text-muted/50">{placeholder}</span>
         <span className="text-muted/40 text-[10px]">▼</span>
       </div>
@@ -1627,7 +1627,7 @@ function AccordionComponent({ props }: RendererProps) {
   ];
   return (
     <div className="px-4 py-4">
-      <div className="rounded-lg border border-separator/50 overflow-hidden divide-y divide-separator/40">
+      <div className="rounded-sm border border-separator/50 overflow-hidden divide-y divide-separator/40">
         {items.map((item, i) => (
           <div key={i} className="px-3 py-2.5 flex items-center justify-between bg-white dark:bg-surface">
             <span className="text-sm font-medium text-foreground">{item.title}</span>
@@ -1672,7 +1672,7 @@ function TableComponent({ props }: RendererProps) {
   ];
   return (
     <div className="px-4 py-4">
-      <div className="rounded-lg border border-separator/50 overflow-hidden">
+      <div className="rounded-sm border border-separator/50 overflow-hidden">
         <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#FAFAFA] dark:bg-surface">
@@ -1737,12 +1737,12 @@ function PopoverComponent({ props, design }: RendererProps) {
   return (
     <div className="px-4 py-4">
       <button
-        className="px-4 py-2 rounded-lg text-xs font-semibold border"
+        className="px-4 py-2 rounded-sm text-xs font-semibold border"
         style={{ borderColor: `${accent}40`, color: accent }}
       >
         {trigger}
       </button>
-      <div className="mt-2 rounded-lg border border-separator/50 bg-white dark:bg-surface shadow-lg p-3 max-w-[200px]">
+      <div className="mt-2 rounded-sm border border-separator/50 bg-white dark:bg-surface shadow-lg p-3 max-w-[200px]">
         <p className="text-xs text-foreground font-medium">Popover Title</p>
         <p className="text-[10px] text-muted mt-1">Popover content goes here.</p>
       </div>
@@ -1971,7 +1971,8 @@ export function BlockRenderer({
   return (
     <div
       className={clsx(
-        "relative group cursor-pointer transition-all rounded-lg",
+        "relative group cursor-pointer transition-all duration-300",
+        isSelected ? "ring-2 ring-[#634CF8] ring-offset-0 shadow-[0_0_15px_rgba(99,76,248,0.1)] z-10" : "hover:ring-1 hover:ring-[#634CF8]/30",
         animationClass,
         cssClass,
       )}
@@ -1984,10 +1985,10 @@ export function BlockRenderer({
       {/* Block type label */}
       <div
         className={clsx(
-          "absolute -top-3 left-3 z-10 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-opacity",
+          "absolute -top-3 left-3 z-20 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider transition-all duration-200 shadow-sm",
           isSelected
-            ? "bg-[#634CF8] text-white opacity-100"
-            : "bg-foreground/80 text-background opacity-0 group-hover:opacity-100",
+            ? "bg-[#634CF8] text-white translate-y-0 opacity-100"
+            : "bg-foreground text-background -translate-y-1 opacity-0 group-hover:translate-y-0 group-hover:opacity-100",
         )}
       >
         {block.type}
@@ -1997,8 +1998,8 @@ export function BlockRenderer({
 
       {/* Responsive visibility overlay */}
       {hiddenForViewport && (
-        <div className="absolute inset-0 bg-muted/20 backdrop-blur-[1px] flex items-center justify-center rounded-lg z-[5]">
-          <div className="bg-white dark:bg-surface border border-separator/50 rounded-lg px-3 py-1.5 shadow-sm">
+        <div className="absolute inset-0 bg-muted/20 backdrop-blur-[1px] flex items-center justify-center rounded-sm z-[5]">
+          <div className="bg-white dark:bg-surface border border-separator/50 rounded-sm px-3 py-1.5 shadow-sm">
             <p className="text-[10px] font-semibold text-muted">
               Hidden on {getHiddenViewportLabel(previewMode)}
             </p>

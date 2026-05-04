@@ -68,8 +68,8 @@
   --field-radius: 1rem;
 
   /* Font Family */
-  /* Make sure to load Inter font in your app */
-  --font-sans: var(--font-inter);
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-display: "Outfit", var(--font-sans);
 }
 
 .dark,
@@ -106,4 +106,52 @@
   --surface-tertiary-foreground: oklch(99.11% 0.01 171.5);
   --warning: oklch(82.03% 0.1416 66.46);
   --warning-foreground: oklch(21.03% 0.0059 66.46);
+}
+
+/* ── Global UI Refinements ── */
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.011em;
+}
+
+/* Custom Premium Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+  background-clip: content-box;
+}
+
+/* Selection */
+::selection {
+  background: #634CF833;
+  color: #634CF8;
+}
+
+/* Smooth transitions for theme switching */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Modern Input Focus */
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px oklch(66.78% 0.2232 171.5 / 0.1);
 }

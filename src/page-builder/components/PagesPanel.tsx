@@ -61,7 +61,7 @@ export function PagesPanel({
 
       {/* Create */}
       {isCreating && (
-        <div className="flex flex-col gap-2 p-4 rounded-xl border border-[#634CF8]/30 bg-[#634CF8]/5">
+        <div className="flex flex-col gap-2 p-4 rounded-sm border border-[#634CF8]/30 bg-[#634CF8]/5">
           <p className="text-[11px] font-semibold text-foreground">
             Create new page
           </p>
@@ -77,7 +77,7 @@ export function PagesPanel({
 
           <div className="flex flex-col gap-1.5 mt-1">
             <p className="text-[10px] text-muted font-medium uppercase tracking-wider">Language</p>
-            <div className="flex gap-1.5 p-1 bg-surface rounded-lg border border-separator/40">
+            <div className="flex gap-1.5 p-1 bg-surface rounded-sm border border-separator/40">
               <button
                 className={clsx(
                   "flex-1 py-1 text-[11px] font-semibold rounded-md transition-all",
@@ -129,10 +129,10 @@ export function PagesPanel({
           return (
             <div
               className={clsx(
-                "rounded-xl border-2 transition-all cursor-pointer",
+                "rounded-sm border transition-all duration-300 cursor-pointer overflow-hidden",
                 isActive
-                  ? "border-[#634CF8] bg-[#634CF8]/[0.03] shadow-sm"
-                  : "border-separator/30 bg-white dark:bg-surface hover:border-muted/50",
+                  ? "border-[#634CF8] bg-white dark:bg-[#151525] shadow-[0_2px_12px_rgba(99,76,248,0.06)] ring-1 ring-[#634CF8]/20"
+                  : "border-separator/30 bg-white dark:bg-surface/50 hover:border-[#634CF8]/30 hover:bg-white dark:hover:bg-surface",
               )}
               key={page.id}
               onClick={() => onSelectPage(page.id)}
@@ -143,59 +143,64 @@ export function PagesPanel({
                   <div className="flex items-center gap-3 min-w-0">
                     <div
                       className={clsx(
-                        "flex h-10 w-10 items-center justify-center rounded-lg shrink-0 text-lg",
+                        "flex h-10 w-10 items-center justify-center rounded-sm shrink-0 text-lg transition-colors duration-300",
                         isActive
-                          ? "bg-[#634CF8]/10"
-                          : "bg-[#F5F5F5] dark:bg-surface",
+                          ? "bg-[#634CF8] text-white shadow-md shadow-[#634CF8]/15"
+                          : "bg-surface dark:bg-[#1C1C2E] border border-separator/20 text-muted",
                       )}
                     >
-                      <FileText size={18} className={clsx(isActive ? "text-[#634CF8]" : "text-muted")} />
+                      <FileText size={18} />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-[13px] font-semibold text-foreground truncate">
+                        <p className={clsx(
+                          "text-[13px] font-bold truncate transition-colors",
+                          isActive ? "text-foreground" : "text-foreground/80"
+                        )}>
                           {page.settings.title}
                         </p>
                         <span className={clsx(
                           "text-[9px] font-bold px-1.5 py-0.5 rounded-md border uppercase tracking-wider",
                           page.settings.locale === "ar" 
-                            ? "bg-amber-50 text-amber-700 border-amber-200" 
-                            : "bg-blue-50 text-blue-700 border-blue-200"
+                            ? "bg-amber-500/10 text-amber-600 border-amber-500/20" 
+                            : "bg-[#634CF8]/10 text-[#634CF8] border-[#634CF8]/20"
                         )}>
                           {page.settings.locale || "en"}
                         </span>
                       </div>
-                      <p className="text-[11px] text-muted font-mono">
+                      <p className="text-[11px] text-muted/60 font-mono mt-0.5">
                         /{page.settings.slug}
                       </p>
                     </div>
                   </div>
                   <span
                     className={clsx(
-                      "text-[9px] font-bold px-2 py-1 rounded-full shrink-0 uppercase tracking-wider",
+                      "text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 uppercase tracking-widest border",
                       page.settings.published
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+                        ? "bg-green-500/10 text-green-600 border-green-500/20"
+                        : "bg-amber-500/10 text-amber-600 border-amber-500/20",
                     )}
                   >
-                    {page.settings.published ? "Live" : "Draft"}
+                    {page.settings.published ? "Published" : "Draft"}
                   </span>
                 </div>
 
                 {/* Meta */}
-                <div className="flex items-center gap-3 mt-3 text-[10px] text-muted">
-                  <span>{page.blocks?.length || 0} blocks</span>
-                  <span>·</span>
-                  <span>
-                    Updated{" "}
-                    {new Date(page.settings.updatedAt).toLocaleDateString()}
-                  </span>
+                <div className="flex items-center gap-3 mt-4 text-[10px] text-muted/50 font-medium">
+                  <div className="flex items-center gap-1">
+                    <span className="w-1 h-1 rounded-full bg-muted/30" />
+                    {page.blocks?.length || 0} blocks
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="w-1 h-1 rounded-full bg-muted/30" />
+                    Modified {new Date(page.settings.updatedAt).toLocaleDateString()}
+                  </div>
                 </div>
               </div>
 
               {/* Actions — only for active page */}
               {isActive && (
-                <div className="flex items-center gap-1 px-4 py-2.5 border-t border-separator/30 bg-[#FAFAFA] dark:bg-surface/50 rounded-b-[10px]">
+                <div className="flex items-center gap-1 px-3 py-2 border-t border-separator/20 bg-surface/30 dark:bg-black/20">
                   <ActionLink
                     label="⧉ Duplicate"
                     onClick={(e) => {
