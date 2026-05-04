@@ -331,17 +331,26 @@ function CanvasDropZone({
     <div
       ref={setNodeRef}
       className={clsx(
-        "transition-all duration-150 mx-4",
-        isOver
-          ? "h-2 bg-[#634CF8] my-3 rounded-full shadow-[0_0_10px_rgba(99,76,248,0.5)] scale-y-110"
-          : isDragActive
-            ? "h-14 rounded-xl border-2 border-dashed border-[#634CF8]/40 bg-[#634CF8]/[0.05] my-2 flex items-center justify-center cursor-copy"
-            : "h-2 my-0.5",
+        "transition-all duration-150 mx-4 flex items-center justify-center",
+        isDragActive ? "h-14 my-2" : "h-2 my-0.5",
       )}
     >
-      {isDragActive && !isOver && (
-        <span className="text-[9px] text-[#634CF8]/40 font-medium">Drop here</span>
-      )}
+      <div
+        className={clsx(
+          "w-full transition-all duration-150 flex items-center justify-center",
+          isOver
+            ? "h-1 bg-[#634CF8] rounded-full shadow-[0_0_10px_rgba(99,76,248,0.5)] scale-y-125"
+            : isDragActive
+              ? "h-full rounded-xl border-2 border-dashed border-[#634CF8]/40 bg-[#634CF8]/[0.05]"
+              : "h-0",
+        )}
+      >
+        {isDragActive && !isOver && (
+          <span className="text-[9px] text-[#634CF8]/40 font-bold uppercase tracking-widest">
+            Drop here
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -456,20 +465,11 @@ export function Canvas({
         }}
       >
         {blocks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-4 text-center min-h-[400px] m-6">
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-[#634CF8]/10">
-              <span className="text-3xl"><Construction size={32} /></span>
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                Start building your page
-              </p>
-              <p className="text-xs text-muted mt-1 max-w-[240px]">
-                Drag blocks from the left panel or pick a template to get
-                started
-              </p>
-            </div>
-          </div>
+          <CanvasDropZone
+            id="canvas-drop-empty"
+            isDragActive={isDragActive}
+            isEmpty={true}
+          />
         ) : (
           <SortableContext
             items={blocks.map((b) => b.id)}

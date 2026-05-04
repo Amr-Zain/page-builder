@@ -111,7 +111,7 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     });
 
     const linkHtml = links.map((l: { label: string; url: string }) => 
-      `<a href="${esc(l.url)}" style="text-decoration:none;font-weight:500;font-size:0.9375rem;color:${design.mood === "dark" ? "#9ca3af" : "#4b5563"}">${esc(l.label)}</a>`
+      `<a href="${esc(l.url)}" style="text-decoration:none;font-weight:500;font-size:0.9375rem;color:var(--muted-text)">${esc(l.label)}</a>`
     ).join("");
 
     // Language switcher
@@ -133,39 +133,101 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
       }
     }
 
-    return `<nav style="display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid #e5e7eb">
-      <div style="font-weight:700;font-size:1.25rem">${logo}</div>
-      <div style="display:flex;gap:1.5rem;align-items:center">
-        ${linkHtml}
-        ${switcherHtml}
-        <a href="#" style="background:var(--main-color);color:#fff;padding:0.5rem 1.25rem;border-radius:var(--radius);text-decoration:none;font-weight:600;font-size:0.875rem;margin-left:0.5rem">Get Started</a>
+    const themeToggle = `
+      <button class="pb-theme-toggle" style="background:transparent;border:1px solid #e5e7eb;padding:0.5rem;border-radius:var(--radius);cursor:pointer;display:flex;align-items:center;justify-content:center;color:inherit;width:34px;height:34px">
+        <svg class="sun-icon" style="display:none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="moon-icon" style="display:none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <script>
+        (function() {
+          const btn = document.currentScript.previousElementSibling;
+          const sun = btn.querySelector('.sun-icon');
+          const moon = btn.querySelector('.moon-icon');
+          function updateIcons(isDark) {
+            sun.style.display = isDark ? 'block' : 'none';
+            moon.style.display = isDark ? 'none' : 'block';
+          }
+          const isDark = document.documentElement.classList.contains('dark');
+          updateIcons(isDark);
+          btn.addEventListener('click', () => {
+            const nowDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('pb-theme', nowDark ? 'dark' : 'light');
+            updateIcons(nowDark);
+          });
+        })();
+      </script>
+    `;
+
+    const mobileMenu = `
+      <div class="pb-mobile-menu" style="display:none;padding:1.5rem;border-top:1px solid var(--border-color);background:var(--bg-color)">
+        <div style="display:flex;flex-direction:column;gap:1.25rem">
+          ${links.map(l => `<a href="${esc(l.url)}" style="text-decoration:none;color:var(--text-color);font-weight:600;font-size:1rem">${esc(l.label)}</a>`).join("")}
+          ${switcherHtml}
+        </div>
       </div>
+    `;
+
+    const hamburger = `
+      <button class="pb-hamburger" style="background:transparent;border:none;padding:0.5rem;cursor:pointer;color:inherit;align-items:center;justify-content:center">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    `;
+
+    return `<nav class="pb-navbar">
+      <div class="pb-nav-container">
+        <div class="pb-nav-logo">${logo}</div>
+        <div class="pb-nav-right">
+          <div class="pb-nav-links">
+            ${linkHtml}
+            ${switcherHtml}
+          </div>
+          <div class="pb-nav-actions">
+            ${themeToggle}
+            <a href="#" class="pb-nav-cta">Get Started</a>
+            ${hamburger}
+          </div>
+        </div>
+      </div>
+      ${mobileMenu}
+      <script>
+        (function() {
+          const nav = document.currentScript.parentElement;
+          const burger = nav.querySelector('.pb-hamburger');
+          const menu = nav.querySelector('.pb-mobile-menu');
+          if (burger && menu) {
+            burger.addEventListener('click', () => {
+              const isOpen = menu.style.display === 'block';
+              menu.style.display = isOpen ? 'none' : 'block';
+            });
+          }
+        })();
+      </script>
     </nav>`;
   },
 
-  hero: (props) => {
+  hero: (props, _design) => {
     const headline = esc(String(props.headline ?? "Your headline here"));
     const subtitle = esc(String(props.subtitle ?? ""));
     const ctaText = esc(String(props.ctaText ?? "Get Started"));
     return `<section style="text-align:center;padding:5rem 2rem">
       <h1 style="font-size:3rem;font-weight:700;margin:0 0 1rem">${headline}</h1>
-      <p style="font-size:1.25rem;color:#6b7280;max-width:640px;margin:0 auto 2rem">${subtitle}</p>
+      <p style="font-size:1.25rem;color:var(--muted-text);max-width:640px;margin:0 auto 2rem">${subtitle}</p>
       <div style="display:flex;gap:1rem;justify-content:center">
         <a href="#" style="background:var(--main-color);color:#fff;padding:0.75rem 1.5rem;border-radius:var(--radius);text-decoration:none;font-weight:600">${ctaText}</a>
       </div>
     </section>`;
   },
 
-  features: (props) => {
+  features: (props, _design) => {
     const title = esc(String(props.title ?? "Features"));
     const items = Array.isArray(props.items) ? props.items : [];
     const cardsHtml = items
       .map((item: unknown) => {
         const i = item as Record<string, unknown>;
-        return `<div style="padding:1.5rem;border:1px solid #e5e7eb;border-radius:var(--radius)">
+        return `<div style="padding:1.5rem;border:1px solid var(--border-color);border-radius:var(--radius)">
           <div style="font-size:2rem;margin-bottom:0.75rem">${esc(String(i.icon ?? ""))}</div>
           <h3 style="font-weight:600;margin:0 0 0.5rem">${esc(String(i.title ?? ""))}</h3>
-          <p style="color:#6b7280;margin:0">${esc(String(i.description ?? ""))}</p>
+          <p style="color:var(--muted-text);margin:0">${esc(String(i.description ?? ""))}</p>
         </div>`;
       })
       .join("\n      ");
@@ -177,33 +239,33 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     </section>`;
   },
 
-  content: (props) => {
+  content: (props, _design) => {
     const heading = esc(String(props.heading ?? ""));
     const body = esc(String(props.body ?? ""));
     const body2 = props.body2
-      ? `<p style="color:#6b7280;max-width:700px;margin:1rem auto 0">${esc(String(props.body2))}</p>`
+      ? `<p style="color:var(--muted-text);max-width:700px;margin:1rem auto 0">${esc(String(props.body2))}</p>`
       : "";
     return `<section style="padding:4rem 2rem;text-align:center">
       ${heading ? `<h2 style="font-size:2rem;font-weight:700;margin:0 0 1rem">${heading}</h2>` : ""}
-      <p style="color:#6b7280;max-width:700px;margin:0 auto">${body}</p>
+      <p style="color:var(--muted-text);max-width:700px;margin:0 auto">${body}</p>
       ${body2}
     </section>`;
   },
 
-  testimonials: (props) => {
+  testimonials: (props, _design) => {
     const title = esc(String(props.title ?? "Testimonials"));
     return `<section style="padding:4rem 2rem;text-align:center">
       <h2 style="font-size:2rem;font-weight:700;margin:0 0 2rem">${title}</h2>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;max-width:1000px;margin:0 auto">
-        <div style="padding:1.5rem;border:1px solid #e5e7eb;border-radius:var(--radius)">
-          <p style="font-style:italic;color:#6b7280;margin:0 0 1rem">"This product changed how our team works. Highly recommended."</p>
+        <div style="padding:1.5rem;border:1px solid var(--border-color);border-radius:var(--radius)">
+          <p style="font-style:italic;color:var(--muted-text);margin:0 0 1rem">"This product changed how our team works. Highly recommended."</p>
           <p style="font-weight:600;margin:0">— Alex Johnson</p>
         </div>
-        <div style="padding:1.5rem;border:1px solid #e5e7eb;border-radius:var(--radius)">
+        <div style="padding:1.5rem;border:1px solid var(--border-color);border-radius:var(--radius)">
           <p style="font-style:italic;color:#6b7280;margin:0 0 1rem">"Incredible experience from start to finish. The support is top-notch."</p>
           <p style="font-weight:600;margin:0">— Maria Garcia</p>
         </div>
-        <div style="padding:1.5rem;border:1px solid #e5e7eb;border-radius:var(--radius)">
+        <div style="padding:1.5rem;border:1px solid var(--border-color);border-radius:var(--radius)">
           <p style="font-style:italic;color:#6b7280;margin:0 0 1rem">"We saw a 40% improvement in productivity within the first month."</p>
           <p style="font-weight:600;margin:0">— David Kim</p>
         </div>
@@ -211,16 +273,16 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     </section>`;
   },
 
-  pricing: (props) => {
+  pricing: (props, _design) => {
     const title = esc(String(props.title ?? "Pricing"));
     return `<section style="padding:4rem 2rem;text-align:center">
       <h2 style="font-size:2rem;font-weight:700;margin:0 0 2rem">${title}</h2>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;max-width:900px;margin:0 auto">
-        <div style="padding:2rem;border:1px solid #e5e7eb;border-radius:var(--radius)">
+        <div style="padding:2rem;border:1px solid var(--border-color);border-radius:var(--radius)">
           <h3 style="font-weight:600;margin:0 0 0.5rem">Free</h3>
-          <p style="font-size:2rem;font-weight:700;margin:0 0 1rem">$0<span style="font-size:1rem;color:#6b7280">/mo</span></p>
-          <ul style="list-style:none;padding:0;margin:0 0 1.5rem;color:#6b7280"><li>Up to 3 projects</li><li>Basic analytics</li><li>Community support</li></ul>
-          <a href="#" style="display:inline-block;padding:0.5rem 1.5rem;border:1px solid #e5e7eb;border-radius:var(--radius);text-decoration:none;color:inherit">Get Started</a>
+          <p style="font-size:2rem;font-weight:700;margin:0 0 1rem">$0<span style="font-size:1rem;color:var(--muted-text)">/mo</span></p>
+          <ul style="list-style:none;padding:0;margin:0 0 1.5rem;color:var(--muted-text)"><li>Up to 3 projects</li><li>Basic analytics</li><li>Community support</li></ul>
+          <a href="#" style="display:inline-block;padding:0.5rem 1.5rem;border:1px solid var(--border-color);border-radius:var(--radius);text-decoration:none;color:inherit">Get Started</a>
         </div>
         <div style="padding:2rem;border:2px solid var(--main-color);border-radius:var(--radius);position:relative">
           <h3 style="font-weight:600;margin:0 0 0.5rem">Pro</h3>
@@ -228,7 +290,7 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
           <ul style="list-style:none;padding:0;margin:0 0 1.5rem;color:#6b7280"><li>Unlimited projects</li><li>Advanced analytics</li><li>Priority support</li></ul>
           <a href="#" style="display:inline-block;padding:0.5rem 1.5rem;background:var(--main-color);color:#fff;border-radius:var(--radius);text-decoration:none;font-weight:500">Get Started</a>
         </div>
-        <div style="padding:2rem;border:1px solid #e5e7eb;border-radius:var(--radius)">
+        <div style="padding:2rem;border:1px solid var(--border-color);border-radius:var(--radius)">
           <h3 style="font-weight:600;margin:0 0 0.5rem">Enterprise</h3>
           <p style="font-size:2rem;font-weight:700;margin:0 0 1rem">Custom</p>
           <ul style="list-style:none;padding:0;margin:0 0 1.5rem;color:#6b7280"><li>Custom integrations</li><li>Dedicated support</li><li>SLA guarantee</li></ul>
@@ -238,14 +300,14 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     </section>`;
   },
 
-  stats: (props) => {
+  stats: (props, _design) => {
     const items = Array.isArray(props.items) ? props.items : [];
     const statsHtml = items
       .map((item: unknown) => {
         const i = item as Record<string, unknown>;
         return `<div style="text-align:center">
           <div style="font-size:2.5rem;font-weight:700">${esc(String(i.value ?? ""))}</div>
-          <div style="color:#6b7280;margin-top:0.25rem">${esc(String(i.label ?? ""))}</div>
+          <div style="color:var(--muted-text);margin-top:0.25rem">${esc(String(i.label ?? ""))}</div>
         </div>`;
       })
       .join("\n      ");
@@ -256,7 +318,7 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     </section>`;
   },
 
-  team: (props) => {
+  team: (props, _design) => {
     const title = esc(String(props.title ?? "Our Team"));
     return `<section style="padding:4rem 2rem;text-align:center">
       <h2 style="font-size:2rem;font-weight:700;margin:0 0 2rem">${title}</h2>
@@ -264,7 +326,7 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
         <div style="text-align:center">
           <div style="width:80px;height:80px;border-radius:50%;background:#e5e7eb;margin:0 auto 1rem"></div>
           <h3 style="font-weight:600;margin:0">Jane Doe</h3>
-          <p style="color:#6b7280;margin:0.25rem 0 0">CEO &amp; Founder</p>
+          <p style="color:var(--muted-text);margin:0.25rem 0 0">CEO &amp; Founder</p>
         </div>
         <div style="text-align:center">
           <div style="width:80px;height:80px;border-radius:50%;background:#e5e7eb;margin:0 auto 1rem"></div>
@@ -280,15 +342,15 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     </section>`;
   },
 
-  faq: (props) => {
+  faq: (props, _design) => {
     const title = esc(String(props.title ?? "FAQ"));
     const items = Array.isArray(props.items) ? props.items : [];
     const faqHtml = items
       .map((item: unknown) => {
         const i = item as Record<string, unknown>;
-        return `<details style="border:1px solid #e5e7eb;border-radius:var(--radius);padding:1rem;margin-bottom:0.75rem">
+        return `<details style="border:1px solid var(--border-color);border-radius:var(--radius);padding:1rem;margin-bottom:0.75rem">
           <summary style="font-weight:600;cursor:pointer">${esc(String(i.q ?? ""))}</summary>
-          <p style="color:#6b7280;margin:0.75rem 0 0">${esc(String(i.a ?? ""))}</p>
+          <p style="color:var(--muted-text);margin:0.75rem 0 0">${esc(String(i.a ?? ""))}</p>
         </details>`;
       })
       .join("\n      ");
@@ -298,7 +360,7 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     </section>`;
   },
 
-  gallery: (props) => {
+  gallery: (props, _design) => {
     const title = props.title
       ? `<h2 style="font-size:2rem;font-weight:700;margin:0 0 2rem;text-align:center">${esc(String(props.title))}</h2>`
       : "";
@@ -328,23 +390,23 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     </section>`;
   },
 
-  contact: (props) => {
+  contact: (props, _design) => {
     const title = esc(String(props.title ?? "Contact"));
     return `<section style="padding:4rem 2rem;max-width:600px;margin:0 auto">
       <h2 style="font-size:2rem;font-weight:700;margin:0 0 2rem;text-align:center">${title}</h2>
       <form style="display:flex;flex-direction:column;gap:1rem">
-        <input type="text" placeholder="Name" style="padding:0.75rem;border:1px solid #e5e7eb;border-radius:var(--radius);font-size:1rem" />
+        <input type="text" placeholder="Name" style="padding:0.75rem;border:1px solid var(--border-color);border-radius:var(--radius);font-size:1rem;background:var(--bg-color);color:var(--text-color)" />
         <input type="email" placeholder="Email" style="padding:0.75rem;border:1px solid #e5e7eb;border-radius:var(--radius);font-size:1rem" />
-        <textarea placeholder="Message" rows="4" style="padding:0.75rem;border:1px solid #e5e7eb;border-radius:var(--radius);font-size:1rem;resize:vertical"></textarea>
+        <textarea placeholder="Message" rows="4" style="padding:0.75rem;border:1px solid var(--border-color);border-radius:var(--radius);font-size:1rem;resize:vertical;background:var(--bg-color);color:var(--text-color)"></textarea>
         <button type="submit" style="padding:0.75rem 1.5rem;background:var(--main-color);color:#fff;border:none;border-radius:var(--radius);font-size:1rem;font-weight:600;cursor:pointer">Send Message</button>
       </form>
     </section>`;
   },
 
-  logos: (props) => {
+  logos: (props, _design) => {
     const title = esc(String(props.title ?? "Trusted by"));
     return `<section style="padding:3rem 2rem;text-align:center">
-      <p style="color:#6b7280;margin:0 0 1.5rem;font-size:0.875rem;text-transform:uppercase;letter-spacing:0.05em">${title}</p>
+      <p style="color:var(--muted-text);margin:0 0 1.5rem;font-size:0.875rem;text-transform:uppercase;letter-spacing:0.05em">${title}</p>
       <div style="display:flex;justify-content:center;gap:3rem;flex-wrap:wrap;opacity:0.5">
         <span style="font-size:1.25rem;font-weight:700">Vercel</span>
         <span style="font-size:1.25rem;font-weight:700">Stripe</span>
@@ -355,12 +417,12 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     </section>`;
   },
 
-  banner: (props) => {
+  banner: (props, _design) => {
     const text = esc(String(props.text ?? ""));
     return `<div style="padding:0.75rem 2rem;background:var(--main-color);color:#fff;text-align:center;font-size:0.875rem">${text}</div>`;
   },
 
-  footer: (props: any, _design: DesignSettings, _children: string | undefined, options: HtmlExportOptions | undefined) => {
+  footer: (props, _design, _children, options) => {
     const copyright = esc(String(props.copyright ?? ""));
     const rawLinks = Array.isArray(props.links) ? props.links : [];
     const currentLocale = options?.pageSettings.locale || "en";
@@ -388,10 +450,10 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     });
 
     const linkListHtml = links.length > 0 
-      ? links.map((l: { label: string; url: string }) => `<a href="${esc(l.url)}" style="color:#6b7280;text-decoration:none;font-size:0.875rem">${esc(l.label)}</a>`).join("")
-      : `<a href="#" style="color:#6b7280;text-decoration:none;font-size:0.875rem">Features</a><a href="#" style="color:#6b7280;text-decoration:none;font-size:0.875rem">Pricing</a><a href="#" style="color:#6b7280;text-decoration:none;font-size:0.875rem">About</a>`;
+      ? links.map((l: { label: string; url: string }) => `<a href="${esc(l.url)}" style="color:var(--muted-text);text-decoration:none;font-size:0.875rem">${esc(l.label)}</a>`).join("")
+      : `<a href="#" style="color:var(--muted-text);text-decoration:none;font-size:0.875rem">Features</a><a href="#" style="color:var(--muted-text);text-decoration:none;font-size:0.875rem">Pricing</a><a href="#" style="color:var(--muted-text);text-decoration:none;font-size:0.875rem">About</a>`;
 
-    return `<footer style="padding:4rem 2rem;border-top:1px solid #e5e7eb">
+    return `<footer style="padding:4rem 2rem;border-top:1px solid var(--border-color)">
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:3rem;max-width:1100px;margin:0 auto 3rem">
         <div>
           <h4 style="font-weight:700;margin:0 0 1.25rem;font-size:1rem">Links</h4>
@@ -415,18 +477,18 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
           </div>
         </div>
       </div>
-      <p style="text-align:center;color:#9ca3af;margin:0;font-size:0.875rem;border-top:1px solid #f3f4f6;padding-top:2rem">${copyright}</p>
+      <p style="text-align:center;color:#9ca3af;margin:0;font-size:0.875rem;border-top:1px solid var(--border-color);padding-top:2rem">${copyright}</p>
     </footer>`;
   },
 
-  text: (props) => {
+  text: (props, _design) => {
     const content = esc(String(props.content ?? ""));
     return `<div style="padding:2rem;max-width:700px;margin:0 auto">
       <p style="margin:0;line-height:1.7">${content}</p>
     </div>`;
   },
 
-  image: (props) => {
+  image: (props, _design) => {
     const src = String(props.src ?? "");
     const alt = esc(String(props.alt ?? "Image"));
     return `<figure style="padding:2rem;margin:0;text-align:center">
@@ -434,7 +496,7 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     </figure>`;
   },
 
-  video: (props) => {
+  video: (props, _design) => {
     const url = String(props.url ?? "");
     return `<div style="padding:2rem;text-align:center">
       <div style="aspect-ratio:16/9;background:#111;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;color:#fff;max-width:800px;margin:0 auto">
@@ -443,7 +505,7 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     </div>`;
   },
 
-  "button-group": (props) => {
+  "button-group": (props, design) => {
     const buttons = Array.isArray(props.buttons) ? props.buttons : [];
     const btnsHtml = buttons
       .map((btn: unknown) => {
@@ -465,6 +527,7 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     const count = Number(props.count) || 2;
     return `<div style="display:grid;grid-template-columns:repeat(${count},1fr);gap:1rem;padding:2rem">${childrenHtml || ""}</div>`;
   },
+  
   container: (props, _design, childrenHtml) => {
     return `<div style="max-width:${props.maxWidth || "1200px"};margin:0 auto;padding:2rem">${childrenHtml || ""}</div>`;
   },
@@ -481,33 +544,322 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     const gap = props.gap || "16";
     return `<div style="display:flex;flex-direction:${dir};gap:${gap}px;${props.justifyContent ? `justify-content:${props.justifyContent};` : ""}${props.alignItems ? `align-items:${props.alignItems};` : ""}${props.wrap ? `flex-wrap:${props.wrap};` : ""}padding:1rem">${childrenHtml || ""}</div>`;
   },
+  
   "flex-row": (props, _design, childrenHtml) => {
     const gap = props.gap || "1rem";
     return `<div style="display:flex;flex-direction:row;gap:${gap};${props.justify ? `justify-content:${props.justify};` : ""}${props.align ? `align-items:${props.align};` : ""}padding:1rem">${childrenHtml || ""}</div>`;
   },
+  
   "flex-col": (props, _design, childrenHtml) => {
     const gap = props.gap || "1rem";
     return `<div style="display:flex;flex-direction:column;gap:${gap};${props.justify ? `justify-content:${props.justify};` : ""}${props.align ? `align-items:${props.align};` : ""}padding:1rem">${childrenHtml || ""}</div>`;
   },
 
-  spacer: (props) => {
+  spacer: (props, _design) => {
     const height = Number(props.height) || 64;
     return `<div style="height:${height}px"></div>`;
   },
 
-  divider: () => {
-    return `<hr style="border:none;border-top:1px solid #e5e7eb;margin:2rem 0" />`;
+  divider: (_props, _design) => {
+    return `<hr style="border:none;border-top:1px solid var(--border-color);margin:2rem 0" />`;
   },
 
-  code: (props) => {
+  code: (props, _design) => {
     const code = esc(String(props.code ?? ""));
     const language = esc(String(props.language ?? ""));
     return `<pre style="background:#1e1e2e;color:#cdd6f4;padding:1.5rem;border-radius:var(--radius);overflow-x:auto;margin:2rem"><code data-language="${language}">${code}</code></pre>`;
   },
 
-  html: (props) => {
+  html: (props, _design) => {
     const rawHtml = String(props.html ?? "");
     return `<div>${rawHtml}</div>`;
+  },
+
+  // ── UI Components ──
+
+  button: (props, design) => {
+    const text = esc(String(props.text ?? "Button"));
+    const variant = props.variant || "primary";
+    const accent = `#${design.mainColor}`;
+    const style = variant === "primary"
+      ? `background:${accent};color:#fff;border:none`
+      : `border:1.5px solid ${accent};color:${accent};background:transparent`;
+    return `<div style="padding:1rem;display:flex;justify-content:center">
+      <button style="${style};padding:0.625rem 1.5rem;border-radius:var(--radius);font-weight:600;font-size:0.875rem;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all 0.2s">${text}</button>
+    </div>`;
+  },
+
+  link: (props, design) => {
+    const text = esc(String(props.text ?? "Link"));
+    const url = ensureRelative(String(props.url ?? "#"));
+    return `<div style="padding:1rem;display:flex;justify-content:center">
+      <a href="${url}" style="color:#${design.mainColor};text-decoration:none;font-weight:500;font-size:0.875rem;border-bottom:1px solid transparent;transition:border-color 0.2s" onmouseover="this.style.borderBottomColor='#${design.mainColor}'" onmouseout="this.style.borderBottomColor='transparent'">${text}</a>
+    </div>`;
+  },
+
+  card: (props, _design) => {
+    const title = esc(String(props.title ?? "Card Title"));
+    const description = esc(String(props.description ?? "Card description goes here."));
+    return `<div style="padding:1rem">
+      <div style="border:1px solid var(--border-color);border-radius:var(--radius);background:var(--bg-color);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1)">
+        <div style="height:120px;background:linear-gradient(135deg, rgba(99,76,248,0.1) 0%, rgba(99,76,248,0.05) 100%)"></div>
+        <div style="padding:1.25rem">
+          <h4 style="margin:0 0 0.5rem;font-weight:700;font-size:0.9375rem">${title}</h4>
+          <p style="margin:0;color:var(--muted-text);font-size:0.8125rem;line-height:1.5">${description}</p>
+        </div>
+      </div>
+    </div>`;
+  },
+
+  avatar: (props, _design) => {
+    const name = esc(String(props.name ?? "User"));
+    const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+    return `<div style="padding:1rem;display:flex;align-items:center;gap:0.75rem">
+      <div style="width:40px;height:40px;border-radius:50%;background:rgba(99,76,248,0.1);display:flex;align-items:center;justify-content:center;font-size:0.8125rem;font-weight:700;color:#634CF8">${initials}</div>
+      <span style="font-size:0.875rem;font-weight:500">${name}</span>
+    </div>`;
+  },
+
+  badge: (props, design) => {
+    const text = esc(String(props.text ?? "Badge"));
+    const accent = `#${design.mainColor}`;
+    return `<div style="padding:1rem;display:flex">
+      <span style="background:${accent}15;color:${accent};padding:0.125rem 0.625rem;border-radius:9999px;font-size:0.75rem;font-weight:700;letter-spacing:0.025em">${text}</span>
+    </div>`;
+  },
+
+  chip: (props, design) => {
+    const text = esc(String(props.text ?? "Chip"));
+    const accent = `#${design.mainColor}`;
+    return `<div style="padding:1rem;display:flex;gap:0.5rem">
+      <span style="border:1px solid ${accent}40;color:${accent};padding:0.25rem 0.75rem;border-radius:9999px;font-size:0.75rem;font-weight:500;display:inline-flex;align-items:center;gap:0.25rem">
+        ${text}
+        <span style="opacity:0.5;cursor:pointer;margin-left:0.25rem">×</span>
+      </span>
+    </div>`;
+  },
+
+  accordion: (props, _design) => {
+    const title = esc(String(props.title ?? "Accordion Title"));
+    const items = Array.isArray(props.items) ? props.items : [
+      { q: "Item 1", a: "Content 1" },
+      { q: "Item 2", a: "Content 2" }
+    ];
+    const itemsHtml = items.map((item: any) => `
+      <details style="border-bottom:1px solid var(--border-color);padding:0.75rem 0">
+        <summary style="font-weight:600;font-size:0.9375rem;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center">
+          ${esc(item.q ?? item.title ?? "Question")}
+          <span style="transition:transform 0.2s">▼</span>
+        </summary>
+        <div style="padding:1rem 0;color:var(--muted-text);font-size:0.875rem;line-height:1.6">${esc(item.a ?? item.content ?? "Answer content goes here.")}</div>
+      </details>`).join("");
+    
+    return `<div style="padding:2rem;max-width:700px;margin:0 auto">
+      ${props.title ? `<h3 style="font-size:1.25rem;font-weight:700;margin-bottom:1.5rem">${title}</h3>` : ""}
+      <div style="border-top:1px solid var(--border-color)">${itemsHtml}</div>
+    </div>`;
+  },
+
+  tabs: (props, design) => {
+    const items = Array.isArray(props.items) ? props.items : [
+      { label: "Tab 1", content: "Content 1" },
+      { label: "Tab 2", content: "Content 2" }
+    ];
+    const accent = `#${design.mainColor}`;
+    const tabsHtml = items.map((item: any, i: number) => `
+      <div class="pb-tab-item ${i === 0 ? "active" : ""}" data-target="tab-${i}" style="padding:0.5rem 1rem;cursor:pointer;font-weight:600;font-size:0.875rem;color:${i === 0 ? accent : "#6b7280"};border-bottom:2px solid ${i === 0 ? accent : "transparent"}">${esc(item.label)}</div>
+    `).join("");
+    const panelsHtml = items.map((item: any, i: number) => `
+      <div id="tab-${i}" class="pb-tab-panel" style="display:${i === 0 ? "block" : "none"};padding:1.5rem 0;font-size:0.875rem;color:#4b5563">${esc(item.content)}</div>
+    `).join("");
+
+    return `<div style="padding:2rem" class="pb-tabs">
+      <div style="display:flex;gap:1rem;border-bottom:1px solid var(--border-color)">${tabsHtml}</div>
+      <div>${panelsHtml}</div>
+      <script>
+        (function() {
+          var container = document.currentScript.parentElement;
+          var tabs = container.querySelectorAll('.pb-tab-item');
+          var panels = container.querySelectorAll('.pb-tab-panel');
+          tabs.forEach(function(tab) {
+            tab.addEventListener('click', function() {
+              tabs.forEach(t => { 
+                t.style.color = '#6b7280'; 
+                t.style.borderBottomColor = 'transparent';
+              });
+              panels.forEach(p => p.style.display = 'none');
+              tab.style.color = '${accent}';
+              tab.style.borderBottomColor = '${accent}';
+              container.querySelector('#' + tab.dataset.target).style.display = 'block';
+            });
+          });
+        })();
+      </script>
+    </div>`;
+  },
+
+  table: (props, _design) => {
+    const title = esc(String(props.title ?? ""));
+    const headers = Array.isArray(props.headers) ? props.headers : ["Name", "Role", "Status"];
+    const rows = Array.isArray(props.rows) ? props.rows : [
+      ["John Doe", "Designer", "Active"],
+      ["Jane Smith", "Developer", "Away"]
+    ];
+    
+    const headerHtml = headers.map(h => `<th style="text-align:left;padding:0.75rem;border-bottom:1px solid var(--border-color);font-size:0.75rem;font-weight:700;color:var(--muted-text);text-transform:uppercase;letter-spacing:0.05em">${esc(h)}</th>`).join("");
+    const rowsHtml = rows.map(row => `
+      <tr>
+        ${(Array.isArray(row) ? row : []).map(cell => `<td style="padding:1rem 0.75rem;border-bottom:1px solid #f3f4f6;font-size:0.875rem;color:#4b5563">${esc(String(cell))}</td>`).join("")}
+      </tr>`).join("");
+
+    return `<div style="padding:2rem;overflow-x:auto">
+      ${title ? `<h3 style="font-size:1.125rem;font-weight:700;margin-bottom:1rem">${title}</h3>` : ""}
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr>${headerHtml}</tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>`;
+  },
+
+  separator: (_props, _design) => `<div style="padding:1rem"><div style="height:1px;background:var(--border-color)"></div></div>`,
+
+  input: (props, _design) => {
+    const label = esc(String(props.label ?? "Input"));
+    const placeholder = esc(String(props.placeholder ?? "Enter text..."));
+    return `<div style="padding:1rem">
+      <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--muted-text);margin-bottom:0.375rem">${label}</label>
+      <input type="text" placeholder="${placeholder}" style="width:100%;padding:0.625rem 0.75rem;border:1px solid var(--border-color);border-radius:var(--radius);font-size:0.875rem;background:var(--bg-color);color:var(--text-color)" />
+    </div>`;
+  },
+
+  textfield: (props, _design) => {
+    const label = esc(String(props.label ?? "Text Field"));
+    const placeholder = esc(String(props.placeholder ?? "Enter value..."));
+    return `<div style="padding:1rem">
+      <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--text-color);margin-bottom:0.375rem">${label}</label>
+      <input type="text" placeholder="${placeholder}" style="width:100%;padding:0.625rem 0.75rem;border:1px solid var(--border-color);border-radius:var(--radius);font-size:0.875rem;background:var(--bg-color);color:var(--text-color)" />
+      <p style="margin:0.25rem 0 0;font-size:0.625rem;color:var(--muted-text)">Helper text</p>
+    </div>`;
+  },
+
+  textarea: (props, _design) => {
+    const label = esc(String(props.label ?? "Text Area"));
+    const placeholder = esc(String(props.placeholder ?? "Write something..."));
+    return `<div style="padding:1rem">
+      <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--muted-text);margin-bottom:0.375rem">${label}</label>
+      <textarea placeholder="${placeholder}" style="width:100%;min-height:100px;padding:0.625rem 0.75rem;border:1px solid var(--border-color);border-radius:var(--radius);font-size:0.875rem;background:var(--bg-color);color:var(--text-color);resize:vertical"></textarea>
+    </div>`;
+  },
+
+  checkbox: (props, design) => {
+    const label = esc(String(props.label ?? "Checkbox option"));
+    const accent = `#${design.mainColor}`;
+    return `<div style="padding:1rem;display:flex;align-items:center;gap:0.625rem">
+      <div style="width:18px;height:18px;border:2px solid ${accent};border-radius:4px;display:flex;align-items:center;justify-content:center;color:${accent};font-size:11px;font-weight:700">✓</div>
+      <span style="font-size:0.875rem;color:var(--text-color)">${label}</span>
+    </div>`;
+  },
+
+  switch: (props, design) => {
+    const label = esc(String(props.label ?? "Toggle option"));
+    const accent = `#${design.mainColor}`;
+    return `<div style="padding:1rem;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:0.875rem;color:var(--text-color)">${label}</span>
+      <div style="width:36px;height:20px;background:${accent};border-radius:9999px;position:relative">
+        <div style="width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;top:2px;right:2px;box-shadow:0 1px 2px rgba(0,0,0,0.1)"></div>
+      </div>
+    </div>`;
+  },
+
+  progress: (props, design) => {
+    const value = Number(props.value) || 50;
+    const label = esc(String(props.label ?? "Progress"));
+    const accent = `#${design.mainColor}`;
+    return `<div style="padding:1rem">
+      <div style="display:flex;justify-content:space-between;margin-bottom:0.375rem">
+        <span style="font-size:0.75rem;font-weight:600;color:var(--muted-text)">${label}</span>
+        <span style="font-size:0.75rem;font-weight:700;color:${accent}">${value}%</span>
+      </div>
+      <div style="height:8px;background:#f3f4f6;border-radius:9999px;overflow:hidden">
+        <div style="height:100%;width:${value}%;background:${accent};border-radius:9999px"></div>
+      </div>
+    </div>`;
+  },
+
+  breadcrumbs: (props) => {
+    const items = Array.isArray(props.items) ? props.items : ["Home", "Products", "Current"];
+    const html = items.map((item, i) => `
+      <span style="font-size:0.75rem;color:${i === items.length - 1 ? "var(--text-color)" : "var(--muted-text)"};font-weight:${i === items.length - 1 ? "600" : "400"}">${esc(String(item))}</span>
+      ${i < items.length - 1 ? '<span style="color:var(--border-color);font-size:0.75rem;margin:0 0.5rem">/</span>' : ""}
+    `).join("");
+    return `<div style="padding:1rem;display:flex;align-items:center">${html}</div>`;
+  },
+
+  select: (props, _design) => {
+    const label = esc(String(props.label ?? "Select"));
+    const placeholder = esc(String(props.placeholder ?? "Choose an option..."));
+    return `<div style="padding:1rem">
+      <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--muted-text);margin-bottom:0.375rem">${label}</label>
+      <div style="width:100%;padding:0.625rem 0.75rem;border:1px solid var(--border-color);border-radius:var(--radius);font-size:0.875rem;background:var(--bg-color);color:var(--text-color);display:flex;justify-content:space-between;align-items:center;cursor:pointer">
+        <span style="color:var(--muted-text)">${placeholder}</span>
+        <span style="font-size:10px;color:var(--muted-text)">▼</span>
+      </div>
+    </div>`;
+  },
+
+  radiogroup: (props, design) => {
+    const label = esc(String(props.label ?? "Radio Group"));
+    const options = Array.isArray(props.options) ? props.options : ["Option 1", "Option 2", "Option 3"];
+    const accent = `#${design.mainColor}`;
+    const optsHtml = options.map((opt, i) => `
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem">
+        <div style="width:16px;height:16px;border-radius:50%;border:2px solid ${i === 0 ? accent : "#d4d4d4"};display:flex;align-items:center;justify-content:center">
+          ${i === 0 ? `<div style="width:8px;height:8px;border-radius:50%;background:${accent}"></div>` : ""}
+        </div>
+        <span style="font-size:0.875rem;color:var(--text-color)">${esc(String(opt))}</span>
+      </div>`).join("");
+    return `<div style="padding:1rem">
+      <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--muted-text);margin-bottom:0.625rem">${label}</label>
+      <div>${optsHtml}</div>
+    </div>`;
+  },
+
+  slider: (props, design) => {
+    const label = esc(String(props.label ?? "Slider"));
+    const accent = `#${design.mainColor}`;
+    return `<div style="padding:1rem">
+      <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem">
+        <label style="font-size:0.75rem;font-weight:600;color:var(--muted-text)">${label}</label>
+        <span style="font-size:0.75rem;font-weight:700;color:var(--text-color)">50</span>
+      </div>
+      <div style="position:relative;height:20px;display:flex;align-items:center">
+        <div style="width:100%;height:6px;background:var(--border-color);border-radius:9999px;position:relative">
+          <div style="width:50%;height:100%;background:${accent};border-radius:9999px"></div>
+          <div style="width:16px;height:16px;background:#fff;border:2px solid ${accent};border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 1px 3px rgba(0,0,0,0.1)"></div>
+        </div>
+      </div>
+    </div>`;
+  },
+
+  tooltip: (props, _design) => {
+    const text = esc(String(props.text ?? "Hover me"));
+    const tooltip = esc(String(props.tooltip ?? "Tooltip info"));
+    return `<div style="padding:1rem;display:flex;align-items:center;gap:0.5rem">
+      <span style="font-size:0.875rem;color:var(--text-color);text-decoration:underline;text-decoration-style:dashed;text-underline-offset:4px;cursor:help">${text}</span>
+      <div style="background:var(--text-color);color:var(--bg-color);padding:0.25rem 0.5rem;border-radius:4px;font-size:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1)">${tooltip}</div>
+    </div>`;
+  },
+
+  popover: (props, design) => {
+    const trigger = esc(String(props.trigger ?? "Click me"));
+    const accent = `#${design.mainColor}`;
+    return `<div style="padding:1rem">
+      <button style="padding:0.5rem 1rem;border:1px solid ${accent}40;color:${accent};border-radius:8px;font-size:0.75rem;font-weight:600;background:transparent;cursor:pointer">${trigger}</button>
+      <div style="margin-top:0.5rem;padding:0.75rem;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-color);color:var(--text-color);box-shadow:0 4px 12px rgba(0,0,0,0.08);max-width:200px">
+        <p style="margin:0;font-size:0.75rem;font-weight:600;color:var(--text-color)">Popover Title</p>
+        <p style="margin:0.25rem 0 0;font-size:10px;color:var(--muted-text)">Popover content goes here.</p>
+      </div>
+    </div>`;
   },
 };
 
@@ -518,7 +870,9 @@ function renderBlock(
   design: DesignSettings,
   options: HtmlExportOptions,
 ): string {
-  const generator = BLOCK_HTML_MAP[block.type];
+  // Case-insensitive lookup for block type
+  const typeKey = block.type.toLowerCase();
+  const generator = BLOCK_HTML_MAP[typeKey] || BLOCK_HTML_MAP[block.type];
   // Render nested children if present
   let childrenHtml = "";
   if (block.children) {
@@ -725,18 +1079,63 @@ ${!pageSettings.published ? "<!-- DRAFT - Not Published -->\n" : ""}<html lang="
       --main-color: ${mainColor};
       --radius: ${radiusValue};
       --font-family: ${fontFamily};
+      --bg-color: #ffffff;
+      --text-color: #111827;
+      --border-color: #e5e7eb;
+      --muted-text: #6b7280;
+    }
+    html.dark {
+      --bg-color: #111827;
+      --text-color: #f9fafb;
+      --border-color: #374151;
+      --muted-text: #9ca3af;
     }
     *, *::before, *::after { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: var(--font-family);
       line-height: 1.6;
-      color: ${design.mood === "dark" ? "#f9fafb" : "#111827"};
-      background: ${design.mood === "dark" ? "#111827" : "#ffffff"};
+      color: var(--text-color);
+      background: var(--bg-color);
+      transition: background-color 0.3s, color 0.3s;
     }
     img { max-width: 100%; height: auto; }
     a { color: inherit; }
+    
+    /* UI Component Helper Styles */
+    .pb-tab-item:hover { opacity: 0.8; }
+    .pb-tab-item.active { pointer-events: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    details[open] summary span { transform: rotate(180deg); }
+    
+    /* Force consistent colors for nav and other elements using the variables */
+    nav, section, footer, div, h1, h2, h3, h4, p, span { border-color: var(--border-color) !important; }
+
+    /* Navbar Responsiveness */
+    .pb-navbar { border-bottom: 1px solid var(--border-color); }
+    .pb-nav-container { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2rem; max-width: 1200px; margin: 0 auto; }
+    .pb-nav-logo { font-weight: 700; font-size: 1.25rem; }
+    .pb-nav-right { display: flex; align-items: center; gap: 1.5rem; }
+    .pb-nav-links { display: flex; align-items: center; gap: 1.5rem; }
+    .pb-nav-actions { display: flex; align-items: center; gap: 0.75rem; }
+    .pb-nav-cta { background: var(--main-color); color: #fff; padding: 0.5rem 1.25rem; border-radius: var(--radius); text-decoration: none; font-weight: 600; font-size: 0.875rem; }
+    .pb-hamburger { display: none; }
+    
+    @media (max-width: 768px) {
+      .pb-nav-links { display: none; }
+      .pb-hamburger { display: flex; }
+      .pb-nav-container { padding: 0.75rem 1rem; }
+      .pb-nav-right { gap: 0.75rem; }
+      .pb-nav-cta { display: none; }
+    }
   </style>
+  <script>
+    (function() {
+      const saved = localStorage.getItem('pb-theme');
+      if (saved === 'dark') document.documentElement.classList.add('dark');
+      else if (saved === 'light') document.documentElement.classList.remove('dark');
+    })();
+  </script>
   ${animationCSS}
   ${pageSettings.customCSS ? `<style>\n${pageSettings.customCSS}\n  </style>` : ""}
   ${pageSettings.headCode ?? ""}

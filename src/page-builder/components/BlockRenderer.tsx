@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button, Card, Accordion } from "@heroui/react";
 import clsx from "clsx";
-import { Menu as MenuIcon, X as XIcon, ChevronDown } from "lucide-react";
+import { Menu as MenuIcon, X as XIcon, ChevronDown, Sun, Moon } from "lucide-react";
 
 import type { BlockInstance, BlockStyleOverrides, DesignSettings } from "../types";
 import { RADIUS_TOKENS } from "../tokens";
@@ -41,13 +41,15 @@ function NavbarBlock({ props, design, previewMode }: RendererProps) {
   ]).map((link) =>
     typeof link === "string" ? { label: link, url: "#" } : (link as { label: string; url: string }),
   );
+  
   const mobile = isMobile(previewMode);
+  const tablet = previewMode === "tablet";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <nav className="border-b border-separator/50">
+    <nav className="border-b border-separator/50 bg-background transition-colors duration-300">
       <div className={clsx(
-        "flex items-center justify-between",
+        "flex items-center justify-between mx-auto max-w-7xl",
         mobile ? "px-4 py-3" : "px-4 sm:px-8 py-4",
       )}>
         {/* Logo */}
@@ -58,8 +60,8 @@ function NavbarBlock({ props, design, previewMode }: RendererProps) {
           ◆ {logo}
         </span>
 
-        {/* Desktop links */}
-        {!mobile && (
+        {/* Desktop/Tablet links */}
+        {!mobile && !tablet && (
           <div className="flex items-center gap-4 md:gap-8">
             {links.map((link, i) => (
               <a
@@ -77,10 +79,14 @@ function NavbarBlock({ props, design, previewMode }: RendererProps) {
         {/* Right side */}
         <div className="flex items-center gap-3">
           {!mobile && (
-            <span className="text-sm text-muted hover:text-foreground cursor-pointer transition-colors font-medium">
-              Log in
-            </span>
+            <div className="flex items-center gap-1.5 mr-1">
+              <button className="p-2 rounded-lg border border-separator/50 text-muted hover:text-foreground hover:bg-surface transition-colors">
+                {design.mood === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
+            </div>
           )}
+          
+          
           {!mobile && (
             <Button
               size="sm"
@@ -93,8 +99,9 @@ function NavbarBlock({ props, design, previewMode }: RendererProps) {
               Get Started
             </Button>
           )}
-          {/* Hamburger toggle on mobile */}
-          {mobile && (
+
+          {/* Hamburger toggle on mobile/tablet */}
+          {(mobile || tablet) && (
             <button
               className="flex h-8 w-8 items-center justify-center rounded-md text-foreground hover:bg-surface transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -105,34 +112,37 @@ function NavbarBlock({ props, design, previewMode }: RendererProps) {
         </div>
       </div>
 
-      {/* Mobile dropdown menu */}
-      {mobile && mobileMenuOpen && (
-        <div className="border-t border-separator/30 px-4 py-3 flex flex-col gap-2 bg-surface/50">
-          {links.map((link, i) => (
-            <a
-              key={i}
-              href={link.url || "#"}
-              className="text-sm text-muted hover:text-foreground cursor-pointer transition-colors font-medium py-1.5 border-b border-separator/20 last:border-0"
-              onClick={(e) => e.preventDefault()}
-            >
-              {link.label}
-            </a>
-          ))}
-          <div className="flex items-center gap-3 pt-2">
-            <span className="text-sm text-muted hover:text-foreground cursor-pointer transition-colors font-medium">
-              Log in
-            </span>
-            <Button
-              size="sm"
-              style={{
-                backgroundColor: `#${design.mainColor}`,
-                color: "#fff",
-                borderRadius: radiusValue(design.radius),
-              }}
-            >
-              Get Started
-            </Button>
+      {/* Mobile/Tablet Menu Overlay */}
+      {(mobile || tablet) && mobileMenuOpen && (
+        <div className="border-t border-separator/50 bg-background/95 backdrop-blur-sm p-4 space-y-4 animate-in slide-in-from-top-2 duration-200">
+          <div className="flex flex-col gap-3">
+            {links.map((link, i) => (
+              <a
+                key={i}
+                href={link.url || "#"}
+                className="text-sm text-foreground/80 hover:text-foreground font-medium py-1"
+                onClick={(e) => e.preventDefault()}
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
+          <div className="pt-4 border-t border-separator/30 flex items-center justify-between">
+            <span className="text-sm font-medium text-muted">Theme</span>
+            <button className="p-2 rounded-lg border border-separator/50 text-muted hover:text-foreground">
+              {design.mood === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+          </div>
+          <Button
+            className="w-full"
+            style={{
+              backgroundColor: `#${design.mainColor}`,
+              color: "#fff",
+              borderRadius: radiusValue(design.radius),
+            }}
+          >
+            Get Started
+          </Button>
         </div>
       )}
     </nav>

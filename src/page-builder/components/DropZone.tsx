@@ -146,12 +146,16 @@ function NestedDropIndicator({ id }: { id: string }) {
   return (
     <div
       ref={setNodeRef}
-      className={clsx(
-        "transition-all duration-150",
-        isOver
-          ? "h-[2px] rounded-full bg-[#634CF8] my-1.5 shadow-[0_0_6px_rgba(99,76,248,0.3)]"
-          : "h-2",
-      )}
-    />
+      className="h-3 flex items-center justify-center transition-all duration-150"
+    >
+      <div
+        className={clsx(
+          "w-full transition-all duration-150",
+          isOver
+            ? "h-0.5 rounded-full bg-[#634CF8] shadow-[0_0_6px_rgba(99,76,248,0.3)]"
+            : "h-[1px] bg-[#634CF8]/10",
+        )}
+      />
+    </div>
   );
 }
