@@ -1,6 +1,6 @@
 import { Button, Tooltip } from "@heroui/react";
 import clsx from "clsx";
-import { Monitor, Tablet, Smartphone, Undo2, Redo2, PanelLeft, PanelRight, Moon, Sun, Globe, GlobeLock, Download } from "lucide-react";
+import { Monitor, Tablet, Smartphone, Undo2, Redo2, PanelLeft, PanelRight, Moon, Sun, Globe, GlobeLock } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function Toolbar({

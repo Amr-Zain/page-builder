@@ -80,7 +80,7 @@ type BlockHtmlFn = (
 ) => string;
 
 const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
-  navbar: (props, design, _children, options) => {
+  navbar: (props, _design, _children, options) => {
     const logo = esc(String(props.logo ?? "Logo"));
     const rawLinks = Array.isArray(props.links) ? props.links : [];
     const currentLocale = options?.pageSettings.locale || "en";
@@ -505,7 +505,7 @@ const BLOCK_HTML_MAP: Record<string, BlockHtmlFn> = {
     </div>`;
   },
 
-  "button-group": (props, design) => {
+  "button-group": (props, _design) => {
     const buttons = Array.isArray(props.buttons) ? props.buttons : [];
     const btnsHtml = buttons
       .map((btn: unknown) => {

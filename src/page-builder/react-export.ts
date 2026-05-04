@@ -55,7 +55,10 @@ function blockToJsx(block: BlockInstance, design: DesignSettings, indent: string
       inner = `${indent}<nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem 2rem", borderBottom: "1px solid #e5e7eb" }}>
 ${indent}  <span style={{ fontWeight: 700, fontSize: "1.25rem" }}>${esc(String(p.logo || "Logo"))}</span>
 ${indent}  <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
-${indent}    ${(Array.isArray(p.links) ? p.links : []).map((l: unknown) => `<a href="#" style={{ textDecoration: "none", color: "inherit" }}>${esc(String(l))}</a>`).join("\n" + indent + "    ")}
+${indent}    ${(Array.isArray(p.links) ? p.links : []).map((l: any) => {
+        const label = typeof l === "string" ? l : (l?.label || "Link");
+        return `<a href="#" style={{ textDecoration: "none", color: "inherit" }}>${esc(String(label))}</a>`;
+      }).join("\n" + indent + "    ")}
 ${indent}    <a href="#" style={{ background: "#${mc}", color: "#fff", padding: "0.5rem 1rem", borderRadius: "${r}", textDecoration: "none" }}>Get Started</a>
 ${indent}  </div>
 ${indent}</nav>${childrenJsx}`;
@@ -113,6 +116,85 @@ ${indent}</section>${childrenJsx}`;
     }
     case "flex-col": {
       inner = `${indent}<div style={{ display: "flex", flexDirection: "column", gap: "${p.gap || "1rem"}", justifyContent: "${p.justify || "flex-start"}", alignItems: "${p.align || "stretch"}" }}>${childrenJsx}</div>`;
+      break;
+    }
+    case "features": {
+      inner = `${indent}<section style={{ padding: "4rem 2rem", background: "transparent" }}>
+${indent}  <h2 style={{ fontSize: "2rem", fontWeight: 700, textAlign: "center", marginBottom: "3rem" }}>${esc(String(p.title || "Features"))}</h2>
+${indent}  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "2rem" }}>
+${indent}    ${(Array.isArray(p.items) ? p.items : []).map((item: any) => `
+${indent}    <div style={{ padding: "1.5rem", border: "1px solid #e5e7eb", borderRadius: "${r}" }}>
+${indent}      <div style={{ fontSize: "2rem", marginBottom: "1rem" }}>${esc(String(item.icon || "✨"))}</div>
+${indent}      <h3 style={{ fontSize: "1.25rem", fontWeight: 600, marginBottom: "0.5rem" }}>${esc(String(item.title || ""))}</h3>
+${indent}      <p style={{ color: "#6b7280", lineHeight: 1.5 }}>${esc(String(item.description || ""))}</p>
+${indent}    </div>`).join("")}
+${indent}  </div>
+${indent}</section>${childrenJsx}`;
+      break;
+    }
+    case "pricing": {
+      inner = `${indent}<section style={{ padding: "4rem 2rem" }}>
+${indent}  <h2 style={{ fontSize: "2rem", fontWeight: 700, textAlign: "center", marginBottom: "3rem" }}>${esc(String(p.title || "Pricing"))}</h2>
+${indent}  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "2rem", maxWidth: "1000px", margin: "0 auto" }}>
+${indent}    ${(Array.isArray(p.tiers) ? p.tiers : []).map((tier: any) => `
+${indent}    <div style={{ padding: "2rem", border: "2px solid #e5e7eb", borderRadius: "${r}", textAlign: "center" }}>
+${indent}      <h3 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.5rem" }}>${esc(String(tier.name || ""))}</h3>
+${indent}      <div style={{ fontSize: "2.5rem", fontWeight: 800, marginBottom: "1.5rem" }}>${esc(String(tier.price || "$0"))}</div>
+${indent}      <ul style={{ listStyle: "none", padding: 0, marginBottom: "2rem", textAlign: "left" }}>
+${indent}        ${(Array.isArray(tier.features) ? tier.features : []).map((f: string) => `<li style={{ marginBottom: "0.5rem", display: "flex", gap: "0.5rem" }}><span>✓</span> ${esc(f)}</li>`).join("\n" + indent + "        ")}
+${indent}      </ul>
+${indent}      <button style={{ width: "100%", background: "#${mc}", color: "#fff", border: "none", padding: "0.75rem", borderRadius: "${r}", fontWeight: 600 }}>Get Started</button>
+${indent}    </div>`).join("")}
+${indent}  </div>
+${indent}</section>${childrenJsx}`;
+      break;
+    }
+    case "stats": {
+      inner = `${indent}<section style={{ padding: "4rem 2rem", background: "#f9fafb", textAlign: "center" }}>
+${indent}  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "2rem" }}>
+${indent}    ${(Array.isArray(p.items) ? p.items : []).map((s: any) => `
+${indent}    <div>
+${indent}      <div style={{ fontSize: "2.5rem", fontWeight: 800, color: "#${mc}" }}>${esc(String(s.value || ""))}</div>
+${indent}      <div style={{ color: "#6b7280", fontWeight: 500 }}>${esc(String(s.label || ""))}</div>
+${indent}    </div>`).join("")}
+${indent}  </div>
+${indent}</section>${childrenJsx}`;
+      break;
+    }
+    case "testimonials": {
+      inner = `${indent}<section style={{ padding: "4rem 2rem" }}>
+${indent}  <h2 style={{ fontSize: "2rem", fontWeight: 700, textAlign: "center", marginBottom: "3rem" }}>${esc(String(p.title || "Testimonials"))}</h2>
+${indent}  <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+${indent}    ${(Array.isArray(p.testimonials) ? p.testimonials : []).map((t: any) => `
+${indent}    <div style={{ padding: "2rem", background: "#f9fafb", borderRadius: "${r}", marginBottom: "2rem" }}>
+${indent}      <p style={{ fontSize: "1.125rem", fontStyle: "italic", marginBottom: "1.5rem" }}>"${esc(String(t.content || ""))}"</p>
+${indent}      <div style={{ fontWeight: 600 }}>${esc(String(t.name || ""))}</div>
+${indent}      <div style={{ color: "#6b7280", fontSize: "0.875rem" }}>${esc(String(t.role || ""))}</div>
+${indent}    </div>`).join("")}
+${indent}  </div>
+${indent}</section>${childrenJsx}`;
+      break;
+    }
+    case "faq": {
+      inner = `${indent}<section style={{ padding: "4rem 2rem" }}>
+${indent}  <h2 style={{ fontSize: "2rem", fontWeight: 700, textAlign: "center", marginBottom: "3rem" }}>${esc(String(p.title || "FAQ"))}</h2>
+${indent}  <div style={{ maxWidth: "700px", margin: "0 auto" }}>
+${indent}    ${(Array.isArray(p.questions) ? p.questions : []).map((q: any) => `
+${indent}    <div style={{ marginBottom: "1.5rem", paddingBottom: "1.5rem", borderBottom: "1px solid #e5e7eb" }}>
+${indent}      <h3 style={{ fontSize: "1.125rem", fontWeight: 600, marginBottom: "0.5rem" }}>${esc(String(q.question || ""))}</h3>
+${indent}      <p style={{ color: "#6b7280" }}>${esc(String(q.answer || ""))}</p>
+${indent}    </div>`).join("")}
+${indent}  </div>
+${indent}</section>${childrenJsx}`;
+      break;
+    }
+    case "logos": {
+      inner = `${indent}<section style={{ padding: "3rem 2rem", textAlign: "center", background: "#fff" }}>
+${indent}  <p style={{ color: "#6b7280", fontWeight: 600, fontSize: "0.875rem", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "2rem" }}>${esc(String(p.title || "Trusted by"))}</p>
+${indent}  <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "3rem", opacity: 0.5 }}>
+${indent}    ${(Array.isArray(p.items) ? p.items : []).map((l: any) => `<span style={{ fontSize: "1.5rem", fontWeight: 700 }}>${esc(String(l.name || ""))}</span>`).join("\n" + indent + "    ")}
+${indent}  </div>
+${indent}</section>${childrenJsx}`;
       break;
     }
     default:
